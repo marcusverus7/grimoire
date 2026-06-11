@@ -38,6 +38,7 @@ export default function CampaignDetailScreen() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [search, setSearch] = useState("");
 
   const load = useCallback(() => {
     const c = db
@@ -104,11 +105,16 @@ export default function CampaignDetailScreen() {
     );
   }
 
+  const q = search.toLowerCase().trim();
+  const filtered = q
+    ? entities.filter((e) => e.name.toLowerCase().includes(q))
+    : entities;
+
   const entitiesByKind = ENTITY_KINDS
     .map((kind) => ({
       kind,
       label: KIND_LABELS[kind] ?? kind,
-      items: entities.filter((e) => e.kind === kind),
+      items: filtered.filter((e) => e.kind === kind),
     }))
     .filter((g) => g.items.length > 0);
 
@@ -216,6 +222,16 @@ export default function CampaignDetailScreen() {
               </Text>
             </Pressable>
           </View>
+          {entities.length > 5 && (
+            <TextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search entities…"
+              placeholderTextColor="#ECE3CF30"
+              className="border border-parchment/10 rounded-sm px-3 py-2 mb-3"
+              style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#ECE3CF" }}
+            />
+          )}
           {entitiesByKind.length === 0 ? (
             <Text className="text-parchment/40 text-sm" style={{ fontFamily: "Inter_400Regular" }}>
               No entities yet — create NPCs, locations, factions, and more
@@ -274,8 +290,24 @@ export default function CampaignDetailScreen() {
         {/* Actions */}
         <View className="flex-row justify-between">
           <Pressable
+            onPress={() => router.push(`/campaign/${id}/graph`)}
+            className="flex-1 mr-1.5 py-2.5 border border-gold/20 rounded-sm items-center"
+          >
+            <Text
+              style={{
+                fontFamily: "Inter_500Medium",
+                fontSize: 11,
+                color: "#A07A2C",
+                textTransform: "uppercase",
+                letterSpacing: 1,
+              }}
+            >
+              Map
+            </Text>
+          </Pressable>
+          <Pressable
             onPress={() => router.push(`/campaign/${id}/export`)}
-            className="flex-1 mr-2 py-2.5 border border-gold/20 rounded-sm items-center"
+            className="flex-1 mx-1.5 py-2.5 border border-gold/20 rounded-sm items-center"
           >
             <Text
               style={{
@@ -291,7 +323,7 @@ export default function CampaignDetailScreen() {
           </Pressable>
           <Pressable
             onPress={() => router.push(`/campaign/${id}/settings`)}
-            className="flex-1 ml-2 py-2.5 border border-parchment/15 rounded-sm items-center"
+            className="flex-1 ml-1.5 py-2.5 border border-parchment/15 rounded-sm items-center"
           >
             <Text
               style={{
