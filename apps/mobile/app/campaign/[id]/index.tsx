@@ -91,7 +91,7 @@ export default function CampaignDetailScreen() {
         status: "planned",
       })
       .run();
-    router.push(`/campaign/${id}/session/${sessionId}`);
+    router.push(`/campaign/${id}/session/${sessionId}/edit`);
   };
 
   if (!campaign) {
@@ -267,6 +267,44 @@ export default function CampaignDetailScreen() {
               </View>
             ))
           )}
+        </View>
+
+        <GoldRule className="my-4" />
+
+        {/* Actions */}
+        <View className="flex-row justify-between">
+          <Pressable
+            onPress={() => router.push(`/campaign/${id}/export`)}
+            className="flex-1 mr-2 py-2.5 border border-gold/20 rounded-sm items-center"
+          >
+            <Text
+              style={{
+                fontFamily: "Inter_500Medium",
+                fontSize: 11,
+                color: "#A07A2C",
+                textTransform: "uppercase",
+                letterSpacing: 1,
+              }}
+            >
+              Export
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push(`/campaign/${id}/settings`)}
+            className="flex-1 ml-2 py-2.5 border border-parchment/15 rounded-sm items-center"
+          >
+            <Text
+              style={{
+                fontFamily: "Inter_500Medium",
+                fontSize: 11,
+                color: "#ECE3CF80",
+                textTransform: "uppercase",
+                letterSpacing: 1,
+              }}
+            >
+              Settings
+            </Text>
+          </Pressable>
         </View>
 
         <View className="h-20" />

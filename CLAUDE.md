@@ -23,10 +23,11 @@ read Part IV (build plan) before starting any phase.
   generated in `migrations/`), rich-text model, @-mention linking engine,
   permissions/visibility/succession, relationship-graph derivation, Markdown+
   JSON export, recap pipeline + AI recap prompt builders.
-- `apps/mobile` — NOT YET CREATED. Expo (React Native) + Expo Router +
-  TypeScript + NativeWind + expo-sqlite + Drizzle, consuming `@grimoire/core`.
-- `apps/recap-web` — NOT YET CREATED. Minimal Next.js on Vercel rendering
-  recap JSON at `/r/[slug]`, logging `recap_events` (open/share/return).
+- `apps/mobile` — Expo 54 + Expo Router + NativeWind v4 + expo-sqlite + Drizzle,
+  consuming `@grimoire/core`. 10 routes: tab layout (campaigns list, design
+  showcase), campaign detail (entity list by kind, session list), entity
+  create/edit/detail (with backlinks panel), session create/edit.
+- `apps/recap-web` — Next.js skeleton with `/r/[slug]` recap route stub.
 
 ## Commands
 
@@ -34,23 +35,22 @@ read Part IV (build plan) before starting any phase.
 - `pnpm typecheck` — strict TS across workspace
 - `pnpm db:generate` — regenerate SQL migration after schema changes
 
-## What to build next (phase 0–1, fine on a smaller model)
+## Completed
 
-1. Scaffold `apps/mobile` with Expo Router (iOS/Android/web), NativeWind,
-   expo-sqlite + Drizzle wired to `@grimoire/core`'s schema and migration.
-   Apply migrations on app start.
-2. Design tokens from the plan: leather `#1A1410` chrome, parchment `#ECE3CF`
-   surfaces, gold `#A07A2C`, oxblood `#7A2418` single accent; Cinzel Decorative
-   titles only, Cormorant Garamond body, Inter for form labels. Build a
-   `/design` screen showing palette + type + the wax-seal component ("G").
-3. Campaign create + entity CRUD screens (all kinds, kind-specific attrs,
-   visibility flag). Use `canEditEntity`/`canViewEntity` from core for every
-   read/write path — no ad-hoc permission checks.
-4. Editor: on every body save, call `computeLinkChanges` and apply
-   inserts/deletes/snippet updates in one transaction. Backlinks panel via
-   `backlinksFor`. This is the hero feature — phase 2's gate is "following
-   links feels faster than remembering".
-5. Scaffold `apps/recap-web` (Next.js hello-world on Vercel).
+- Phase 0: mobile scaffold, design system (/design), recap-web skeleton
+- Phase 1: campaign detail, entity CRUD (all 7 kinds, quest attrs, visibility),
+  session CRUD, entity detail with backlinks panel
+
+## What to build next (phase 2)
+
+1. Rich-text editor for entity bodies (TipTap/ProseMirror): on every save,
+   call `computeLinkChanges` and apply inserts/deletes/snippet updates in one
+   transaction. @-mention autocomplete against campaign entities. This is the
+   hero feature — gate: "following links feels faster than remembering".
+2. Session body editor (same rich-text editor, beat-marking for recap pipeline).
+3. Recap flow: extract beats, build manual recap doc, share via recap-web.
+4. Relationship graph visualization (entity detail → "see on map" action).
+5. Campaign export (Markdown + JSON download).
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).
