@@ -1,0 +1,10 @@
+{
+  "name": "grimoire",
+  "private": true,
+  "scripts": {
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @grimoire/core db:generate"
+  },
+  "packageManager": "pnpm@11.0.9"
+}
