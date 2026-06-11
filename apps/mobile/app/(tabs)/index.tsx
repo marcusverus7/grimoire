@@ -1,6 +1,8 @@
 import { View, Text, Pressable, FlatList } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { eq } from "drizzle-orm";
+import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { WaxSeal } from "@/components/WaxSeal";
@@ -11,16 +13,18 @@ type Campaign = typeof schema.campaigns.$inferSelect;
 
 export default function CampaignsScreen() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const router = useRouter();
 
-  useEffect(() => {
+  const loadCampaigns = useCallback(() => {
     const rows = db
       .select()
       .from(schema.campaigns)
       .orderBy(schema.campaigns.createdAt)
       .all();
     setCampaigns(rows);
-  }, [refreshKey]);
+  }, []);
+
+  useFocusEffect(loadCampaigns);
 
   const createCampaign = () => {
     const now = Date.now();
@@ -64,7 +68,7 @@ export default function CampaignsScreen() {
       })
       .run();
 
-    setRefreshKey((k) => k + 1);
+    router.push(`/campaign/${id}`);
   };
 
   return (
@@ -95,7 +99,10 @@ export default function CampaignsScreen() {
           contentContainerStyle={{ padding: 16 }}
           ItemSeparatorComponent={() => <GoldRule className="my-3" />}
           renderItem={({ item }) => (
-            <Pressable className="py-3 px-2">
+            <Pressable
+              onPress={() => router.push(`/campaign/${item.id}`)}
+              className="py-3 px-2"
+            >
               <Text className="font-cormorant-semibold text-parchment text-lg">
                 {item.name}
               </Text>

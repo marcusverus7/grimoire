@@ -1,7 +1,7 @@
 import "../global.css";
 import { useEffect, useState } from "react";
 import { View, Text } from "react-native";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
@@ -71,7 +71,15 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="light" />
-      <Slot />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: "#1A1410" },
+        }}
+      >
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="campaign/[id]" />
+      </Stack>
     </>
   );
 }
