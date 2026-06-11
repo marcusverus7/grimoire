@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { RecapView } from "./recap-view";
+import { fetchRecapBySlug } from "../../../lib/recaps";
 
 interface RecapPageProps {
   params: Promise<{ slug: string }>;
@@ -9,13 +10,22 @@ export async function generateMetadata({
   params,
 }: RecapPageProps): Promise<Metadata> {
   const { slug } = await params;
-  // TODO: fetch recap by slug, use campaign name + session title for OG tags
+  const recap = await resolveRecap(slug);
+
+  const title = recap
+    ? `${recap.campaignName} — Session ${recap.sessionNumber}`
+    : "Recap Not Found";
+
   return {
-    title: `Recap — The Grimoire Archive`,
-    description: "A session recap from The Grimoire Archive",
+    title: `${title} — The Grimoire Archive`,
+    description: recap
+      ? `Session ${recap.sessionNumber} recap from ${recap.campaignName}`
+      : "A session recap from The Grimoire Archive",
     openGraph: {
-      title: `Recap — The Grimoire Archive`,
-      description: "Relive the adventure",
+      title,
+      description: recap
+        ? recap.body.slice(0, 160)
+        : "Relive the adventure",
       type: "article",
     },
   };
@@ -23,10 +33,7 @@ export async function generateMetadata({
 
 export default async function RecapPage({ params }: RecapPageProps) {
   const { slug } = await params;
-
-  // TODO: replace with Supabase fetch by share_slug
-  // For now, show a demo recap when slug is "demo", otherwise a placeholder
-  const recap = slug === "demo" ? DEMO_RECAP : null;
+  const recap = await resolveRecap(slug);
 
   if (!recap) {
     return (
@@ -62,6 +69,11 @@ export interface RecapData {
   tone: string;
   body: string;
   playedOn?: string | null;
+}
+
+async function resolveRecap(slug: string): Promise<RecapData | null> {
+  if (slug === "demo") return DEMO_RECAP;
+  return fetchRecapBySlug(slug);
 }
 
 const DEMO_RECAP: RecapData = {
