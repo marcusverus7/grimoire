@@ -11,7 +11,7 @@ import {
   isBlock,
   nodeText,
   walk,
-} from "./richtext.js";
+} from "./richtext";
 
 export interface Mention {
   entityId: string;

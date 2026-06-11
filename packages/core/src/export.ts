@@ -3,7 +3,7 @@
  * ownership over lock-in). Markdown uses [[wiki-links]] so an export drops
  * straight into Obsidian, which is also the import story in reverse.
  */
-import { MENTION_NODE, type RichTextNode } from "./richtext.js";
+import { MENTION_NODE, type RichTextNode } from "./richtext";
 
 export interface ExportEntity {
   id: string;

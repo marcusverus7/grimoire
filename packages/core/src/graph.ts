@@ -3,13 +3,13 @@
  * Pure projection over entities + entity_links; visibility-filtered so the
  * player view never leaks gm_only nodes.
  */
-import type { EntityLinkRow } from "./linking.js";
+import type { EntityLinkRow } from "./linking";
 import {
   type EntityForAccess,
   type Member,
   type RevealForAccess,
   canViewEntity,
-} from "./permissions.js";
+} from "./permissions";
 
 export interface GraphEntity extends EntityForAccess {
   name: string;

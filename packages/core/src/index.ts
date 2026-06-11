@@ -1,7 +1,7 @@
-export * from "./richtext.js";
-export * from "./linking.js";
-export * from "./permissions.js";
-export * from "./graph.js";
-export * from "./export.js";
-export * from "./recap.js";
-export * as schema from "./schema.js";
+export * from "./richtext";
+export * from "./linking";
+export * from "./permissions";
+export * from "./graph";
+export * from "./export";
+export * from "./recap";
+export * as schema from "./schema";

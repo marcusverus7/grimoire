@@ -12,7 +12,7 @@ import {
   paragraph,
   textNode,
   walk,
-} from "./richtext.js";
+} from "./richtext";
 
 export type RecapTone = "plain" | "epic" | "noir" | "comedy";
 
