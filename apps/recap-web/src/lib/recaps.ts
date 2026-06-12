@@ -1,10 +1,12 @@
 import { supabase } from "./supabase";
 import type { RecapData } from "../app/r/[slug]/page";
 
+const SAFE_SLUG = /^[a-zA-Z0-9_-]+$/;
+
 export async function fetchRecapBySlug(
   slug: string,
 ): Promise<RecapData | null> {
-  if (!supabase) return null;
+  if (!supabase || !SAFE_SLUG.test(slug)) return null;
 
   const { data: recap } = await supabase
     .from("recaps")

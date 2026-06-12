@@ -52,7 +52,8 @@ export function slugify(name: string): string {
   return slug || "untitled";
 }
 
-const escapeYaml = (s: string) => `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+const escapeYaml = (s: string) =>
+  `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\r/g, "\\r")}"`;
 
 function frontmatter(fields: Record<string, unknown>): string {
   const lines = ["---"];
