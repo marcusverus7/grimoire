@@ -19,4 +19,16 @@ config.resolver.nodeModulesPaths = [
 // expo-sqlite web worker needs .wasm files
 config.resolver.assetExts = [...(config.resolver.assetExts || []), "wasm"];
 
+// expo-sqlite on web requires SharedArrayBuffer, which needs cross-origin isolation
+config.server = {
+  ...config.server,
+  enhanceMiddleware: (middleware) => {
+    return (req, res, next) => {
+      res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+      res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+      return middleware(req, res, next);
+    };
+  },
+};
+
 module.exports = withNativeWind(config, { input: "./global.css" });
