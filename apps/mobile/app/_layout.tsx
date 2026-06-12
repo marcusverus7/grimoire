@@ -40,12 +40,14 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    try {
-      applyMigrations();
-      setDbReady(true);
-    } catch (e) {
-      console.error("Migration failed:", e);
-    }
+    (async () => {
+      try {
+        await applyMigrations();
+        setDbReady(true);
+      } catch (e) {
+        console.error("Migration failed:", e);
+      }
+    })();
   }, []);
 
   useEffect(() => {
