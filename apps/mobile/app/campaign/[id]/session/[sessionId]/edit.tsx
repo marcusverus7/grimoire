@@ -126,10 +126,14 @@ export default function SessionFormScreen() {
         text: "Delete",
         style: "destructive",
         onPress: () => {
-          db.delete(schema.sessions)
-            .where(eq(schema.sessions.id, sessionId))
-            .run();
-          router.back();
+          try {
+            db.delete(schema.sessions)
+              .where(eq(schema.sessions.id, sessionId))
+              .run();
+            router.back();
+          } catch (e) {
+            Alert.alert("Delete Failed", e instanceof Error ? e.message : "An unexpected error occurred");
+          }
         },
       },
     ]);

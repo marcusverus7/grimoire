@@ -46,15 +46,19 @@ export default function CampaignSettingsScreen() {
       Alert.alert("Name required", "Your campaign needs a name.");
       return;
     }
-    db.update(schema.campaigns)
-      .set({
-        name: trimmed,
-        systemTag: systemTag.trim() || null,
-        status,
-      })
-      .where(eq(schema.campaigns.id, id))
-      .run();
-    router.back();
+    try {
+      db.update(schema.campaigns)
+        .set({
+          name: trimmed,
+          systemTag: systemTag.trim() || null,
+          status,
+        })
+        .where(eq(schema.campaigns.id, id))
+        .run();
+      router.back();
+    } catch (e) {
+      Alert.alert("Save Failed", e instanceof Error ? e.message : "An unexpected error occurred");
+    }
   };
 
   const deleteCampaign = () => {
@@ -67,22 +71,26 @@ export default function CampaignSettingsScreen() {
           text: "Delete Forever",
           style: "destructive",
           onPress: () => {
-            db.delete(schema.entityLinks)
-              .where(eq(schema.entityLinks.campaignId, id))
-              .run();
-            db.delete(schema.entities)
-              .where(eq(schema.entities.campaignId, id))
-              .run();
-            db.delete(schema.sessions)
-              .where(eq(schema.sessions.campaignId, id))
-              .run();
-            db.delete(schema.memberships)
-              .where(eq(schema.memberships.campaignId, id))
-              .run();
-            db.delete(schema.campaigns)
-              .where(eq(schema.campaigns.id, id))
-              .run();
-            router.dismissAll();
+            try {
+              db.delete(schema.entityLinks)
+                .where(eq(schema.entityLinks.campaignId, id))
+                .run();
+              db.delete(schema.entities)
+                .where(eq(schema.entities.campaignId, id))
+                .run();
+              db.delete(schema.sessions)
+                .where(eq(schema.sessions.campaignId, id))
+                .run();
+              db.delete(schema.memberships)
+                .where(eq(schema.memberships.campaignId, id))
+                .run();
+              db.delete(schema.campaigns)
+                .where(eq(schema.campaigns.id, id))
+                .run();
+              router.dismissAll();
+            } catch (e) {
+              Alert.alert("Delete Failed", e instanceof Error ? e.message : "An unexpected error occurred");
+            }
           },
         },
       ],

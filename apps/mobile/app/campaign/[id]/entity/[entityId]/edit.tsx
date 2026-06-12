@@ -179,13 +179,17 @@ export default function EntityFormScreen() {
         text: "Delete",
         style: "destructive",
         onPress: () => {
-          db.delete(schema.entityLinks)
-            .where(eq(schema.entityLinks.toEntityId, entityId))
-            .run();
-          db.delete(schema.entities)
-            .where(eq(schema.entities.id, entityId))
-            .run();
-          router.back();
+          try {
+            db.delete(schema.entityLinks)
+              .where(eq(schema.entityLinks.toEntityId, entityId))
+              .run();
+            db.delete(schema.entities)
+              .where(eq(schema.entities.id, entityId))
+              .run();
+            router.back();
+          } catch (e) {
+            Alert.alert("Delete Failed", e instanceof Error ? e.message : "An unexpected error occurred");
+          }
         },
       },
     ]);

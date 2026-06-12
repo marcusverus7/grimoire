@@ -7,6 +7,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { useState, useCallback } from "react";
 import { eq, sql } from "drizzle-orm";
@@ -59,51 +60,55 @@ export default function CampaignsScreen() {
     const trimmed = newName.trim();
     if (!trimmed) return;
 
-    const now = Date.now();
-    const id = newId();
-    db.insert(schema.campaigns)
-      .values({
-        id,
-        name: trimmed,
-        systemTag: newSystem.trim() || null,
-        status: "active",
-        createdAt: new Date(now),
-      })
-      .run();
-
-    const profileId = newId();
-    const existing = db
-      .select()
-      .from(schema.profiles)
-      .where(eq(schema.profiles.username, "local_gm"))
-      .get();
-
-    const userId = existing?.id ?? profileId;
-    if (!existing) {
-      db.insert(schema.profiles)
+    try {
+      const now = Date.now();
+      const id = newId();
+      db.insert(schema.campaigns)
         .values({
-          id: profileId,
-          username: "local_gm",
-          displayName: "Game Master",
+          id,
+          name: trimmed,
+          systemTag: newSystem.trim() || null,
+          status: "active",
           createdAt: new Date(now),
         })
         .run();
+
+      const profileId = newId();
+      const existing = db
+        .select()
+        .from(schema.profiles)
+        .where(eq(schema.profiles.username, "local_gm"))
+        .get();
+
+      const userId = existing?.id ?? profileId;
+      if (!existing) {
+        db.insert(schema.profiles)
+          .values({
+            id: profileId,
+            username: "local_gm",
+            displayName: "Game Master",
+            createdAt: new Date(now),
+          })
+          .run();
+      }
+
+      db.insert(schema.memberships)
+        .values({
+          id: newId(),
+          campaignId: id,
+          userId,
+          role: "gm",
+          joinedAt: new Date(now),
+        })
+        .run();
+
+      setShowCreate(false);
+      setNewName("");
+      setNewSystem("");
+      router.push(`/campaign/${id}`);
+    } catch (e) {
+      Alert.alert("Create Failed", e instanceof Error ? e.message : "An unexpected error occurred");
     }
-
-    db.insert(schema.memberships)
-      .values({
-        id: newId(),
-        campaignId: id,
-        userId,
-        role: "gm",
-        joinedAt: new Date(now),
-      })
-      .run();
-
-    setShowCreate(false);
-    setNewName("");
-    setNewSystem("");
-    router.push(`/campaign/${id}`);
   };
 
   const openCreate = () => {
