@@ -135,6 +135,30 @@ export default function SessionDetailScreen() {
           </View>
         ) : null}
 
+        {/* Create Recap */}
+        {session.body && session.status === "played" ? (
+          <Pressable
+            onPress={() =>
+              router.push(
+                `/campaign/${campaignId}/session/${sessionId}/recap`,
+              )
+            }
+            className="mb-6 py-3 rounded-sm border border-gold/30 bg-oxblood items-center"
+          >
+            <Text
+              style={{
+                fontFamily: "Inter_600SemiBold",
+                fontSize: 13,
+                color: "#ECE3CF",
+                textTransform: "uppercase",
+                letterSpacing: 1.5,
+              }}
+            >
+              Create Recap
+            </Text>
+          </Pressable>
+        ) : null}
+
         {/* Linked entities */}
         {linkedEntities.length > 0 && (
           <>
