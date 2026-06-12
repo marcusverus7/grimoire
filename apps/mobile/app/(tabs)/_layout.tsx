@@ -25,7 +25,7 @@ export default function TabLayout() {
           backgroundColor: colors.leather.DEFAULT,
           borderBottomWidth: 0.8,
           borderBottomColor: colors.gold.DEFAULT,
-        } as any,
+        } as Record<string, unknown>,
         headerTitleStyle: {
           fontFamily: "CinzelDecorative_400Regular",
           fontSize: 16,

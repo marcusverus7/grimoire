@@ -8,6 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { WaxSeal } from "@/components/WaxSeal";
 import { schema } from "@grimoire/core";
 import { exportCampaign, slugify } from "@grimoire/core";
+import type { RichTextNode } from "@grimoire/core";
 
 export default function ExportScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
@@ -51,7 +52,7 @@ export default function ExportScreen() {
           kind: e.kind,
           name: e.name,
           summary: e.summary,
-          body: e.body as any,
+          body: e.body as RichTextNode | null,
           attrs: e.attrs as Record<string, unknown> | null,
           visibility: e.visibility as "gm_only" | "table",
         })),
@@ -60,7 +61,7 @@ export default function ExportScreen() {
           number: s.number,
           title: s.title,
           playedOn: s.playedOn,
-          body: s.body as any,
+          body: s.body as RichTextNode | null,
           status: s.status as "planned" | "played",
         })),
         includeGmOnly: true,
@@ -100,7 +101,7 @@ export default function ExportScreen() {
         });
       }
     } catch (e) {
-      Alert.alert("Export Failed", String(e));
+      Alert.alert("Export Failed", e instanceof Error ? e.message : "An unexpected error occurred");
     } finally {
       setExporting(false);
     }

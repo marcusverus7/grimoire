@@ -30,7 +30,7 @@ export async function fetchRecapBySlug(
 
   if (!recap) return null;
 
-  const session = recap.session as any;
+  const session = recap.session as unknown as { number: number; title: string | null; played_on: string | null; campaign: { name: string } } | undefined;
   const campaign = session?.campaign;
 
   return {
@@ -62,11 +62,15 @@ export async function logRecapEvent(
   visitorHash: string | null,
 ): Promise<void> {
   if (!supabase) return;
-  await supabase.from("recap_events").insert({
-    id: crypto.randomUUID(),
-    recap_id: recapId,
-    kind,
-    occurred_at: Date.now(),
-    visitor_hash: visitorHash,
-  });
+  try {
+    await supabase.from("recap_events").insert({
+      id: crypto.randomUUID(),
+      recap_id: recapId,
+      kind,
+      occurred_at: Date.now(),
+      visitor_hash: visitorHash,
+    });
+  } catch {
+    // Analytics failure should never break the user experience
+  }
 }
