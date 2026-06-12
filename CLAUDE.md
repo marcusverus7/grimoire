@@ -24,10 +24,14 @@ read Part IV (build plan) before starting any phase.
   permissions/visibility/succession, relationship-graph derivation, Markdown+
   JSON export, recap pipeline + AI recap prompt builders.
 - `apps/mobile` — Expo 54 + Expo Router + NativeWind v4 + expo-sqlite + Drizzle,
-  consuming `@grimoire/core`. 10 routes: tab layout (campaigns list, design
-  showcase), campaign detail (entity list by kind, session list), entity
-  create/edit/detail (with backlinks panel), session create/edit.
-- `apps/recap-web` — Next.js skeleton with `/r/[slug]` recap route stub.
+  consuming `@grimoire/core`. Routes: tab layout (campaigns list, design
+  showcase), campaign detail (entity list by kind, session list, quests,
+  timeline), entity create/edit/detail (with backlinks, rich-text body),
+  session create/edit/detail (rich-text body, recap creation), campaign
+  export, graph, settings.
+- `apps/recap-web` — Next.js on Vercel at `grimoire-recap-web.vercel.app`.
+  `/r/[slug]` renders recaps from Supabase with social card meta tags.
+  `/r/demo` serves a hardcoded demo recap.
 
 ## Commands
 
@@ -40,17 +44,19 @@ read Part IV (build plan) before starting any phase.
 - Phase 0: mobile scaffold, design system (/design), recap-web skeleton
 - Phase 1: campaign detail, entity CRUD (all 7 kinds, quest attrs, visibility),
   session CRUD, entity detail with backlinks panel
+- Phase 2: rich-text editor (TipTap via tentap-editor) for entity + session
+  bodies with computeLinkChanges on save, relationship graph, campaign export
+  (Markdown + JSON), security audit + RLS on all Supabase tables
+- Phase 3: recap creation screen (beat selection, tone picker, share slug),
+  open-quests view, campaign timeline, social card meta tags on recap-web
 
-## What to build next (phase 2)
+## What to build next (phase 4–5)
 
-1. Rich-text editor for entity bodies (TipTap/ProseMirror): on every save,
-   call `computeLinkChanges` and apply inserts/deletes/snippet updates in one
-   transaction. @-mention autocomplete against campaign entities. This is the
-   hero feature — gate: "following links feels faster than remembering".
-2. Session body editor (same rich-text editor, beat-marking for recap pipeline).
-3. Recap flow: extract beats, build manual recap doc, share via recap-web.
-4. Relationship graph visualization (entity detail → "see on map" action).
-5. Campaign export (Markdown + JSON download).
+1. MVP polish: onboarding flow, empty states, performance.
+2. Founders run 4 weeks of own game (Path-A test).
+3. @-mention autocomplete (requires tentap-editor customSource HTML).
+4. Backup to Supabase (cloud snapshot push).
+5. Session scheduling card (date + RSVP stub).
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).

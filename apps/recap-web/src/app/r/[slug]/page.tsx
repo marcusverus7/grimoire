@@ -16,17 +16,24 @@ export async function generateMetadata({
     ? `${recap.campaignName} — Session ${recap.sessionNumber}`
     : "Recap Not Found";
 
+  const description = recap
+    ? `Session ${recap.sessionNumber} recap from ${recap.campaignName}`
+    : "A session recap from The Grimoire Archive";
+  const bodyPreview = recap ? recap.body.slice(0, 200) : "Relive the adventure";
+
   return {
     title: `${title} — The Grimoire Archive`,
-    description: recap
-      ? `Session ${recap.sessionNumber} recap from ${recap.campaignName}`
-      : "A session recap from The Grimoire Archive",
+    description,
     openGraph: {
       title,
-      description: recap
-        ? recap.body.slice(0, 160)
-        : "Relive the adventure",
+      description: bodyPreview,
       type: "article",
+      siteName: "The Grimoire Archive",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description: bodyPreview,
     },
   };
 }

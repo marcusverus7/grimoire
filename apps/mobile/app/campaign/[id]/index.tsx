@@ -163,11 +163,18 @@ export default function CampaignDetailScreen() {
             >
               Sessions
             </Text>
-            <Pressable onPress={createSession}>
-              <Text className="text-gold text-xs" style={{ fontFamily: "Inter_500Medium" }}>
-                + New
-              </Text>
-            </Pressable>
+            <View className="flex-row items-center">
+              <Pressable onPress={() => router.push(`/campaign/${id}/timeline`)}>
+                <Text className="text-parchment/40 text-xs mr-4" style={{ fontFamily: "Inter_500Medium" }}>
+                  Timeline
+                </Text>
+              </Pressable>
+              <Pressable onPress={createSession}>
+                <Text className="text-gold text-xs" style={{ fontFamily: "Inter_500Medium" }}>
+                  + New
+                </Text>
+              </Pressable>
+            </View>
           </View>
           {sessions.length === 0 ? (
             <Text className="text-parchment/40 text-sm mb-4" style={{ fontFamily: "Inter_400Regular" }}>
@@ -288,10 +295,28 @@ export default function CampaignDetailScreen() {
         <GoldRule className="my-4" />
 
         {/* Actions */}
-        <View className="flex-row justify-between">
+        <View className="flex-row flex-wrap justify-between">
+          <Pressable
+            onPress={() => router.push(`/campaign/${id}/quests`)}
+            className="mr-1.5 mb-2 flex-1 py-2.5 border border-gold/20 rounded-sm items-center"
+            style={{ minWidth: "22%" }}
+          >
+            <Text
+              style={{
+                fontFamily: "Inter_500Medium",
+                fontSize: 11,
+                color: "#A07A2C",
+                textTransform: "uppercase",
+                letterSpacing: 1,
+              }}
+            >
+              Quests
+            </Text>
+          </Pressable>
           <Pressable
             onPress={() => router.push(`/campaign/${id}/graph`)}
-            className="flex-1 mr-1.5 py-2.5 border border-gold/20 rounded-sm items-center"
+            className="mx-1.5 mb-2 flex-1 py-2.5 border border-gold/20 rounded-sm items-center"
+            style={{ minWidth: "22%" }}
           >
             <Text
               style={{
@@ -307,7 +332,8 @@ export default function CampaignDetailScreen() {
           </Pressable>
           <Pressable
             onPress={() => router.push(`/campaign/${id}/export`)}
-            className="flex-1 mx-1.5 py-2.5 border border-gold/20 rounded-sm items-center"
+            className="mx-1.5 mb-2 flex-1 py-2.5 border border-gold/20 rounded-sm items-center"
+            style={{ minWidth: "22%" }}
           >
             <Text
               style={{
@@ -323,7 +349,8 @@ export default function CampaignDetailScreen() {
           </Pressable>
           <Pressable
             onPress={() => router.push(`/campaign/${id}/settings`)}
-            className="flex-1 ml-1.5 py-2.5 border border-parchment/15 rounded-sm items-center"
+            className="ml-1.5 mb-2 flex-1 py-2.5 border border-parchment/15 rounded-sm items-center"
+            style={{ minWidth: "22%" }}
           >
             <Text
               style={{
