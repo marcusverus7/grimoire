@@ -7,11 +7,15 @@ import {
   Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import { useEffect, useState } from "react";
-import { eq } from "drizzle-orm";
+import { useEffect, useState, useRef } from "react";
+import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
-import { schema } from "@grimoire/core";
+import RichTextEditor from "@/components/RichTextEditor";
+import { schema, computeLinkChanges } from "@grimoire/core";
+import type { RichTextNode, EntityLinkRow } from "@grimoire/core";
+import type { EditorBridge } from "@10play/tentap-editor";
 
 type Session = typeof schema.sessions.$inferSelect;
 
@@ -25,8 +29,10 @@ export default function SessionFormScreen() {
   const [title, setTitle] = useState("");
   const [number, setNumber] = useState(1);
   const [playedOn, setPlayedOn] = useState("");
+  const [body, setBody] = useState<RichTextNode | null>(null);
   const [status, setStatus] = useState<"planned" | "played">("planned");
   const [loaded, setLoaded] = useState(false);
+  const editorRef = useRef<EditorBridge | null>(null);
 
   useEffect(() => {
     const session = db
@@ -34,25 +40,83 @@ export default function SessionFormScreen() {
       .from(schema.sessions)
       .where(eq(schema.sessions.id, sessionId))
       .get();
-    if (session) {
-      setTitle(session.title ?? "");
-      setNumber(session.number);
-      setPlayedOn(session.playedOn ?? "");
-      setStatus(session.status);
+    if (!session) {
+      Alert.alert("Error", "Session not found");
+      router.back();
+      return;
     }
+    setTitle(session.title ?? "");
+    setNumber(session.number);
+    setPlayedOn(session.playedOn ?? "");
+    setBody(session.body as RichTextNode | null);
+    setStatus(session.status);
     setLoaded(true);
   }, [sessionId]);
 
-  const save = () => {
-    db.update(schema.sessions)
-      .set({
-        title: title.trim() || null,
-        playedOn: playedOn.trim() || null,
-        status,
-      })
-      .where(eq(schema.sessions.id, sessionId))
-      .run();
-    router.back();
+  const save = async () => {
+    let editorBody: RichTextNode | null = null;
+    if (editorRef.current) {
+      const json = await editorRef.current.getJSON();
+      const doc = json as RichTextNode;
+      const hasContent = doc.content?.some(
+        (n) => n.type !== "paragraph" || (n.content && n.content.length > 0),
+      );
+      editorBody = hasContent ? doc : null;
+    }
+
+    try {
+      db.update(schema.sessions)
+        .set({
+          title: title.trim() || null,
+          playedOn: playedOn.trim() || null,
+          body: editorBody,
+          status,
+        })
+        .where(eq(schema.sessions.id, sessionId))
+        .run();
+
+      if (editorBody) {
+        const existing = db
+          .select()
+          .from(schema.entityLinks)
+          .where(
+            and(
+              eq(schema.entityLinks.fromType, "session"),
+              eq(schema.entityLinks.fromId, sessionId),
+            ),
+          )
+          .all() as EntityLinkRow[];
+
+        const changes = computeLinkChanges({
+          campaignId,
+          fromType: "session",
+          fromId: sessionId,
+          body: editorBody,
+          existing,
+        });
+
+        for (const ins of changes.inserts) {
+          db.insert(schema.entityLinks)
+            .values({ id: newId(), ...ins })
+            .run();
+        }
+        for (const delId of changes.deleteIds) {
+          db.delete(schema.entityLinks)
+            .where(eq(schema.entityLinks.id, delId))
+            .run();
+        }
+        for (const upd of changes.snippetUpdates) {
+          db.update(schema.entityLinks)
+            .set({ contextSnippet: upd.contextSnippet })
+            .where(eq(schema.entityLinks.id, upd.id))
+            .run();
+        }
+      }
+
+      router.back();
+    } catch (e) {
+      Alert.alert("Save Failed", e instanceof Error ? e.message : "An unexpected error occurred");
+    }
   };
 
   const deleteSession = () => {
@@ -155,6 +219,16 @@ export default function SessionFormScreen() {
               Played
             </Text>
           </Pressable>
+        </View>
+
+        {/* Session Notes */}
+        <Label text="Session Notes" />
+        <View style={{ height: 300, marginBottom: 20 }}>
+          <RichTextEditor
+            initialContent={body}
+            editorRef={editorRef}
+            minHeight={300}
+          />
         </View>
 
         <GoldRule />

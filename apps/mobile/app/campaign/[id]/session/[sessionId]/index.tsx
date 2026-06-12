@@ -5,7 +5,8 @@ import { eq } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
-import { schema } from "@grimoire/core";
+import { schema, nodeText } from "@grimoire/core";
+import type { RichTextNode } from "@grimoire/core";
 
 type Session = typeof schema.sessions.$inferSelect;
 
@@ -127,15 +128,12 @@ export default function SessionDetailScreen() {
 
         <GoldRule />
 
-        {/* Body placeholder */}
-        <View className="mt-4 mb-6">
-          <Text
-            className="text-ink-soft/40 text-sm"
-            style={{ fontFamily: "Inter_400Regular" }}
-          >
-            Session notes editor coming in phase 2
-          </Text>
-        </View>
+        {/* Body */}
+        {session.body ? (
+          <View className="mt-4 mb-6">
+            {renderBody(session.body as RichTextNode)}
+          </View>
+        ) : null}
 
         {/* Linked entities */}
         {linkedEntities.length > 0 && (
@@ -185,4 +183,80 @@ export default function SessionDetailScreen() {
       </ScrollView>
     </>
   );
+}
+
+function renderBody(body: RichTextNode): React.ReactNode {
+  if (!body.content) return null;
+  return body.content.map((block, i) => {
+    const text = nodeText(block);
+    if (!text.trim()) return null;
+
+    if (block.type === "heading") {
+      const level = (block.attrs?.["level"] as number) ?? 2;
+      return (
+        <Text
+          key={i}
+          className="text-ink mb-2"
+          style={{
+            fontFamily: "CormorantGaramond_700Bold",
+            fontSize: level === 1 ? 22 : level === 2 ? 19 : 17,
+          }}
+        >
+          {renderInline(block)}
+        </Text>
+      );
+    }
+
+    if (block.type === "blockquote") {
+      return (
+        <View key={i} className="border-l-2 border-gold/40 pl-3 mb-2">
+          <Text
+            className="text-ink/70 italic text-base leading-6"
+            style={{ fontFamily: "CormorantGaramond_400Regular_Italic" }}
+          >
+            {renderInline(block)}
+          </Text>
+        </View>
+      );
+    }
+
+    if (block.type === "bulletList" || block.type === "orderedList") {
+      return (
+        <View key={i} className="mb-2 pl-2">
+          {(block.content ?? []).map((li, j) => (
+            <View key={j} className="flex-row mb-1">
+              <Text
+                className="text-gold mr-2"
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14 }}
+              >
+                {block.type === "orderedList" ? `${j + 1}.` : "•"}
+              </Text>
+              <Text
+                className="text-ink/80 text-base flex-1 leading-6"
+                style={{ fontFamily: "CormorantGaramond_400Regular" }}
+              >
+                {renderInline(li)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      );
+    }
+
+    return (
+      <Text
+        key={i}
+        className="text-ink/80 text-base mb-2 leading-6"
+        style={{ fontFamily: "CormorantGaramond_400Regular" }}
+      >
+        {renderInline(block)}
+      </Text>
+    );
+  });
+}
+
+function renderInline(node: RichTextNode): string {
+  if (node.text != null) return node.text;
+  if (node.type === "mention") return `@${node.attrs?.["label"] ?? ""}`;
+  return (node.content ?? []).map(renderInline).join("");
 }

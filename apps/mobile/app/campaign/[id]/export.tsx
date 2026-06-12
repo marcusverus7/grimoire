@@ -77,7 +77,8 @@ export default function ExportScreen() {
 
       for (const f of exportData.files) {
         const parts = f.path.split("/");
-        const fileName = parts.pop()!;
+        const fileName = parts.pop();
+        if (!fileName) continue;
         let parent: Directory = exportDir;
         for (const part of parts) {
           parent = new Directory(parent, part);

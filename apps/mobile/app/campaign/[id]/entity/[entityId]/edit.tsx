@@ -7,12 +7,15 @@ import {
   Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import { useEffect, useState } from "react";
-import { eq } from "drizzle-orm";
+import { useEffect, useState, useRef } from "react";
+import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
-import { schema } from "@grimoire/core";
+import RichTextEditor from "@/components/RichTextEditor";
+import { schema, computeLinkChanges } from "@grimoire/core";
+import type { RichTextNode, EntityLinkRow } from "@grimoire/core";
+import type { EditorBridge } from "@10play/tentap-editor";
 
 type Entity = typeof schema.entities.$inferSelect;
 
@@ -42,9 +45,11 @@ export default function EntityFormScreen() {
   const [name, setName] = useState("");
   const [kind, setKind] = useState<Kind>("npc");
   const [summary, setSummary] = useState("");
+  const [body, setBody] = useState<RichTextNode | null>(null);
   const [visibility, setVisibility] = useState<"table" | "gm_only">("table");
   const [questStatus, setQuestStatus] = useState<string>("rumoured");
   const [loaded, setLoaded] = useState(false);
+  const editorRef = useRef<EditorBridge | null>(null);
 
   useEffect(() => {
     if (!isNew) {
@@ -53,57 +58,118 @@ export default function EntityFormScreen() {
         .from(schema.entities)
         .where(eq(schema.entities.id, entityId))
         .get();
-      if (entity) {
-        setName(entity.name);
-        setKind(entity.kind as Kind);
-        setSummary(entity.summary ?? "");
-        setVisibility(entity.visibility);
-        const attrs = entity.attrs as Record<string, unknown> | null;
-        if (attrs?.["questStatus"]) setQuestStatus(String(attrs["questStatus"]));
+      if (!entity) {
+        Alert.alert("Error", "Entity not found");
+        router.back();
+        return;
       }
+      setName(entity.name);
+      setKind(entity.kind as Kind);
+      setSummary(entity.summary ?? "");
+      setBody(entity.body as RichTextNode | null);
+      setVisibility(entity.visibility);
+      const attrs = entity.attrs as Record<string, unknown> | null;
+      if (attrs?.["questStatus"]) setQuestStatus(String(attrs["questStatus"]));
     }
     setLoaded(true);
   }, [entityId, isNew]);
 
-  const save = () => {
+  const save = async () => {
     const trimmed = name.trim();
     if (!trimmed) {
       Alert.alert("Name required", "Every entity needs a name.");
       return;
     }
 
-    const now = Date.now();
-    const attrs: Record<string, unknown> = {};
-    if (kind === "quest") attrs["questStatus"] = questStatus;
-
-    if (isNew) {
-      db.insert(schema.entities)
-        .values({
-          id: newId(),
-          campaignId,
-          kind,
-          name: trimmed,
-          summary: summary.trim() || null,
-          visibility,
-          attrs: Object.keys(attrs).length > 0 ? attrs : null,
-          createdAt: new Date(now),
-          updatedAt: new Date(now),
-        })
-        .run();
-    } else {
-      db.update(schema.entities)
-        .set({
-          name: trimmed,
-          kind,
-          summary: summary.trim() || null,
-          visibility,
-          attrs: Object.keys(attrs).length > 0 ? attrs : null,
-          updatedAt: new Date(now),
-        })
-        .where(eq(schema.entities.id, entityId))
-        .run();
+    let editorBody: RichTextNode | null = null;
+    if (editorRef.current) {
+      const json = await editorRef.current.getJSON();
+      const doc = json as RichTextNode;
+      const hasContent = doc.content?.some(
+        (n) => n.type !== "paragraph" || (n.content && n.content.length > 0),
+      );
+      editorBody = hasContent ? doc : null;
     }
-    router.back();
+
+    try {
+      const now = Date.now();
+      const attrs: Record<string, unknown> = {};
+      if (kind === "quest") attrs["questStatus"] = questStatus;
+
+      let savedId = entityId;
+      if (isNew) {
+        savedId = newId();
+        db.insert(schema.entities)
+          .values({
+            id: savedId,
+            campaignId,
+            kind,
+            name: trimmed,
+            summary: summary.trim() || null,
+            body: editorBody,
+            visibility,
+            attrs: Object.keys(attrs).length > 0 ? attrs : null,
+            createdAt: new Date(now),
+            updatedAt: new Date(now),
+          })
+          .run();
+      } else {
+        db.update(schema.entities)
+          .set({
+            name: trimmed,
+            kind,
+            summary: summary.trim() || null,
+            body: editorBody,
+            visibility,
+            attrs: Object.keys(attrs).length > 0 ? attrs : null,
+            updatedAt: new Date(now),
+          })
+          .where(eq(schema.entities.id, entityId))
+          .run();
+      }
+
+      if (editorBody) {
+        const existing = db
+          .select()
+          .from(schema.entityLinks)
+          .where(
+            and(
+              eq(schema.entityLinks.fromType, "entity"),
+              eq(schema.entityLinks.fromId, savedId),
+            ),
+          )
+          .all() as EntityLinkRow[];
+
+        const changes = computeLinkChanges({
+          campaignId,
+          fromType: "entity",
+          fromId: savedId,
+          body: editorBody,
+          existing,
+        });
+
+        for (const ins of changes.inserts) {
+          db.insert(schema.entityLinks)
+            .values({ id: newId(), ...ins })
+            .run();
+        }
+        for (const delId of changes.deleteIds) {
+          db.delete(schema.entityLinks)
+            .where(eq(schema.entityLinks.id, delId))
+            .run();
+        }
+        for (const upd of changes.snippetUpdates) {
+          db.update(schema.entityLinks)
+            .set({ contextSnippet: upd.contextSnippet })
+            .where(eq(schema.entityLinks.id, upd.id))
+            .run();
+        }
+      }
+
+      router.back();
+    } catch (e) {
+      Alert.alert("Save Failed", e instanceof Error ? e.message : "An unexpected error occurred");
+    }
   };
 
   const deleteEntity = () => {
@@ -215,6 +281,16 @@ export default function EntityFormScreen() {
           className="border border-parchment/15 rounded-sm p-3 mb-5"
           style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#ECE3CF", textAlignVertical: "top", minHeight: 80 }}
         />
+
+        {/* Body */}
+        <Label text="Body" />
+        <View style={{ height: 300, marginBottom: 20 }}>
+          <RichTextEditor
+            initialContent={body}
+            editorRef={editorRef}
+            minHeight={300}
+          />
+        </View>
 
         {/* Visibility */}
         <Label text="Visibility" />

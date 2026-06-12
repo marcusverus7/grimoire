@@ -66,12 +66,14 @@ export function RecapView({ recap }: { recap: RecapData }) {
 }
 
 function formatDate(iso: string): string {
-  const [year, month, day] = iso.split("-").map(Number);
+  const parts = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!parts) return iso;
+  const [, year, month, day] = parts;
   const months = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
   ];
-  const m = months[month! - 1] ?? "";
+  const m = months[parseInt(month!, 10) - 1] ?? "";
   return `${m} ${day}, ${year}`;
 }
 
