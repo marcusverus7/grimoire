@@ -26,6 +26,7 @@ type CampaignRow = typeof schema.campaigns.$inferSelect & {
   entityCount: number;
   sessionCount: number;
   quoteCount: number;
+  logline?: string;
 };
 
 function remapMentionIds(node: unknown, idMap: Map<string, string>): unknown {
@@ -84,7 +85,8 @@ export default function CampaignsScreen() {
         .from(schema.quotes)
         .where(eq(schema.quotes.campaignId, c.id))
         .get()?.count ?? 0;
-      return { ...c, entityCount, sessionCount, quoteCount };
+      const logline = (c.settings as { logline?: string } | null)?.logline;
+      return { ...c, entityCount, sessionCount, quoteCount, logline };
     });
     setCampaigns(enriched);
   }, []);
@@ -363,6 +365,11 @@ export default function CampaignsScreen() {
                   </Text>
                 ) : null}
               </View>
+              {item.logline ? (
+                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#4A3F3280", marginTop: 2, fontStyle: "italic" }} numberOfLines={2}>
+                  {item.logline}
+                </Text>
+              ) : null}
               {item.systemTag ? (
                 <Text className="font-inter text-gold text-xs mt-1">
                   {item.systemTag}

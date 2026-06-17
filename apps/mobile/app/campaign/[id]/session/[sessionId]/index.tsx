@@ -12,7 +12,7 @@ import { RichTextRenderer } from "@/components/RichTextRenderer";
 
 type Session = typeof schema.sessions.$inferSelect;
 type Quote = typeof schema.quotes.$inferSelect;
-type SessionAttrs = { startedAt?: number; endedAt?: number };
+type SessionAttrs = { startedAt?: number; endedAt?: number; prepGoals?: string };
 
 function formatDuration(ms: number): string {
   const hours = Math.floor(ms / 3600000);
@@ -261,6 +261,18 @@ export default function SessionDetailScreen() {
         )}
 
         <GoldRule />
+
+        {/* Prep goals (if set) */}
+        {sessionAttrs.prepGoals ? (
+          <View style={{ marginTop: 12, paddingHorizontal: 12, paddingVertical: 10, borderLeftWidth: 2, borderLeftColor: "#A07A2C40", backgroundColor: "#A07A2C06", marginBottom: 4 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
+              Session Goals
+            </Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#4A3F32", lineHeight: 20 }}>
+              {sessionAttrs.prepGoals}
+            </Text>
+          </View>
+        ) : null}
 
         {/* Body */}
         {session.body ? (

@@ -16,7 +16,7 @@ import { schema } from "@grimoire/core";
 
 type Campaign = typeof schema.campaigns.$inferSelect;
 type Status = "active" | "archived" | "ended";
-type CampaignSettings = { notes?: string; nextSession?: string };
+type CampaignSettings = { notes?: string; nextSession?: string; logline?: string };
 
 const STATUSES: Status[] = ["active", "archived", "ended"];
 
@@ -29,6 +29,7 @@ export default function CampaignSettingsScreen() {
   const [status, setStatus] = useState<Status>("active");
   const [notes, setNotes] = useState("");
   const [nextSession, setNextSession] = useState("");
+  const [logline, setLogline] = useState("");
 
   useEffect(() => {
     const c = db
@@ -44,6 +45,7 @@ export default function CampaignSettingsScreen() {
       const s = (c.settings ?? {}) as CampaignSettings;
       setNotes(s.notes ?? "");
       setNextSession(s.nextSession ?? "");
+      setLogline(s.logline ?? "");
     }
   }, [id]);
 
@@ -62,6 +64,7 @@ export default function CampaignSettingsScreen() {
           status,
           settings: {
             ...existing,
+            logline: logline.trim() || undefined,
             notes: notes.trim() || undefined,
             nextSession: nextSession.trim() || undefined,
           },
@@ -146,6 +149,17 @@ export default function CampaignSettingsScreen() {
           placeholderTextColor="#2C201440"
           className="border-b border-gold/20 pb-2 mb-5"
           style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014" }}
+        />
+
+        {/* Logline */}
+        <Label text="Campaign Logline (optional)" />
+        <TextInput
+          value={logline}
+          onChangeText={setLogline}
+          placeholder="One-sentence hook: e.g. A band of outlaws chase a sunken treasure"
+          placeholderTextColor="#2C201440"
+          className="border-b border-gold/20 pb-2 mb-5"
+          style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 15, color: "#2C2014", fontStyle: "italic" }}
         />
 
         {/* Status */}
