@@ -221,13 +221,18 @@ export default function EntityDetailScreen() {
         >
           {entity.name}
         </Text>
-        <View className="flex-row items-center mb-4">
+        <View className="flex-row items-center flex-wrap mb-4">
           <Text
             className="text-ink-soft text-xs uppercase tracking-wider"
             style={{ fontFamily: "Inter_500Medium" }}
           >
             {KIND_LABELS[entity.kind] ?? entity.kind}
           </Text>
+          {attrs?.["role"] ? (
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80", marginLeft: 8 }}>
+              · {String(attrs["role"])}
+            </Text>
+          ) : null}
           {entity.visibility === "gm_only" && (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginLeft: 8 }}>
               <View style={{ paddingHorizontal: 8, paddingVertical: 2, backgroundColor: "#7A241810", borderRadius: 2 }}>

@@ -63,6 +63,7 @@ export default function EntityFormScreen() {
   const [campaignFactions, setCampaignFactions] = useState<{ id: string; name: string }[]>([]);
   const [heldBy, setHeldBy] = useState<string | null>(null);
   const [campaignPCs, setCampaignPCs] = useState<{ id: string; name: string }[]>([]);
+  const [role, setRole] = useState("");
   const [hp, setHp] = useState("");
   const [ac, setAc] = useState("");
   const [initiative, setInitiative] = useState("");
@@ -96,6 +97,7 @@ export default function EntityFormScreen() {
       if (Array.isArray(attrs?.["interestedEntityIds"])) setInterestedEntityIds(attrs["interestedEntityIds"] as string[]);
       if (Array.isArray(attrs?.["relationships"])) setFactionRelationships(attrs["relationships"] as { factionId: string; type: string }[]);
       if (typeof attrs?.["heldBy"] === "string") setHeldBy(attrs["heldBy"]);
+      if (typeof attrs?.["role"] === "string") setRole(attrs["role"]);
       if (attrs?.["hp"]) setHp(String(attrs["hp"]));
       if (attrs?.["ac"]) setAc(String(attrs["ac"]));
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
@@ -174,6 +176,11 @@ export default function EntityFormScreen() {
         else delete attrs["heldBy"];
       } else {
         delete attrs["heldBy"];
+      }
+      if ((kind === "npc" || kind === "pc" || kind === "custom" || kind === "faction") && role.trim()) {
+        attrs["role"] = role.trim();
+      } else {
+        delete attrs["role"];
       }
       if (kind === "npc" || kind === "pc") {
         if (hp.trim()) attrs["hp"] = hp.trim(); else delete attrs["hp"];
@@ -320,6 +327,20 @@ export default function EntityFormScreen() {
             </Pressable>
           )}
         </View>
+
+        {/* Role/Title — shown for NPC/PC/faction/custom */}
+        {(kind === "npc" || kind === "pc" || kind === "custom" || kind === "faction") && (
+          <>
+            <Label text="Role / Title (optional)" />
+            <TextInput
+              value={role}
+              onChangeText={setRole}
+              placeholder="e.g. Village Blacksmith, Queen's Hand, Guild Master"
+              placeholderTextColor="#2C201440"
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20 }}
+            />
+          </>
+        )}
 
         {/* Kind */}
         <Label text="Kind" />

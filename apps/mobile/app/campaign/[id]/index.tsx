@@ -727,6 +727,10 @@ export default function CampaignDetailScreen() {
                         >
                           {entity.summary}
                         </Text>
+                      ) : (entity.attrs as Record<string, unknown> | null)?.["role"] ? (
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60", marginTop: 1 }} numberOfLines={1}>
+                          {String((entity.attrs as Record<string, unknown>)["role"])}
+                        </Text>
                       ) : null}
                     </Pressable>
                   );
