@@ -240,6 +240,24 @@ export default function CampaignsScreen() {
         }).run();
       }
 
+      // Copy entity_links with remapped from/to IDs so backlinks work in the copy
+      const links = db.select().from(schema.entityLinks).where(eq(schema.entityLinks.campaignId, campaign.id)).all();
+      for (const link of links) {
+        const newFromId = link.fromType === "entity"
+          ? entityIdMap.get(link.fromId)
+          : sessionIdMap.get(link.fromId);
+        const newToEntityId = entityIdMap.get(link.toEntityId);
+        if (!newFromId || !newToEntityId) continue;
+        db.insert(schema.entityLinks).values({
+          id: newId(),
+          campaignId: newCampaignId,
+          fromType: link.fromType as "entity" | "session",
+          fromId: newFromId,
+          toEntityId: newToEntityId,
+          contextSnippet: link.contextSnippet,
+        }).run();
+      }
+
       loadCampaigns();
     } catch (e) {
       Alert.alert("Duplicate Failed", e instanceof Error ? e.message : "An unexpected error occurred");
