@@ -127,11 +127,12 @@ jobs:
           fi
           SCHEME=$(echo "$WORKSPACE" | sed 's/\.xcworkspace//')
           echo "Building workspace=$WORKSPACE scheme=$SCHEME"
-          # Force the bundle phase to use expo export:embed (same as pre-bundle step)
-          # This avoids pnpm module resolution differences between react-native bundle and expo CLI
+          # Force the bundle phase to use expo export:embed (same as pre-bundle step).
+          # Locate expo's CLI entry point via require.resolve (works regardless of pnpm layout).
           NODE_BIN="$(which node)"
-          EXPO_CLI="$GITHUB_WORKSPACE/node_modules/.bin/expo"
-          echo "NODE_BINARY=$NODE_BIN  EXPO_CLI=$EXPO_CLI"
+          EXPO_CLI="$("$NODE_BIN" -e "const p=require.resolve('expo/package.json');const d=require('path').dirname(p);const b=require(p).bin;const e=typeof b==='string'?b:(b.expo||b);console.log(require('path').join(d,e))")"
+          echo "NODE_BINARY=$NODE_BIN"
+          echo "EXPO_CLI=$EXPO_CLI"
           set -o pipefail
           xcodebuild archive \
             -workspace "$WORKSPACE" \
