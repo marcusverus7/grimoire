@@ -3,7 +3,7 @@ import { useLocalSearchParams, Stack } from "expo-router";
 import { useState } from "react";
 import { eq } from "drizzle-orm";
 import { Paths, File, Directory } from "expo-file-system";
-import { db } from "@/lib/db";
+import { db, getKv } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { WaxSeal } from "@/components/WaxSeal";
@@ -106,8 +106,27 @@ export default function ExportScreen() {
         outFile.write(f.content);
       }
 
+      // Scene notes per session
+      let notesFileCount = 0;
+      const notesDir = new Directory(exportDir, "scene-notes");
+      for (const s of sessions) {
+        const raw = getKv(`session_notes_${s.id}`);
+        if (!raw) continue;
+        try {
+          const notes = JSON.parse(raw) as { id: string; text: string; ts: number }[];
+          if (notes.length === 0) continue;
+          if (notesFileCount === 0) notesDir.create();
+          const lines = notes.map((n) => `- ${n.text}`).join("\n");
+          const md = `# Session ${s.number}${s.title ? `: ${s.title}` : ""} — Scene Notes\n\n${lines}\n`;
+          const f = new File(notesDir, `session-${s.number}-notes.md`);
+          f.create();
+          f.write(md);
+          notesFileCount++;
+        } catch { /* skip malformed */ }
+      }
+
       setResult({
-        fileCount: exportData.files.length + 1,
+        fileCount: exportData.files.length + 1 + notesFileCount,
         jsonSize: Math.round(exportData.json.length / 1024),
       });
 
@@ -177,6 +196,22 @@ export default function ExportScreen() {
         if (journalSections.length > 0) {
           text += `\n\n---\n\n# Character Journals\n\n${journalSections.join("\n\n")}`;
         }
+      }
+
+      // Append scene notes for sessions that have them
+      const noteSections: string[] = [];
+      for (const s of sessions) {
+        const raw = getKv(`session_notes_${s.id}`);
+        if (!raw) continue;
+        try {
+          const notes = JSON.parse(raw) as { id: string; text: string; ts: number }[];
+          if (notes.length === 0) continue;
+          const lines = notes.map((n) => `- ${n.text}`).join("\n");
+          noteSections.push(`### Session ${s.number}${s.title ? `: ${s.title}` : ""}\n\n${lines}`);
+        } catch { /* skip */ }
+      }
+      if (noteSections.length > 0) {
+        text += `\n\n---\n\n# Scene Notes\n\n${noteSections.join("\n\n")}`;
       }
 
       await Share.share({

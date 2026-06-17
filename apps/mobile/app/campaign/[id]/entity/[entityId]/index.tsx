@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Share, TextInput, Alert } from "react-native";
+import { View, Text, Pressable, ScrollView, Share, TextInput, Alert, Modal, KeyboardAvoidingView, Platform } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
 import { eq, and } from "drizzle-orm";
@@ -40,6 +40,8 @@ export default function EntityDetailScreen() {
   const [inventory, setInventory] = useState<{ id: string; name: string }[]>([]);
   const [editingHp, setEditingHp] = useState(false);
   const [hpInput, setHpInput] = useState("");
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [noteInput, setNoteInput] = useState("");
 
   const load = useCallback(() => {
     const e = db
@@ -221,6 +223,16 @@ export default function EntityDetailScreen() {
                 </Text>
               </Pressable>
               <Pressable
+                onPress={() => {
+                  setNoteInput(typeof attrs?.["sessionNote"] === "string" ? attrs["sessionNote"] : "");
+                  setShowNoteModal(true);
+                }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: attrs?.["sessionNote"] ? "#A07A2C" : "#A07A2C50" }}>
+                  ✎
+                </Text>
+              </Pressable>
+              <Pressable
                 onPress={() =>
                   router.push(`/campaign/${campaignId}/entity/${entityId}/edit`)
                 }
@@ -324,6 +336,19 @@ export default function EntityDetailScreen() {
             </Pressable>
           ) : null;
         })() : null}
+
+        {/* Session Note banner */}
+        {typeof attrs?.["sessionNote"] === "string" && attrs["sessionNote"] ? (
+          <Pressable
+            onPress={() => { setNoteInput(attrs["sessionNote"] as string); setShowNoteModal(true); }}
+            style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 12, paddingHorizontal: 10, paddingVertical: 8, borderRadius: 2, borderWidth: 1, borderColor: "#C9A24A60", backgroundColor: "#C9A24A12", borderLeftWidth: 3, borderLeftColor: "#C9A24A" }}
+          >
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#C9A24A80", marginRight: 6, marginTop: 1 }}>✎</Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#5A4D3E", flex: 1, lineHeight: 19 }}>
+              {attrs["sessionNote"] as string}
+            </Text>
+          </Pressable>
+        ) : null}
 
         {/* Tags */}
         {Array.isArray(attrs?.["tags"]) && (attrs["tags"] as string[]).length > 0 ? (
@@ -830,6 +855,63 @@ export default function EntityDetailScreen() {
         <View className="h-20" />
       </ScrollView>
       </ParchmentScreen>
+
+      {/* Quick Session Note modal */}
+      <Modal visible={showNoteModal} transparent animationType="fade" onRequestClose={() => setShowNoteModal(false)}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+          <Pressable onPress={() => setShowNoteModal(false)} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", paddingHorizontal: 24 }}>
+            <Pressable onPress={() => {}} style={{ backgroundColor: "#FAF5EA", borderRadius: 4, borderWidth: 1, borderColor: "#C9A24A40", padding: 20 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 16, color: "#2C2014", marginBottom: 4 }}>
+                Session Note
+              </Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginBottom: 12 }}>
+                Quick note for this session — visible on entity detail as a banner.
+              </Text>
+              <TextInput
+                value={noteInput}
+                onChangeText={setNoteInput}
+                placeholder="e.g. knows about the vault, wants coin, secretly works for Harwick…"
+                placeholderTextColor="#2C201440"
+                multiline
+                autoFocus
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", minHeight: 80, borderWidth: 1, borderColor: "#C9A24A30", borderRadius: 2, padding: 10, backgroundColor: "#FFFDF7", marginBottom: 16, lineHeight: 20 }}
+              />
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                {typeof attrs?.["sessionNote"] === "string" && attrs["sessionNote"] ? (
+                  <Pressable
+                    onPress={() => {
+                      const next = { ...(entity.attrs ?? {}) as Record<string, unknown> };
+                      delete next["sessionNote"];
+                      db.update(schema.entities).set({ attrs: next, updatedAt: new Date() }).where(eq(schema.entities.id, entityId)).run();
+                      setEntity((prev) => prev ? { ...prev, attrs: next } : prev);
+                      setShowNoteModal(false);
+                    }}
+                  >
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#7A241870" }}>Clear</Text>
+                  </Pressable>
+                ) : <View />}
+                <View style={{ flexDirection: "row", gap: 12 }}>
+                  <Pressable onPress={() => setShowNoteModal(false)} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#5A4D3E" }}>Cancel</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      const next = { ...(entity.attrs ?? {}) as Record<string, unknown> };
+                      if (noteInput.trim()) { next["sessionNote"] = noteInput.trim(); } else { delete next["sessionNote"]; }
+                      db.update(schema.entities).set({ attrs: next, updatedAt: new Date() }).where(eq(schema.entities.id, entityId)).run();
+                      setEntity((prev) => prev ? { ...prev, attrs: next } : prev);
+                      setShowNoteModal(false);
+                    }}
+                    style={{ paddingHorizontal: 20, paddingVertical: 10, backgroundColor: "#C9A24A", borderRadius: 2 }}
+                  >
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1 }}>Save</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
     </>
   );
 }
