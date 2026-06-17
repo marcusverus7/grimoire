@@ -114,25 +114,10 @@ jobs:
           EXPO_CLI="$("$NODE_PATH" -e "const p=require.resolve('expo/package.json');const d=require('path').dirname(p);const b=require(p).bin;const e=typeof b==='string'?b:(b.expo||b);console.log(require('path').join(d,e))")"
           echo "EXPO_CLI=$EXPO_CLI"
 
-          # Create a Node.js wrapper that strips --config-cmd from the invocation.
-          # react-native-xcode.sh appends --config-cmd which changes how Metro resolves
-          # projectRoot inside jest-worker processes, breaking babel-preset-expo resolution.
-          # Without --config-cmd, expo uses cwd (apps/mobile) as projectRoot — which works.
-          cat > /tmp/expo-filter.js << 'JSWRAPPER'
-#!/usr/bin/env node
-const { spawnSync } = require('child_process');
-const args = process.argv.slice(2);
-const filtered = [];
-let skip = 0;
-for (const arg of args) {
-  if (skip > 0) { skip--; continue; }
-  if (arg === '--config-cmd') { skip = 1; continue; }
-  filtered.push(arg);
-}
-const expoCli = process.env.REAL_EXPO_CLI;
-const result = spawnSync(process.execPath, [expoCli, ...filtered], { stdio: 'inherit' });
-process.exit(result.status || 0);
-JSWRAPPER
+          # Copy the wrapper script from repo — strips --config-cmd before calling expo.
+          # (Inline heredoc would fail because YAML block-literal strips indentation,
+          # which conflicts with the closing delimiter needing to be at column 0.)
+          cp "$GITHUB_WORKSPACE/.github/scripts/expo-filter.js" /tmp/expo-filter.js
           chmod +x /tmp/expo-filter.js
           echo "EXPO_CLI_PATH=$EXPO_CLI" >> "$GITHUB_ENV"
 
