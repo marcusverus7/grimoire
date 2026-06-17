@@ -64,6 +64,7 @@ export default function EntityFormScreen() {
   const [heldBy, setHeldBy] = useState<string | null>(null);
   const [campaignPCs, setCampaignPCs] = useState<{ id: string; name: string }[]>([]);
   const [role, setRole] = useState("");
+  const [factionId, setFactionId] = useState<string | null>(null);
   const [hp, setHp] = useState("");
   const [ac, setAc] = useState("");
   const [initiative, setInitiative] = useState("");
@@ -98,6 +99,7 @@ export default function EntityFormScreen() {
       if (Array.isArray(attrs?.["relationships"])) setFactionRelationships(attrs["relationships"] as { factionId: string; type: string }[]);
       if (typeof attrs?.["heldBy"] === "string") setHeldBy(attrs["heldBy"]);
       if (typeof attrs?.["role"] === "string") setRole(attrs["role"]);
+      if (typeof attrs?.["factionId"] === "string") setFactionId(attrs["factionId"]);
       if (attrs?.["hp"]) setHp(String(attrs["hp"]));
       if (attrs?.["ac"]) setAc(String(attrs["ac"]));
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
@@ -181,6 +183,11 @@ export default function EntityFormScreen() {
         attrs["role"] = role.trim();
       } else {
         delete attrs["role"];
+      }
+      if ((kind === "npc" || kind === "pc") && factionId) {
+        attrs["factionId"] = factionId;
+      } else {
+        delete attrs["factionId"];
       }
       if (kind === "npc" || kind === "pc") {
         if (hp.trim()) attrs["hp"] = hp.trim(); else delete attrs["hp"];
@@ -339,6 +346,38 @@ export default function EntityFormScreen() {
               placeholderTextColor="#2C201440"
               style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20 }}
             />
+          </>
+        )}
+
+        {/* Faction membership — shown for NPC/PC */}
+        {(kind === "npc" || kind === "pc") && campaignFactions.length > 0 && (
+          <>
+            <Label text="Faction (optional)" />
+            <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 20 }}>
+              {campaignFactions.map((f) => {
+                const selected = factionId === f.id;
+                return (
+                  <Pressable
+                    key={f.id}
+                    onPress={() => setFactionId(selected ? null : f.id)}
+                    style={{
+                      marginRight: 8,
+                      marginBottom: 8,
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 2,
+                      borderWidth: 1,
+                      borderColor: selected ? "#7A2418" : "#2C201425",
+                      backgroundColor: selected ? "#7A241810" : "transparent",
+                    }}
+                  >
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: selected ? "#7A2418" : "#5A4D3E60" }}>
+                      {f.name}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </>
         )}
 

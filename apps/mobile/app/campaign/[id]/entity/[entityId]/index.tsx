@@ -128,6 +128,28 @@ export default function EntityDetailScreen() {
           }));
         setQuestHooks(quests);
         setInterestedEntities([]);
+        // PC/NPC inventory
+        const items = db.select().from(schema.entities)
+          .where(eq(schema.entities.campaignId, campaignId))
+          .all()
+          .filter((item) => {
+            if (item.kind !== "item") return false;
+            const held = (item.attrs as Record<string, unknown> | null)?.["heldBy"];
+            return held === e.id;
+          })
+          .map((item) => ({ id: item.id, name: item.name }));
+        setInventory(items);
+        setHeldByName(null);
+      } else if (e.kind === "faction") {
+        const members = db.select().from(schema.entities)
+          .where(eq(schema.entities.campaignId, campaignId))
+          .all()
+          .filter((m) => (m.attrs as Record<string, unknown> | null)?.["factionId"] === e.id)
+          .sort((a, b) => a.name.localeCompare(b.name));
+        setInventory(members.map((m) => ({ id: m.id, name: m.name })));
+        setInterestedEntities([]);
+        setQuestHooks([]);
+        setHeldByName(null);
       } else if (e.kind === "item") {
         const hbId = (e.attrs as Record<string, unknown> | null)?.["heldBy"];
         if (typeof hbId === "string") {
@@ -143,21 +165,6 @@ export default function EntityDetailScreen() {
         setInterestedEntities([]);
         setQuestHooks([]);
         setHeldByName(null);
-      }
-
-      // PC/NPC inventory
-      if (e.kind === "pc" || e.kind === "npc") {
-        const items = db.select().from(schema.entities)
-          .where(eq(schema.entities.campaignId, campaignId))
-          .all()
-          .filter((item) => {
-            if (item.kind !== "item") return false;
-            const held = (item.attrs as Record<string, unknown> | null)?.["heldBy"];
-            return held === e.id;
-          })
-          .map((item) => ({ id: item.id, name: item.name }));
-        setInventory(items);
-      } else {
         setInventory([]);
       }
     }
@@ -247,6 +254,14 @@ export default function EntityDetailScreen() {
               · {String(attrs["role"])}
             </Text>
           ) : null}
+          {attrs?.["factionId"] ? (() => {
+            const fn = db.select({ name: schema.entities.name }).from(schema.entities).where(eq(schema.entities.id, String(attrs["factionId"]))).get();
+            return fn ? (
+              <Pressable onPress={() => router.push(`/campaign/${campaignId}/entity/${String(attrs["factionId"])}`)} style={{ marginLeft: 8, paddingHorizontal: 7, paddingVertical: 2, borderRadius: 2, backgroundColor: "#7A241810", borderWidth: 1, borderColor: "#7A241830" }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#7A2418" }}>{fn.name}</Text>
+              </Pressable>
+            ) : null;
+          })() : null}
           {entity.visibility === "gm_only" && (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginLeft: 8 }}>
               <View style={{ paddingHorizontal: 8, paddingVertical: 2, backgroundColor: "#7A241810", borderRadius: 2 }}>
@@ -629,13 +644,13 @@ export default function EntityDetailScreen() {
           </>
         )}
 
-        {/* PC/NPC — Inventory */}
+        {/* PC/NPC inventory / faction members */}
         {inventory.length > 0 ? (
           <>
             <GoldRule />
             <View style={{ marginTop: 16 }}>
               <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#5A4D3E", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
-                Inventory
+                {entity.kind === "faction" ? "Members" : "Inventory"}
               </Text>
               {inventory.map((item) => (
                 <Pressable
