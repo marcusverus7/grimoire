@@ -87,15 +87,22 @@ read Part IV (build plan) before starting any phase.
   on campaign detail group headers, EAS build fix (reanimated Babel plugin,
   package.json aligned with pnpm-lock.yaml, expo-linear-gradient restored).
   Build #10 queued (v1.0.0, all Phase 6-7 features).
+- Phase 8: Sample campaign seeder (The Sunken Throne — 8 entities, 2 sessions,
+  3 quotes, full @-mention links), Character Passports tab (global list with
+  class/level/race attrs, archive/restore), PC entity ↔ character passport
+  linking (radio picker in edit, badge in detail), Lore search per-kind entity
+  badge, EAS build fix (downgrade tentap-editor 1.0.1 → 0.4.58 — 0.4.x uses
+  WebView, same API, no worklets dep; pin react-native-worklets@0.8.3 to stay
+  in reanimated 4.1.7's accepted range 0.5–0.8). Build #13 queued.
 
-## What to build next (phase 8)
+## What to build next (phase 9)
 
-1. @-mention autocomplete (requires tentap-editor customSource HTML).
+1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
+   until tentap-editor 1.x is worklets-compatible with Expo 55+).
 2. Backup to Supabase (cloud snapshot push).
-3. Player invites & roles (Phase 8 — requires auth).
-4. Character passports UI (schema exists: character_profiles).
-5. Per-entity secrets & progressive reveal (schema exists: reveals table).
-6. Onboarding flow for first-time users (empty state wizard).
+3. Player invites & roles (requires auth).
+4. Per-entity secrets & progressive reveal (schema exists: reveals table).
+5. Onboarding flow for first-time users (empty state wizard).
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).
