@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Alert } from "react-native";
+import { View, Text, Pressable, ScrollView, Alert, TextInput } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
 import { eq, and, lt, desc } from "drizzle-orm";
@@ -30,6 +30,7 @@ export default function SessionPrepScreen() {
   const [prevSession, setPrevSession] = useState<Session | null>(null);
   const [activeQuests, setActiveQuests] = useState<Entity[]>([]);
   const [keyEntities, setKeyEntities] = useState<Entity[]>([]);
+  const [prepGoals, setPrepGoals] = useState("");
 
   const load = useCallback(() => {
     const s = db
@@ -39,6 +40,7 @@ export default function SessionPrepScreen() {
       .get();
     if (!s) { setSession(null); return; }
     setSession(s);
+    setPrepGoals(((s.attrs ?? {}) as { prepGoals?: string }).prepGoals ?? "");
 
     // Previous played session
     const prev = db
@@ -286,6 +288,39 @@ export default function SessionPrepScreen() {
               </Section>
             </>
           )}
+
+          <View style={{ marginVertical: 16 }}><GoldRule /></View>
+
+          {/* Session Goals */}
+          <Section label="Goals for This Session">
+            <TextInput
+              value={prepGoals}
+              onChangeText={setPrepGoals}
+              onBlur={() => {
+                if (!session) return;
+                const current = (session.attrs ?? {}) as Record<string, unknown>;
+                db.update(schema.sessions)
+                  .set({ attrs: { ...current, prepGoals: prepGoals.trim() || undefined } })
+                  .where(eq(schema.sessions.id, sessionId))
+                  .run();
+              }}
+              placeholder="What do you want to accomplish this session?"
+              placeholderTextColor="#8A7D6D"
+              multiline
+              style={{
+                fontFamily: "Inter_400Regular",
+                fontSize: 14,
+                color: "#2C2014",
+                borderWidth: 1,
+                borderColor: "#A07A2C25",
+                borderRadius: 2,
+                padding: 12,
+                minHeight: 80,
+                textAlignVertical: "top",
+                lineHeight: 20,
+              }}
+            />
+          </Section>
 
           <View style={{ height: 40 }} />
 

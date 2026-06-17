@@ -85,24 +85,25 @@ export default function CampaignSettingsScreen() {
           style: "destructive",
           onPress: () => {
             try {
-              db.delete(schema.entityLinks)
-                .where(eq(schema.entityLinks.campaignId, id))
-                .run();
-              db.delete(schema.entities)
-                .where(eq(schema.entities.campaignId, id))
-                .run();
-              db.delete(schema.sessions)
-                .where(eq(schema.sessions.campaignId, id))
-                .run();
-              db.delete(schema.quotes)
-                .where(eq(schema.quotes.campaignId, id))
-                .run();
-              db.delete(schema.memberships)
-                .where(eq(schema.memberships.campaignId, id))
-                .run();
-              db.delete(schema.campaigns)
-                .where(eq(schema.campaigns.id, id))
-                .run();
+              // reveals → entities; recapEvents → recaps → sessions; delete in dependency order
+              const entityIds = db.select({ id: schema.entities.id }).from(schema.entities).where(eq(schema.entities.campaignId, id)).all().map((e) => e.id);
+              for (const eid of entityIds) {
+                db.delete(schema.reveals).where(eq(schema.reveals.entityId, eid)).run();
+              }
+              const sessionIds = db.select({ id: schema.sessions.id }).from(schema.sessions).where(eq(schema.sessions.campaignId, id)).all().map((s) => s.id);
+              for (const sid of sessionIds) {
+                const recapIds = db.select({ id: schema.recaps.id }).from(schema.recaps).where(eq(schema.recaps.sessionId, sid)).all().map((r) => r.id);
+                for (const rid of recapIds) {
+                  db.delete(schema.recapEvents).where(eq(schema.recapEvents.recapId, rid)).run();
+                }
+                db.delete(schema.recaps).where(eq(schema.recaps.sessionId, sid)).run();
+              }
+              db.delete(schema.entityLinks).where(eq(schema.entityLinks.campaignId, id)).run();
+              db.delete(schema.entities).where(eq(schema.entities.campaignId, id)).run();
+              db.delete(schema.sessions).where(eq(schema.sessions.campaignId, id)).run();
+              db.delete(schema.quotes).where(eq(schema.quotes.campaignId, id)).run();
+              db.delete(schema.memberships).where(eq(schema.memberships.campaignId, id)).run();
+              db.delete(schema.campaigns).where(eq(schema.campaigns.id, id)).run();
               router.replace("/");
             } catch (e) {
               Alert.alert("Delete Failed", e instanceof Error ? e.message : "An unexpected error occurred");
