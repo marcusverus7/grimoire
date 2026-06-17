@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ScrollView,
 } from "react-native";
 import { useState, useCallback, useEffect } from "react";
 import { eq, sql } from "drizzle-orm";
@@ -482,6 +483,27 @@ export default function CampaignsScreen() {
                 }}
                 onSubmitEditing={createCampaign}
               />
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20, marginTop: -4 }}>
+                {["D&D 5e", "Pathfinder 2e", "Call of Cthulhu", "Blades in the Dark", "Mothership"].map((chip) => (
+                  <Pressable
+                    key={chip}
+                    onPress={() => setNewSystem(chip)}
+                    style={{
+                      marginRight: 8,
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderWidth: 1,
+                      borderColor: newSystem === chip ? "#A07A2C" : "#A07A2C40",
+                      borderRadius: 20,
+                      backgroundColor: newSystem === chip ? "#A07A2C15" : "transparent",
+                    }}
+                  >
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: newSystem === chip ? "#A07A2C" : "#5A4D3E80" }}>
+                      {chip}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
 
               <View className="flex-row justify-end">
                 <Pressable
