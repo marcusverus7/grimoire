@@ -117,15 +117,36 @@ read Part IV (build plan) before starting any phase.
   Prep screen Session Goals field (auto-saves to attrs.prepGoals on blur);
   About button in Campaigns tab header; version bumped to 1.1.0.
   Build #14 ready to queue Jul 1 2026.
+- Phase 11: Per-character quest interest tracking (interestedEntityIds in quest
+  attrs, chip picker in edit, pill row in detail + quest board); Quest board
+  "+ New" button + richer cards with character chips; Prev/next session navigation
+  on session detail (replace() to avoid stack growth); Session Zero Today button
+  on played-on date; NPC/PC faction membership (factionId attr, chip picker,
+  badge on detail); item holder tracking (heldBy attr, held-by banner, PC/NPC
+  inventory section); NPC role/title field for NPC/PC/faction/custom entities;
+  Random NPC name generator (⚄ Gen button, 35 given + 25 family names);
+  "⚑ Needs Prep" flag on entity detail (header button, cleared on Begin Session);
+  Flagged entities section on Session Prep screen; existingAttrs preservation on
+  entity edit (base attrs on load to keep pinned etc.); Faction relationship
+  tracker (ally/enemy/rival/neutral, chip list with Alert type picker); PC level
+  + XP tracking (Level/XP/Max XP fields, XP progress bar on detail, level badge
+  on campaign list); Conditions in combat tracker (16 D&D conditions, per-
+  combatant chip picker, persist in attrs.conditions); Random tables screen
+  (per-campaign d-tables stored in app_kv, create/edit/roll); Current/Max HP
+  display on entity detail when tracker has modified HP; Party overview screen
+  (all PCs with level, HP bar, XP bar, conditions, inventory); Session Wrap Up
+  screen (end-of-session HP + XP + quest progress capture, marks session played);
+  Location hierarchy (parentId in attrs, parent picker in edit, breadcrumb +
+  sub-locations on detail). Version bumped to 1.2.0. Build #14 queue Jul 1 2026.
 
-## What to build next (phase 11)
+## What to build next (phase 12)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
 2. Backup to Supabase (cloud snapshot push — needs auth).
 3. Player invites & roles (needs auth).
-4. Campaign "logline" tagline field shown on campaign list card.
-5. Per-character quest interest tracking.
+4. Custom entity attributes (key-value pairs the GM can define per entity).
+5. NPC relationship web — visual graph of NPC-to-NPC faction/ally/enemy links.
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).
