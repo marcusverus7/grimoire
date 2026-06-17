@@ -1,17 +1,22 @@
 #!/usr/bin/env node
 // Wrapper for react-native-xcode.sh bundle phase.
-// Strips --config-cmd before calling expo export:embed.
-// react-native-xcode.sh appends --config-cmd 'react-native cli.js config' which
-// causes Metro to use a different projectRoot in jest-worker processes, breaking
-// babel-preset-expo resolution. Without it, expo uses the cwd (apps/mobile)
-// as projectRoot — same as our pre-bundle step which works correctly.
+// Strips --config-cmd and --entry-file before calling expo export:embed.
+//
+// --config-cmd: appended by react-native-xcode.sh; passes 'react-native config'
+//   which can alter Metro's projectRoot in jest-worker processes.
+// --entry-file: xcodebuild passes an absolute path into the pnpm virtual store
+//   (e.g. node_modules/.pnpm/expo-router@.../entry.js). When Metro sees an entry
+//   file outside the projectRoot, it adjusts how workers are initialised and how
+//   moduleMapper.js resolves packages, breaking babel-preset-expo resolution.
+//   Without --entry-file, expo resolves the entry from package.json "main" field,
+//   which matches what the working pre-bundle step does.
 const { spawnSync } = require('child_process');
 const args = process.argv.slice(2);
 const filtered = [];
 let skip = 0;
 for (const arg of args) {
   if (skip > 0) { skip--; continue; }
-  if (arg === '--config-cmd') { skip = 1; continue; }
+  if (arg === '--config-cmd' || arg === '--entry-file') { skip = 1; continue; }
   filtered.push(arg);
 }
 const expoCli = process.env.REAL_EXPO_CLI;
