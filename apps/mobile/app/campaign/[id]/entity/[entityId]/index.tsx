@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView, Share, TextInput } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
 import { eq, and } from "drizzle-orm";
@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
-import { backlinksFor, type EntityLinkRow } from "@grimoire/core";
+import { backlinksFor, richTextToMarkdown, type EntityLinkRow } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
 import { RichTextRenderer } from "@/components/RichTextRenderer";
 
@@ -33,6 +33,8 @@ export default function EntityDetailScreen() {
   const [backlinks, setBacklinks] = useState<
     { fromType: string; fromId: string; name: string; snippet: string | null }[]
   >([]);
+  const [editingHp, setEditingHp] = useState(false);
+  const [hpInput, setHpInput] = useState("");
 
   const load = useCallback(() => {
     const e = db
@@ -112,22 +114,32 @@ export default function EntityDetailScreen() {
         options={{
           title: entity.name,
           headerRight: () => (
-            <Pressable
-              onPress={() =>
-                router.push(`/campaign/${campaignId}/entity/${entityId}/edit`)
-              }
-            >
-              <Text
-                style={{
-                  fontFamily: "Inter_500Medium",
-                  fontSize: 14,
-                  color: "#A07A2C",
-                  marginRight: 8,
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginRight: 8 }}>
+              <Pressable
+                onPress={async () => {
+                  const kind = KIND_LABELS[entity.kind] ?? entity.kind;
+                  const bodyMd = entity.body
+                    ? richTextToMarkdown(entity.body as RichTextNode)
+                    : "";
+                  const summary = entity.summary ? `\n_${entity.summary}_\n` : "";
+                  const text = `# ${entity.name}\n**${kind}**${summary}\n${bodyMd}`.trim();
+                  await Share.share({ title: entity.name, message: text });
                 }}
               >
-                Edit
-              </Text>
-            </Pressable>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#A07A2C" }}>
+                  Share
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() =>
+                  router.push(`/campaign/${campaignId}/entity/${entityId}/edit`)
+                }
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 14, color: "#A07A2C" }}>
+                  Edit
+                </Text>
+              </Pressable>
+            </View>
           ),
         }}
       />
@@ -163,21 +175,40 @@ export default function EntityDetailScreen() {
           )}
         </View>
 
-        {/* Quest status badge */}
-        {entity.kind === "quest" && attrs != null && "questStatus" in attrs ? (
-          <View className="mb-4 flex-row">
-            <View className="px-3 py-1 bg-gold/10 rounded-sm border border-gold/20">
-              <Text
-                style={{
-                  fontFamily: "Inter_500Medium",
-                  fontSize: 11,
-                  color: "#A07A2C",
-                  textTransform: "capitalize",
-                }}
-              >
-                {String(attrs["questStatus"])}
-              </Text>
-            </View>
+        {/* Quest status quick-toggle */}
+        {entity.kind === "quest" && attrs != null ? (
+          <View style={{ marginBottom: 16, flexDirection: "row", gap: 8 }}>
+            {(["open", "active", "completed", "failed"] as const).map((status) => {
+              const isCurrent = String(attrs["questStatus"] ?? "open") === status;
+              const colors: Record<string, string> = { open: "#5A4D3E", active: "#A07A2C", completed: "#4A8060", failed: "#7A2418" };
+              const color = colors[status] ?? "#5A4D3E";
+              return (
+                <Pressable
+                  key={status}
+                  onPress={() => {
+                    if (isCurrent) return;
+                    const newAttrs = { ...(entity.attrs as Record<string, unknown> | null ?? {}), questStatus: status };
+                    db.update(schema.entities)
+                      .set({ attrs: newAttrs, updatedAt: Date.now() })
+                      .where(eq(schema.entities.id, entityId))
+                      .run();
+                    setEntity((prev) => prev ? { ...prev, attrs: newAttrs } : prev);
+                  }}
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderRadius: 2,
+                    borderWidth: 1,
+                    borderColor: isCurrent ? color : `${color}40`,
+                    backgroundColor: isCurrent ? `${color}15` : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: isCurrent ? color : `${color}80`, textTransform: "capitalize" }}>
+                    {status}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
         ) : null}
 
@@ -196,10 +227,35 @@ export default function EntityDetailScreen() {
             }}
           >
             {attrs["hp"] ? (
-              <View style={{ alignItems: "center" }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>HP</Text>
-                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014" }}>{String(attrs["hp"])}</Text>
-              </View>
+              <Pressable
+                style={{ alignItems: "center" }}
+                onPress={() => { setHpInput(String(attrs["hp"] ?? "")); setEditingHp(true); }}
+              >
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>HP ✎</Text>
+                {editingHp ? (
+                  <TextInput
+                    value={hpInput}
+                    onChangeText={setHpInput}
+                    keyboardType="numeric"
+                    autoFocus
+                    style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014", minWidth: 40, textAlign: "center", borderBottomWidth: 1, borderBottomColor: "#A07A2C" }}
+                    onBlur={() => {
+                      const newAttrs = { ...(entity?.attrs as Record<string, unknown> ?? {}), hp: hpInput };
+                      db.update(schema.entities).set({ attrs: newAttrs, updatedAt: Date.now() }).where(eq(schema.entities.id, entityId)).run();
+                      setEntity((prev) => prev ? { ...prev, attrs: newAttrs } : prev);
+                      setEditingHp(false);
+                    }}
+                    onSubmitEditing={() => {
+                      const newAttrs = { ...(entity?.attrs as Record<string, unknown> ?? {}), hp: hpInput };
+                      db.update(schema.entities).set({ attrs: newAttrs, updatedAt: Date.now() }).where(eq(schema.entities.id, entityId)).run();
+                      setEntity((prev) => prev ? { ...prev, attrs: newAttrs } : prev);
+                      setEditingHp(false);
+                    }}
+                  />
+                ) : (
+                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014" }}>{String(attrs["hp"])}</Text>
+                )}
+              </Pressable>
             ) : null}
             {attrs["ac"] ? (
               <View style={{ alignItems: "center" }}>

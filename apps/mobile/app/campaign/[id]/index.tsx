@@ -33,6 +33,15 @@ const KIND_LABELS: Record<string, string> = {
   quest: "Quests",
   custom: "Custom",
 };
+const KIND_COLORS: Record<string, string> = {
+  npc: "#A07A2C",
+  pc: "#C9A24A",
+  location: "#4A8060",
+  faction: "#7A2418",
+  item: "#6A5ACD",
+  quest: "#D4A843",
+  custom: "#4A3F32",
+};
 
 export default function CampaignDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -453,12 +462,15 @@ export default function CampaignDetailScreen() {
           ) : (
             entitiesByKind.map((group) => (
               <View key={group.kind} className="mb-4">
-                <Text
-                  className="text-ink/50 text-xs uppercase tracking-wider mb-2"
-                  style={{ fontFamily: "Inter_500Medium" }}
-                >
-                  {group.label}
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: KIND_COLORS[group.kind] ?? "#4A3F32", marginRight: 6 }} />
+                  <Text
+                    className="text-ink/50 text-xs uppercase tracking-wider"
+                    style={{ fontFamily: "Inter_500Medium" }}
+                  >
+                    {group.label}
+                  </Text>
+                </View>
                 {group.items.map((entity) => (
                   <Pressable
                     key={entity.id}
