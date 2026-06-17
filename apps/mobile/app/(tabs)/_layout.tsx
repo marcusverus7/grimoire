@@ -53,6 +53,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="characters"
+        options={{
+          title: "Characters",
+          tabBarLabel: "Characters",
+        }}
+      />
+      <Tabs.Screen
         name="design"
         options={{
           href: null,

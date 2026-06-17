@@ -19,6 +19,7 @@ import { WaxSeal } from "@/components/WaxSeal";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
+import { seedSampleCampaign } from "@/lib/sampleData";
 
 type CampaignRow = typeof schema.campaigns.$inferSelect & {
   entityCount: number;
@@ -144,6 +145,22 @@ export default function CampaignsScreen() {
           >
             <Text className="font-inter-semibold text-ink-light text-sm tracking-wider uppercase">
               Begin
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              try {
+                const id = seedSampleCampaign();
+                loadCampaigns();
+                router.push(`/campaign/${id}`);
+              } catch (e) {
+                Alert.alert("Error", e instanceof Error ? e.message : "Could not load sample");
+              }
+            }}
+            style={{ marginTop: 20 }}
+          >
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#A07A2C", textDecorationLine: "underline" }}>
+              Explore a sample campaign →
             </Text>
           </Pressable>
         </View>

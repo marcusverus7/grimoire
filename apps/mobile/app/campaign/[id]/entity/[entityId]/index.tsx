@@ -189,7 +189,7 @@ export default function EntityDetailScreen() {
                     if (isCurrent) return;
                     const newAttrs = { ...(entity.attrs as Record<string, unknown> | null ?? {}), questStatus: status };
                     db.update(schema.entities)
-                      .set({ attrs: newAttrs, updatedAt: Date.now() })
+                      .set({ attrs: newAttrs, updatedAt: new Date() })
                       .where(eq(schema.entities.id, entityId))
                       .run();
                     setEntity((prev) => prev ? { ...prev, attrs: newAttrs } : prev);
@@ -241,13 +241,13 @@ export default function EntityDetailScreen() {
                     style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014", minWidth: 40, textAlign: "center", borderBottomWidth: 1, borderBottomColor: "#A07A2C" }}
                     onBlur={() => {
                       const newAttrs = { ...(entity?.attrs as Record<string, unknown> ?? {}), hp: hpInput };
-                      db.update(schema.entities).set({ attrs: newAttrs, updatedAt: Date.now() }).where(eq(schema.entities.id, entityId)).run();
+                      db.update(schema.entities).set({ attrs: newAttrs, updatedAt: new Date() }).where(eq(schema.entities.id, entityId)).run();
                       setEntity((prev) => prev ? { ...prev, attrs: newAttrs } : prev);
                       setEditingHp(false);
                     }}
                     onSubmitEditing={() => {
                       const newAttrs = { ...(entity?.attrs as Record<string, unknown> ?? {}), hp: hpInput };
-                      db.update(schema.entities).set({ attrs: newAttrs, updatedAt: Date.now() }).where(eq(schema.entities.id, entityId)).run();
+                      db.update(schema.entities).set({ attrs: newAttrs, updatedAt: new Date() }).where(eq(schema.entities.id, entityId)).run();
                       setEntity((prev) => prev ? { ...prev, attrs: newAttrs } : prev);
                       setEditingHp(false);
                     }}

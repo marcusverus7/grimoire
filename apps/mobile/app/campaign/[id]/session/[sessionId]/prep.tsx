@@ -163,7 +163,7 @@ export default function SessionPrepScreen() {
             </Text>
           ) : null}
 
-          <GoldRule style={{ marginVertical: 16 }} />
+          <View style={{ marginVertical: 16 }}><GoldRule /></View>
 
           {/* Previously on... */}
           <Section label="Previously On…">
@@ -200,7 +200,7 @@ export default function SessionPrepScreen() {
             )}
           </Section>
 
-          <GoldRule style={{ marginVertical: 16 }} />
+          <View style={{ marginVertical: 16 }}><GoldRule /></View>
 
           {/* Open Quests */}
           <Section label="Open Quests">
@@ -252,7 +252,7 @@ export default function SessionPrepScreen() {
           {/* Key NPCs from last session */}
           {keyEntities.length > 0 && (
             <>
-              <GoldRule style={{ marginVertical: 16 }} />
+              <View style={{ marginVertical: 16 }}><GoldRule /></View>
               <Section label="Key Characters Last Session">
                 {keyEntities.map((e) => (
                   <Pressable

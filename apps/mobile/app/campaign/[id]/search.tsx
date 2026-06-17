@@ -107,7 +107,7 @@ export default function LoreSearchScreen() {
         const bodyText = s.body ? nodeText(s.body as RichTextNode) : "";
         const bodyMatch = bodyText.toLowerCase().includes(trimmed);
         if (!titleMatch && !bodyMatch) continue;
-        let subtitle = s.status;
+        let subtitle: string = s.status;
         if (bodyMatch && !titleMatch) {
           const idx = bodyText.toLowerCase().indexOf(trimmed);
           const snippet = bodyText.slice(Math.max(0, idx - 20), idx + 60).trim();
