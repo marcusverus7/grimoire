@@ -40,6 +40,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Symlink babel-preset-expo into apps/mobile/node_modules
+        run: |
+          # babel-preset-expo is a transitive dep of expo, only in pnpm virtual store.
+          # @babel/core resolves it via { paths: [apps/mobile] } — create a direct symlink
+          # so Metro's jest-worker child processes can find it without pnpm store traversal.
+          PRESET_DIR=$(node -e "const p=require('path'),fs=require('fs');const e=p.dirname(require.resolve('expo/package.json',{paths:[p.resolve('apps/mobile')]}));const r=fs.realpathSync(e);process.stdout.write(p.dirname(require.resolve('babel-preset-expo/package.json',{paths:[r]})))")
+          echo "babel-preset-expo at: $PRESET_DIR"
+          if [ -z "$PRESET_DIR" ]; then echo "ERROR: could not locate babel-preset-expo"; exit 1; fi
+          ln -sfn "$PRESET_DIR" apps/mobile/node_modules/babel-preset-expo
+          echo "Symlinked apps/mobile/node_modules/babel-preset-expo -> $PRESET_DIR"
+
       - name: Decode signing materials
         env:
           IOS_DIST_P12_BASE64: ${{ secrets.IOS_DIST_P12_BASE64 }}
@@ -73,7 +84,7 @@ jobs:
 
       - name: Run expo prebuild
         working-directory: apps/mobile
-        run: npx expo prebuild --platform ios --clean --non-interactive
+        run: npx expo prebuild --platform ios --clean --non-interactive --no-install
 
       - name: Install CocoaPods
         working-directory: apps/mobile/ios
