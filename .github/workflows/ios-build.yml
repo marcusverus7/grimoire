@@ -127,6 +127,11 @@ jobs:
           fi
           SCHEME=$(echo "$WORKSPACE" | sed 's/\.xcworkspace//')
           echo "Building workspace=$WORKSPACE scheme=$SCHEME"
+          # Force the bundle phase to use expo export:embed (same as pre-bundle step)
+          # This avoids pnpm module resolution differences between react-native bundle and expo CLI
+          NODE_BIN="$(which node)"
+          EXPO_CLI="$GITHUB_WORKSPACE/node_modules/.bin/expo"
+          echo "NODE_BINARY=$NODE_BIN  EXPO_CLI=$EXPO_CLI"
           set -o pipefail
           xcodebuild archive \
             -workspace "$WORKSPACE" \
@@ -137,7 +142,10 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="Grimoire App Store" \
             CODE_SIGN_IDENTITY="Apple Distribution" \
-            DEVELOPMENT_TEAM=JQS67937W6
+            DEVELOPMENT_TEAM=JQS67937W6 \
+            NODE_BINARY="$NODE_BIN" \
+            CLI_PATH="$EXPO_CLI" \
+            BUNDLE_COMMAND="export:embed"
 
       - name: Export IPA
         run: |
