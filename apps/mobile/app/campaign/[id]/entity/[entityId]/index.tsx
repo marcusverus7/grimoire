@@ -469,6 +469,10 @@ export default function EntityDetailScreen() {
                       setEditingHp(false);
                     }}
                   />
+                ) : attrs["currentHp"] != null && Number(attrs["currentHp"]) !== Number(attrs["hp"]) ? (
+                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: Number(attrs["currentHp"]) === 0 ? "#7A2418" : Number(attrs["currentHp"]) < Number(attrs["hp"]) / 2 ? "#A07A2C" : "#2C2014" }}>
+                    {String(attrs["currentHp"])}<Text style={{ fontSize: 13, color: "#5A4D3E60" }}>/{String(attrs["hp"])}</Text>
+                  </Text>
                 ) : (
                   <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014" }}>{String(attrs["hp"])}</Text>
                 )}
