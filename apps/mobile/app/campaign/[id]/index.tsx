@@ -750,6 +750,7 @@ export default function CampaignDetailScreen() {
         {/* Actions */}
         <View className="flex-row flex-wrap">
           {[
+            { label: "Party", path: `/campaign/${id}/party`, gold: true },
             { label: "Search", path: `/campaign/${id}/search`, gold: true },
             { label: "Notes", path: `/campaign/${id}/notes`, gold: true },
             { label: "Quests", path: `/campaign/${id}/quests`, gold: true },
