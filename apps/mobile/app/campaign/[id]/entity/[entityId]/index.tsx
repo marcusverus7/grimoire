@@ -628,6 +628,23 @@ export default function EntityDetailScreen() {
           </>
         ) : null}
 
+        {/* Custom attributes */}
+        {Array.isArray(attrs?.["customAttrs"]) && (attrs["customAttrs"] as { key: string; value: string }[]).length > 0 ? (
+          <>
+            <GoldRule />
+            <View style={{ marginTop: 12, marginBottom: 8 }}>
+              {(attrs["customAttrs"] as { key: string; value: string }[]).map((a, i) => (
+                <View key={i} style={{ flexDirection: "row", paddingVertical: 5, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C12" }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, width: 100, paddingRight: 8 }} numberOfLines={1}>
+                    {a.key}
+                  </Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 1 }}>{a.value}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        ) : null}
+
         {/* Backlinks */}
         {backlinks.length > 0 && (
           <>

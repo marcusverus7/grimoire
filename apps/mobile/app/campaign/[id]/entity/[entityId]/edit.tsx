@@ -70,6 +70,7 @@ export default function EntityFormScreen() {
   const [maxXp, setMaxXp] = useState("");
   const [parentId, setParentId] = useState<string | null>(null);
   const [campaignLocations, setCampaignLocations] = useState<{ id: string; name: string }[]>([]);
+  const [customAttrs, setCustomAttrs] = useState<{ key: string; value: string }[]>([]);
   const [hp, setHp] = useState("");
   const [ac, setAc] = useState("");
   const [initiative, setInitiative] = useState("");
@@ -113,6 +114,7 @@ export default function EntityFormScreen() {
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
       if (attrs?.["gmSecret"]) setGmSecret(String(attrs["gmSecret"]));
       if (typeof attrs?.["parentId"] === "string") setParentId(attrs["parentId"]);
+      if (Array.isArray(attrs?.["customAttrs"])) setCustomAttrs(attrs["customAttrs"] as { key: string; value: string }[]);
       if (entity.characterProfileId) setCharacterProfileId(entity.characterProfileId);
     }
     // Load campaign location entities for parent picker
@@ -230,6 +232,8 @@ export default function EntityFormScreen() {
       } else {
         delete attrs["parentId"];
       }
+      const validCustom = customAttrs.filter((a) => a.key.trim() && a.value.trim());
+      if (validCustom.length > 0) attrs["customAttrs"] = validCustom; else delete attrs["customAttrs"];
 
       let savedId = entityId;
       if (isNew) {
@@ -834,6 +838,36 @@ export default function EntityFormScreen() {
             marginBottom: 20,
           }}
         />
+
+        {/* Custom Attributes */}
+        <Label text="Custom Attributes (optional)" />
+        {customAttrs.map((attr, i) => (
+          <View key={i} style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+            <TextInput
+              value={attr.key}
+              onChangeText={(v) => setCustomAttrs((prev) => prev.map((a, j) => j === i ? { ...a, key: v } : a))}
+              placeholder="Label"
+              placeholderTextColor="#2C201440"
+              style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 4, marginRight: 8, textTransform: "uppercase", letterSpacing: 0.8 }}
+            />
+            <TextInput
+              value={attr.value}
+              onChangeText={(v) => setCustomAttrs((prev) => prev.map((a, j) => j === i ? { ...a, value: v } : a))}
+              placeholder="Value"
+              placeholderTextColor="#2C201440"
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 2, borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 4, marginRight: 8 }}
+            />
+            <Pressable onPress={() => setCustomAttrs((prev) => prev.filter((_, j) => j !== i))}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#7A241860" }}>✕</Text>
+            </Pressable>
+          </View>
+        ))}
+        <Pressable
+          onPress={() => setCustomAttrs((prev) => [...prev, { key: "", value: "" }])}
+          style={{ paddingVertical: 8, marginBottom: 20, flexDirection: "row", alignItems: "center" }}
+        >
+          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C80" }}>+ Add attribute</Text>
+        </Pressable>
 
         {/* Visibility */}
         <Label text="Visibility" />
