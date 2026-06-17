@@ -36,6 +36,8 @@ export default function EntityDetailScreen() {
   >([]);
   const [interestedEntities, setInterestedEntities] = useState<{ id: string; name: string; kind: string }[]>([]);
   const [questHooks, setQuestHooks] = useState<{ id: string; name: string; questStatus: string }[]>([]);
+  const [heldByName, setHeldByName] = useState<{ id: string; name: string } | null>(null);
+  const [inventory, setInventory] = useState<{ id: string; name: string }[]>([]);
   const [editingHp, setEditingHp] = useState(false);
   const [hpInput, setHpInput] = useState("");
 
@@ -126,9 +128,37 @@ export default function EntityDetailScreen() {
           }));
         setQuestHooks(quests);
         setInterestedEntities([]);
+      } else if (e.kind === "item") {
+        const hbId = (e.attrs as Record<string, unknown> | null)?.["heldBy"];
+        if (typeof hbId === "string") {
+          const holder = db.select({ id: schema.entities.id, name: schema.entities.name }).from(schema.entities).where(eq(schema.entities.id, hbId)).get();
+          setHeldByName(holder ?? null);
+        } else {
+          setHeldByName(null);
+        }
+        setInterestedEntities([]);
+        setQuestHooks([]);
+        setInventory([]);
       } else {
         setInterestedEntities([]);
         setQuestHooks([]);
+        setHeldByName(null);
+      }
+
+      // PC/NPC inventory
+      if (e.kind === "pc" || e.kind === "npc") {
+        const items = db.select().from(schema.entities)
+          .where(eq(schema.entities.campaignId, campaignId))
+          .all()
+          .filter((item) => {
+            if (item.kind !== "item") return false;
+            const held = (item.attrs as Record<string, unknown> | null)?.["heldBy"];
+            return held === e.id;
+          })
+          .map((item) => ({ id: item.id, name: item.name }));
+        setInventory(items);
+      } else {
+        setInventory([]);
       }
     }
   }, [campaignId, entityId]);
@@ -306,6 +336,22 @@ export default function EntityDetailScreen() {
               );
             })}
           </View>
+        ) : null}
+
+        {/* Item — Held By */}
+        {entity.kind === "item" && heldByName ? (
+          <Pressable
+            onPress={() => router.push(`/campaign/${campaignId}/entity/${heldByName.id}`)}
+            style={{ marginBottom: 16, flexDirection: "row", alignItems: "center", paddingHorizontal: 10, paddingVertical: 8, borderWidth: 1, borderColor: "#6A5ACD30", backgroundColor: "#6A5ACD08", borderRadius: 2 }}
+          >
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#6A5ACD80", textTransform: "uppercase", letterSpacing: 1.5, marginRight: 10 }}>
+              Held By
+            </Text>
+            <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", flex: 1 }}>
+              {heldByName.name}
+            </Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#6A5ACD" }}>›</Text>
+          </Pressable>
         ) : null}
 
         {/* Quest — Interested Characters */}
@@ -563,6 +609,29 @@ export default function EntityDetailScreen() {
             </View>
           </>
         )}
+
+        {/* PC/NPC — Inventory */}
+        {inventory.length > 0 ? (
+          <>
+            <GoldRule />
+            <View style={{ marginTop: 16 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#5A4D3E", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
+                Inventory
+              </Text>
+              {inventory.map((item) => (
+                <Pressable
+                  key={item.id}
+                  onPress={() => router.push(`/campaign/${campaignId}/entity/${item.id}`)}
+                  style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6, paddingHorizontal: 4, marginBottom: 2 }}
+                >
+                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#6A5ACD50", marginRight: 10 }} />
+                  <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", flex: 1 }}>{item.name}</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C" }}>›</Text>
+                </Pressable>
+              ))}
+            </View>
+          </>
+        ) : null}
 
         {/* PC/NPC — Quest involvement */}
         {questHooks.length > 0 ? (

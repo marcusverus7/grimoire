@@ -53,6 +53,8 @@ export default function EntityFormScreen() {
   const [campaignCharacters, setCampaignCharacters] = useState<{ id: string; name: string; kind: string }[]>([]);
   const [factionRelationships, setFactionRelationships] = useState<{ factionId: string; type: string }[]>([]);
   const [campaignFactions, setCampaignFactions] = useState<{ id: string; name: string }[]>([]);
+  const [heldBy, setHeldBy] = useState<string | null>(null);
+  const [campaignPCs, setCampaignPCs] = useState<{ id: string; name: string }[]>([]);
   const [hp, setHp] = useState("");
   const [ac, setAc] = useState("");
   const [initiative, setInitiative] = useState("");
@@ -85,6 +87,7 @@ export default function EntityFormScreen() {
       if (attrs?.["questStatus"]) setQuestStatus(String(attrs["questStatus"]));
       if (Array.isArray(attrs?.["interestedEntityIds"])) setInterestedEntityIds(attrs["interestedEntityIds"] as string[]);
       if (Array.isArray(attrs?.["relationships"])) setFactionRelationships(attrs["relationships"] as { factionId: string; type: string }[]);
+      if (typeof attrs?.["heldBy"] === "string") setHeldBy(attrs["heldBy"]);
       if (attrs?.["hp"]) setHp(String(attrs["hp"]));
       if (attrs?.["ac"]) setAc(String(attrs["ac"]));
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
@@ -112,6 +115,14 @@ export default function EntityFormScreen() {
       .filter((e) => e.kind === "faction" && e.id !== entityId)
       .sort((a, b) => a.name.localeCompare(b.name));
     setCampaignFactions(factions);
+    // Load PC/NPC entities for item "held by" picker
+    const pcs = db.select({ id: schema.entities.id, name: schema.entities.name, kind: schema.entities.kind })
+      .from(schema.entities)
+      .where(eq(schema.entities.campaignId, campaignId))
+      .all()
+      .filter((e) => e.kind === "pc" || e.kind === "npc")
+      .sort((a, b) => { if (a.kind !== b.kind) return a.kind === "pc" ? -1 : 1; return a.name.localeCompare(b.name); });
+    setCampaignPCs(pcs);
     setLoaded(true);
   }, [entityId, isNew]);
 
@@ -149,6 +160,12 @@ export default function EntityFormScreen() {
         else delete attrs["relationships"];
       } else {
         delete attrs["relationships"];
+      }
+      if (kind === "item") {
+        if (heldBy) attrs["heldBy"] = heldBy;
+        else delete attrs["heldBy"];
+      } else {
+        delete attrs["heldBy"];
       }
       if (kind === "npc" || kind === "pc") {
         if (hp.trim()) attrs["hp"] = hp.trim(); else delete attrs["hp"];
@@ -423,6 +440,38 @@ export default function EntityFormScreen() {
                   >
                     <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: rel ? color : "#5A4D3E60" }}>
                       {f.name}{rel ? ` · ${rel.type}` : ""}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </>
+        )}
+
+        {/* Item holder */}
+        {kind === "item" && campaignPCs.length > 0 && (
+          <>
+            <Label text="Held By (optional)" />
+            <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 20 }}>
+              {campaignPCs.map((pc) => {
+                const selected = heldBy === pc.id;
+                return (
+                  <Pressable
+                    key={pc.id}
+                    onPress={() => setHeldBy(selected ? null : pc.id)}
+                    style={{
+                      marginRight: 8,
+                      marginBottom: 8,
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 2,
+                      borderWidth: 1,
+                      borderColor: selected ? "#6A5ACD" : "#2C201425",
+                      backgroundColor: selected ? "#6A5ACD12" : "transparent",
+                    }}
+                  >
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: selected ? "#6A5ACD" : "#5A4D3E60" }}>
+                      {pc.name}
                     </Text>
                   </Pressable>
                 );
