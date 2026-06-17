@@ -32,6 +32,7 @@ const ENTITY_KIND_COLORS: Record<string, string> = {
   item: "#6A5ACD",
   quest: "#D4A843",
   custom: "#4A3F32",
+  secret: "#7A2418",
 };
 
 export default function LoreSearchScreen() {
@@ -92,6 +93,56 @@ export default function LoreSearchScreen() {
             subtitle: `${e.kind} — …${snippet}…`,
             href: `/campaign/${campaignId}/entity/${e.id}`,
           });
+        }
+      }
+      // Third pass: tag matches
+      for (const e of allEntities) {
+        if (seenEntityIds.has(e.id)) continue;
+        const tags = (e.attrs as Record<string, unknown> | null)?.["tags"];
+        if (Array.isArray(tags) && (tags as string[]).some((t) => t.toLowerCase().includes(trimmed))) {
+          seenEntityIds.add(e.id);
+          const matched = (tags as string[]).filter((t) => t.toLowerCase().includes(trimmed));
+          out.push({
+            id: e.id,
+            kind: "entity",
+            entityKind: e.kind,
+            title: e.name,
+            subtitle: `${e.kind} — tags: ${matched.join(", ")}`,
+            href: `/campaign/${campaignId}/entity/${e.id}`,
+          });
+        }
+      }
+      // Fourth pass: GM secret matches (shown separately so GM knows what matched)
+      for (const e of allEntities) {
+        const secret = (e.attrs as Record<string, unknown> | null)?.["gmSecret"];
+        if (typeof secret === "string" && secret.toLowerCase().includes(trimmed)) {
+          out.push({
+            id: `${e.id}-secret`,
+            kind: "entity",
+            entityKind: "secret",
+            title: e.name,
+            subtitle: `GM Secret — ${secret.slice(0, 100)}`,
+            href: `/campaign/${campaignId}/entity/${e.id}`,
+          });
+        }
+      }
+      // Fifth pass: custom attribute value matches
+      for (const e of allEntities) {
+        const customAttrs = (e.attrs as Record<string, unknown> | null)?.["customAttrs"];
+        if (Array.isArray(customAttrs)) {
+          const matched = (customAttrs as { key: string; value: string }[]).filter(
+            (a) => a.key.toLowerCase().includes(trimmed) || a.value.toLowerCase().includes(trimmed),
+          );
+          if (matched.length > 0 && !out.some((r) => r.id === e.id || r.id === `${e.id}-secret`)) {
+            out.push({
+              id: `${e.id}-attrs`,
+              kind: "entity",
+              entityKind: e.kind,
+              title: e.name,
+              subtitle: `${e.kind} — ${matched[0]?.key}: ${matched[0]?.value}`,
+              href: `/campaign/${campaignId}/entity/${e.id}`,
+            });
+          }
         }
       }
 
@@ -230,7 +281,8 @@ export default function LoreSearchScreen() {
                     ? (ENTITY_KIND_COLORS[item.entityKind] ?? RESULT_COLORS.entity)
                     : RESULT_COLORS[item.kind];
                 const badgeLabel =
-                  item.kind === "entity" && item.entityKind ? item.entityKind : item.kind;
+                  item.entityKind === "secret" ? "⚿ Secret"
+                  : item.kind === "entity" && item.entityKind ? item.entityKind : item.kind;
                 return (
                   <Pressable
                     onPress={() => router.push(item.href as Parameters<typeof router.push>[0])}
