@@ -295,6 +295,29 @@ export default function SessionDetailScreen() {
           </View>
         ) : null}
 
+        {/* Wrap Up shortcut for in_progress sessions */}
+        {session.status === "in_progress" ? (
+          <Pressable
+            onPress={() => router.push(`/campaign/${campaignId}/session/${sessionId}/wrap` as Parameters<typeof router.push>[0])}
+            style={{
+              marginBottom: 12,
+              paddingVertical: 12,
+              borderWidth: 1,
+              borderColor: "#C9A24A40",
+              borderRadius: 2,
+              alignItems: "center",
+              backgroundColor: "#C9A24A06",
+            }}
+          >
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5 }}>
+              ◈ Wrap Up Session
+            </Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginTop: 2 }}>
+              HP · Quests · XP
+            </Text>
+          </Pressable>
+        ) : null}
+
         {/* Mark Played quick action */}
         {session.status !== "played" ? (
           <Pressable
