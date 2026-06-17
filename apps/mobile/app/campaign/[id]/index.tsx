@@ -304,6 +304,7 @@ export default function CampaignDetailScreen() {
                 { label: "Tracker", path: `/campaign/${id}/tracker` },
                 { label: "Tables", path: `/campaign/${id}/tables` },
                 { label: "Party", path: `/campaign/${id}/party` },
+                { label: "Notes", path: `/campaign/${id}/session/${inProgressSession.id}/notes` },
               ].map((btn) => (
                 <Pressable
                   key={btn.label}

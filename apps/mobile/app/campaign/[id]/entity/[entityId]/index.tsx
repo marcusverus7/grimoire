@@ -311,6 +311,20 @@ export default function EntityDetailScreen() {
           )}
         </View>
 
+        {/* Currently At badge */}
+        {attrs?.["locationId"] ? (() => {
+          const loc = db.select({ id: schema.entities.id, name: schema.entities.name }).from(schema.entities).where(eq(schema.entities.id, String(attrs["locationId"]))).get();
+          return loc ? (
+            <Pressable
+              onPress={() => router.push(`/campaign/${campaignId}/entity/${loc.id}` as Parameters<typeof router.push>[0])}
+              style={{ flexDirection: "row", alignItems: "center", marginBottom: 10, alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 2, borderWidth: 1, borderColor: "#4A806040", backgroundColor: "#4A806008" }}
+            >
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#4A806090", marginRight: 4 }}>◈</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#4A8060" }}>{loc.name}</Text>
+            </Pressable>
+          ) : null;
+        })() : null}
+
         {/* Tags */}
         {Array.isArray(attrs?.["tags"]) && (attrs["tags"] as string[]).length > 0 ? (
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>

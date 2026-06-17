@@ -318,6 +318,24 @@ export default function SessionDetailScreen() {
           </Pressable>
         ) : null}
 
+        {/* Scene Notes shortcut */}
+        <Pressable
+          onPress={() => router.push(`/campaign/${campaignId}/session/${sessionId}/notes` as Parameters<typeof router.push>[0])}
+          style={{
+            marginBottom: 12,
+            paddingVertical: 10,
+            borderWidth: 1,
+            borderColor: "#A07A2C30",
+            borderRadius: 2,
+            alignItems: "center",
+            backgroundColor: "#A07A2C06",
+          }}
+        >
+          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+            ✎ Scene Notes
+          </Text>
+        </Pressable>
+
         {/* Mark Played quick action */}
         {session.status !== "played" ? (
           <Pressable

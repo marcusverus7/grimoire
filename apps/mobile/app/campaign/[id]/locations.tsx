@@ -14,10 +14,12 @@ type LocationNode = {
   summary: string | null;
   visibility: string;
   children: LocationNode[];
+  residents: { id: string; name: string; kind: string }[];
 };
 
 function buildTree(
   locs: { id: string; name: string; summary: string | null; parentId: string | null; visibility: string }[],
+  residents: { id: string; name: string; kind: string; locationId: string | null }[],
   parentId: string | null,
 ): LocationNode[] {
   return locs
@@ -28,7 +30,8 @@ function buildTree(
       name: l.name,
       summary: l.summary,
       visibility: l.visibility,
-      children: buildTree(locs, l.id),
+      residents: residents.filter((r) => r.locationId === l.id),
+      children: buildTree(locs, residents, l.id),
     }));
 }
 
@@ -39,11 +42,12 @@ export default function LocationsScreen() {
   const [total, setTotal] = useState(0);
 
   const load = useCallback(() => {
-    const entities = db
+    const allEntities = db
       .select()
       .from(schema.entities)
       .where(eq(schema.entities.campaignId, campaignId))
-      .all()
+      .all();
+    const locs = allEntities
       .filter((e) => e.kind === "location")
       .map((e) => ({
         id: e.id,
@@ -54,8 +58,19 @@ export default function LocationsScreen() {
           ? String((e.attrs as Record<string, unknown>)["parentId"])
           : null,
       }));
-    setTotal(entities.length);
-    setTree(buildTree(entities, null));
+    const residents = allEntities
+      .filter((e) => e.kind !== "location")
+      .map((e) => ({
+        id: e.id,
+        name: e.name,
+        kind: e.kind,
+        locationId: typeof (e.attrs as Record<string, unknown> | null)?.["locationId"] === "string"
+          ? String((e.attrs as Record<string, unknown>)["locationId"])
+          : null,
+      }))
+      .filter((e) => e.locationId !== null);
+    setTotal(locs.length);
+    setTree(buildTree(locs, residents, null));
   }, [campaignId]);
 
   useFocusEffect(load);
@@ -145,6 +160,18 @@ function LocationTreeNode({
             <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80", marginTop: 2 }} numberOfLines={1}>
               {node.summary}
             </Text>
+          ) : null}
+          {node.residents.length > 0 ? (
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+              {node.residents.slice(0, 4).map((r) => (
+                <View key={r.id} style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, backgroundColor: "#4A806012", borderWidth: 1, borderColor: "#4A806030" }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#4A8060" }}>{r.name}</Text>
+                </View>
+              ))}
+              {node.residents.length > 4 ? (
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#4A806060", alignSelf: "center" }}>+{node.residents.length - 4}</Text>
+              ) : null}
+            </View>
           ) : null}
         </View>
         <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#4A8060", marginLeft: 8, marginTop: 2 }}>›</Text>

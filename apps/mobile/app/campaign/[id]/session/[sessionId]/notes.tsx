@@ -3,7 +3,7 @@ import { useLocalSearchParams, Stack } from "expo-router";
 import { useCallback, useState, useRef } from "react";
 import { eq } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
-import { db } from "@/lib/db";
+import { db, getKv, setKv } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
@@ -13,20 +13,13 @@ type NoteEntry = { id: string; text: string; ts: number };
 const NOTE_KEY = (sessionId: string) => `session_notes_${sessionId}`;
 
 function loadNotes(sessionId: string): NoteEntry[] {
-  const row = db.select().from(schema.appKv).where(eq(schema.appKv.key, NOTE_KEY(sessionId))).get();
-  if (!row) return [];
-  try { return JSON.parse(row.value as string) as NoteEntry[]; } catch { return []; }
+  const val = getKv(NOTE_KEY(sessionId));
+  if (!val) return [];
+  try { return JSON.parse(val) as NoteEntry[]; } catch { return []; }
 }
 
 function saveNotes(sessionId: string, notes: NoteEntry[]) {
-  const key = NOTE_KEY(sessionId);
-  const existing = db.select().from(schema.appKv).where(eq(schema.appKv.key, key)).get();
-  const val = JSON.stringify(notes);
-  if (existing) {
-    db.update(schema.appKv).set({ value: val }).where(eq(schema.appKv.key, key)).run();
-  } else {
-    db.insert(schema.appKv).values({ key, value: val }).run();
-  }
+  setKv(NOTE_KEY(sessionId), JSON.stringify(notes));
 }
 
 export default function SessionNotesScreen() {

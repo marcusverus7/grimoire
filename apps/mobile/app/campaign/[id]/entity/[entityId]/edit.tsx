@@ -69,6 +69,7 @@ export default function EntityFormScreen() {
   const [xp, setXp] = useState("");
   const [maxXp, setMaxXp] = useState("");
   const [parentId, setParentId] = useState<string | null>(null);
+  const [locationId, setLocationId] = useState<string | null>(null);
   const [campaignLocations, setCampaignLocations] = useState<{ id: string; name: string }[]>([]);
   const [customAttrs, setCustomAttrs] = useState<{ key: string; value: string }[]>([]);
   const [tags, setTags] = useState<string[]>([]);
@@ -116,6 +117,7 @@ export default function EntityFormScreen() {
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
       if (attrs?.["gmSecret"]) setGmSecret(String(attrs["gmSecret"]));
       if (typeof attrs?.["parentId"] === "string") setParentId(attrs["parentId"]);
+      if (typeof attrs?.["locationId"] === "string") setLocationId(attrs["locationId"]);
       if (Array.isArray(attrs?.["customAttrs"])) setCustomAttrs(attrs["customAttrs"] as { key: string; value: string }[]);
       if (Array.isArray(attrs?.["tags"])) setTags(attrs["tags"] as string[]);
       if (entity.characterProfileId) setCharacterProfileId(entity.characterProfileId);
@@ -234,6 +236,11 @@ export default function EntityFormScreen() {
         if (parentId) attrs["parentId"] = parentId; else delete attrs["parentId"];
       } else {
         delete attrs["parentId"];
+      }
+      if ((kind === "npc" || kind === "pc" || kind === "item") && locationId) {
+        attrs["locationId"] = locationId;
+      } else {
+        delete attrs["locationId"];
       }
       const validCustom = customAttrs.filter((a) => a.key.trim() && a.value.trim());
       if (validCustom.length > 0) attrs["customAttrs"] = validCustom; else delete attrs["customAttrs"];
@@ -804,6 +811,40 @@ export default function EntityFormScreen() {
                   }}
                 >
                   <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: parentId === loc.id ? "#4A8060" : "#5A4D3E80" }}>{loc.name}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </>
+        )}
+
+        {/* Currently At (npc/pc/item only) */}
+        {(kind === "npc" || kind === "pc" || kind === "item") && campaignLocations.length > 0 && (
+          <>
+            <Label text="Currently At (optional)" />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }} contentContainerStyle={{ paddingBottom: 2 }}>
+              <Pressable
+                onPress={() => setLocationId(null)}
+                style={{
+                  marginRight: 8, paddingHorizontal: 12, paddingVertical: 6,
+                  borderRadius: 2, borderWidth: 1,
+                  borderColor: locationId === null ? "#4A8060" : "#4A806040",
+                  backgroundColor: locationId === null ? "#4A806015" : "transparent",
+                }}
+              >
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: locationId === null ? "#4A8060" : "#5A4D3E80" }}>Nowhere</Text>
+              </Pressable>
+              {campaignLocations.map((loc) => (
+                <Pressable
+                  key={loc.id}
+                  onPress={() => setLocationId(locationId === loc.id ? null : loc.id)}
+                  style={{
+                    marginRight: 8, paddingHorizontal: 12, paddingVertical: 6,
+                    borderRadius: 2, borderWidth: 1,
+                    borderColor: locationId === loc.id ? "#4A8060" : "#4A806040",
+                    backgroundColor: locationId === loc.id ? "#4A806015" : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: locationId === loc.id ? "#4A8060" : "#5A4D3E80" }}>{loc.name}</Text>
                 </Pressable>
               ))}
             </ScrollView>
