@@ -5,6 +5,8 @@ import {
   FlatList,
   TextInput,
   Alert,
+  Modal,
+  ScrollView,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
@@ -15,6 +17,22 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { DiceRoller } from "@/components/DiceRoller";
 import { schema } from "@grimoire/core";
 
+const CONDITIONS = [
+  "Blinded", "Charmed", "Concentration", "Deafened", "Exhausted",
+  "Frightened", "Grappled", "Incapacitated", "Invisible", "Paralyzed",
+  "Petrified", "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious",
+];
+
+const CONDITION_COLORS: Record<string, string> = {
+  Poisoned: "#4A7A2C",
+  Frightened: "#7A2418",
+  Paralyzed: "#6A5ACD",
+  Stunned: "#6A5ACD",
+  Unconscious: "#3A2E24",
+  Concentration: "#A07A2C",
+  Prone: "#8A7D6D",
+};
+
 type Entity = typeof schema.entities.$inferSelect;
 type Attrs = Record<string, unknown>;
 
@@ -23,6 +41,7 @@ type TrackerEntry = Entity & {
   maxHp: number;
   ac: number;
   initiative: number | null;
+  conditions: string[];
 };
 
 export default function TrackerScreen() {
@@ -31,6 +50,7 @@ export default function TrackerScreen() {
   const [entries, setEntries] = useState<TrackerEntry[]>([]);
   const [sortByInit, setSortByInit] = useState(false);
   const [showDice, setShowDice] = useState(false);
+  const [conditionTarget, setConditionTarget] = useState<TrackerEntry | null>(null);
 
   const load = useCallback(() => {
     const entities = db
@@ -56,7 +76,8 @@ export default function TrackerScreen() {
         const currentHp = Number(attrs?.["currentHp"] ?? maxHp);
         const ac = Number(attrs?.["ac"] ?? 0);
         const initiative = attrs?.["initiative"] != null ? Number(attrs["initiative"]) : null;
-        return { ...e, currentHp, maxHp, ac, initiative };
+        const conditions = Array.isArray(attrs?.["conditions"]) ? attrs["conditions"] as string[] : [];
+        return { ...e, currentHp, maxHp, ac, initiative, conditions };
       });
     setEntries(entities);
   }, [campaignId]);
@@ -87,6 +108,24 @@ export default function TrackerScreen() {
     setEntries((prev) =>
       prev.map((e) => (e.id === entity.id ? { ...e, currentHp: newHp } : e)),
     );
+  };
+
+  const toggleCondition = (entity: TrackerEntry, condition: string) => {
+    const current = entity.conditions;
+    const next = current.includes(condition)
+      ? current.filter((c) => c !== condition)
+      : [...current, condition];
+    const attrs = { ...(entity.attrs as Attrs | null ?? {}), conditions: next.length > 0 ? next : undefined };
+    db.update(schema.entities)
+      .set({ attrs })
+      .where(eq(schema.entities.id, entity.id))
+      .run();
+    setEntries((prev) =>
+      prev.map((e) => (e.id === entity.id ? { ...e, conditions: next } : e)),
+    );
+    if (conditionTarget?.id === entity.id) {
+      setConditionTarget((t) => t ? { ...t, conditions: next } : t);
+    }
   };
 
   const resetAll = () => {
@@ -175,7 +214,7 @@ export default function TrackerScreen() {
               data={sorted}
               keyExtractor={(item) => item.id}
               contentContainerStyle={{ padding: 12 }}
-              renderItem={({ item }) => <CombatantRow entry={item} onAdjust={adjustHp} onSetHp={setHpDirect} onNavigate={() => router.push(`/campaign/${campaignId}/entity/${item.id}`)} />}
+              renderItem={({ item }) => <CombatantRow entry={item} onAdjust={adjustHp} onSetHp={setHpDirect} onNavigate={() => router.push(`/campaign/${campaignId}/entity/${item.id}`)} onOpenConditions={() => setConditionTarget(item)} onToggleCondition={(c) => toggleCondition(item, c)} />}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
           </>
@@ -183,6 +222,57 @@ export default function TrackerScreen() {
       </ParchmentScreen>
 
       <DiceRoller visible={showDice} onClose={() => setShowDice(false)} />
+
+      {/* Condition picker modal */}
+      <Modal
+        visible={conditionTarget != null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConditionTarget(null)}
+      >
+        <Pressable
+          onPress={() => setConditionTarget(null)}
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", paddingHorizontal: 24 }}
+        >
+          <Pressable onPress={() => {}} style={{ backgroundColor: "#FAF5EA", borderRadius: 4, borderWidth: 1, borderColor: "#A07A2C30", padding: 20 }}>
+            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014", marginBottom: 4 }}>
+              {conditionTarget?.name}
+            </Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>
+              Conditions — tap to toggle
+            </Text>
+            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 280 }}>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                {CONDITIONS.map((c) => {
+                  const active = conditionTarget?.conditions.includes(c) ?? false;
+                  const color = CONDITION_COLORS[c] ?? "#5A4D3E";
+                  return (
+                    <Pressable
+                      key={c}
+                      onPress={() => conditionTarget && toggleCondition(conditionTarget, c)}
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 2,
+                        borderWidth: 1,
+                        borderColor: active ? color : "#A07A2C30",
+                        backgroundColor: active ? `${color}20` : "transparent",
+                      }}
+                    >
+                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: active ? color : "#5A4D3E" }}>
+                        {c}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </ScrollView>
+            <Pressable onPress={() => setConditionTarget(null)} style={{ marginTop: 16, paddingVertical: 10, alignItems: "center" }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>Done</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </>
   );
 }
@@ -192,11 +282,15 @@ function CombatantRow({
   onAdjust,
   onSetHp,
   onNavigate,
+  onOpenConditions,
+  onToggleCondition,
 }: {
   entry: TrackerEntry;
   onAdjust: (e: TrackerEntry, delta: number) => void;
   onSetHp: (e: TrackerEntry, v: string) => void;
   onNavigate: () => void;
+  onOpenConditions: () => void;
+  onToggleCondition: (condition: string) => void;
 }) {
   const pct = entry.maxHp > 0 ? entry.currentHp / entry.maxHp : 1;
   const barColor = pct > 0.5 ? "#4A7A2C" : pct > 0.25 ? "#A07A2C" : "#7A2418";
@@ -269,6 +363,30 @@ function CombatantRow({
       <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", textAlign: "right", marginTop: 2 }}>
         {entry.currentHp} / {entry.maxHp} HP
       </Text>
+
+      {/* Conditions row */}
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 8, alignItems: "center" }}>
+        {entry.conditions.map((c) => {
+          const color = CONDITION_COLORS[c] ?? "#5A4D3E";
+          return (
+            <Pressable
+              key={c}
+              onPress={() => onToggleCondition(c)}
+              style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 2, borderWidth: 1, borderColor: color, backgroundColor: `${color}18` }}
+            >
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color }}>{c}</Text>
+            </Pressable>
+          );
+        })}
+        <Pressable
+          onPress={onOpenConditions}
+          style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C40", backgroundColor: "transparent" }}
+        >
+          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#A07A2C80" }}>
+            {entry.conditions.length === 0 ? "+ Condition" : "+"}
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
