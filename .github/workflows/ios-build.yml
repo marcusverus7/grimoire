@@ -102,10 +102,14 @@ jobs:
           </plist>
           PLIST
 
-      - name: Pre-bundle JS (surface Metro errors before xcodebuild)
+      - name: Pre-bundle JS and fix .xcode.env.local
         working-directory: apps/mobile
         run: |
-          node -e "require('./babel.config.js')({ cache: () => {} })" && echo "Babel config OK"
+          # Hard-code the CI node path so xcodebuild's bundle phase finds it
+          NODE_PATH="$(which node)"
+          echo "export NODE_BINARY=$NODE_PATH" > ios/.xcode.env.local
+          echo "NODE_BINARY set to $NODE_PATH"
+          # Pre-bundle to catch any Metro/Babel errors in a readable log
           npx expo export:embed \
             --platform ios \
             --bundle-output /tmp/main.jsbundle \
@@ -116,8 +120,6 @@ jobs:
       - name: Build archive
         working-directory: apps/mobile/ios
         run: |
-          echo "=== iOS directory contents ==="
-          ls -la
           # Use -d so ls doesn't expand the xcworkspace directory
           WORKSPACE=$(ls -d *.xcworkspace 2>/dev/null | head -1)
           if [ -z "$WORKSPACE" ]; then
