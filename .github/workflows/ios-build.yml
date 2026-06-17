@@ -102,6 +102,17 @@ jobs:
           </plist>
           PLIST
 
+      - name: Pre-bundle JS (surface Metro errors before xcodebuild)
+        working-directory: apps/mobile
+        run: |
+          node -e "require('./babel.config.js')({ cache: () => {} })" && echo "Babel config OK"
+          npx expo export:embed \
+            --platform ios \
+            --bundle-output /tmp/main.jsbundle \
+            --assets-dest /tmp/ios-assets \
+            --dev false
+          echo "Bundle size: $(du -sh /tmp/main.jsbundle)"
+
       - name: Build archive
         working-directory: apps/mobile/ios
         run: |
