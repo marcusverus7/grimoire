@@ -108,8 +108,12 @@ export default function SessionPrepScreen() {
         {
           text: "Begin",
           onPress: () => {
+            const current = (session.attrs ?? {}) as { startedAt?: number };
             db.update(schema.sessions)
-              .set({ status: "in_progress" })
+              .set({
+                status: "in_progress",
+                attrs: current.startedAt ? session.attrs : { ...current, startedAt: Date.now() },
+              })
               .where(eq(schema.sessions.id, sessionId))
               .run();
             router.push(`/campaign/${campaignId}/session/${sessionId}/edit`);

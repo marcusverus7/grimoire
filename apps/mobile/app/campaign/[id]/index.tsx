@@ -46,6 +46,14 @@ const KIND_COLORS: Record<string, string> = {
   custom: "#4A3F32",
 };
 
+function fmtDuration(ms: number): string {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
 export default function CampaignDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -54,7 +62,7 @@ export default function CampaignDetailScreen() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [nextPlannedSessionId, setNextPlannedSessionId] = useState<string | null>(null);
   const [lastPlayedSession, setLastPlayedSession] = useState<Session | null>(null);
-  const [stats, setStats] = useState({ sessionsPlayed: 0, sessionsTotal: 0, entityCount: 0, quoteCount: 0 });
+  const [stats, setStats] = useState({ sessionsPlayed: 0, sessionsTotal: 0, entityCount: 0, quoteCount: 0, totalPlayMs: 0 });
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [search, setSearch] = useState("");
@@ -65,6 +73,7 @@ export default function CampaignDetailScreen() {
   const [quickAddKind, setQuickAddKind] = useState<string>("npc");
   const [quickAddName, setQuickAddName] = useState("");
   const [recentlyRevealed, setRecentlyRevealed] = useState<{ entityId: string; name: string; revealedAt: number }[]>([]);
+  const [showGmOnly, setShowGmOnly] = useState(false);
 
   const load = useCallback(() => {
     const c = db
@@ -98,11 +107,16 @@ export default function CampaignDetailScreen() {
       setLastPlayedSession(lastPlayed ?? null);
       const allEntities = db.select().from(schema.entities).where(eq(schema.entities.campaignId, id)).all();
       const allQuotes = db.select().from(schema.quotes).where(eq(schema.quotes.campaignId, id)).all();
+      const totalPlayMs = allSessions.reduce((acc, s) => {
+        const a = (s.attrs ?? {}) as { startedAt?: number; endedAt?: number };
+        return a.startedAt && a.endedAt ? acc + (a.endedAt - a.startedAt) : acc;
+      }, 0);
       setStats({
         sessionsPlayed: allSessions.filter((s) => s.status === "played").length,
         sessionsTotal: allSessions.length,
         entityCount: allEntities.length,
         quoteCount: allQuotes.length,
+        totalPlayMs,
       });
 
       // Load recently revealed entities (table-wide, last 5)
@@ -204,6 +218,7 @@ export default function CampaignDetailScreen() {
   });
   const filtered = sortedEntities
     .filter((e) => !kindFilter || e.kind === kindFilter)
+    .filter((e) => !showGmOnly || e.visibility === "gm_only")
     .filter((e) => !q || e.name.toLowerCase().includes(q));
 
   const entitiesByKind = (kindFilter
@@ -296,6 +311,9 @@ export default function CampaignDetailScreen() {
           >
             <StatPill label="Sessions" value={`${stats.sessionsPlayed}/${stats.sessionsTotal}`} />
             <StatPill label="Entities" value={String(stats.entityCount)} />
+            {stats.totalPlayMs > 0 && (
+              <StatPill label="Play Time" value={fmtDuration(stats.totalPlayMs)} />
+            )}
             {stats.quoteCount > 0 && (
               <StatPill label="Quotes" value={String(stats.quoteCount)} />
             )}
@@ -489,6 +507,15 @@ export default function CampaignDetailScreen() {
                       {s.playedOn}
                     </Text>
                   ) : null}
+                  {(() => {
+                    const a = (s.attrs ?? {}) as { startedAt?: number; endedAt?: number };
+                    if (!a.startedAt || !a.endedAt) return null;
+                    return (
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E50", marginLeft: 6 }}>
+                        ⏱ {fmtDuration(a.endedAt - a.startedAt)}
+                      </Text>
+                    );
+                  })()}
                   {s.status !== "played" ? (
                     <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#2C201425", marginLeft: 6 }}>
                       long press to mark played
@@ -569,7 +596,7 @@ export default function CampaignDetailScreen() {
             />
           )}
           {entities.length > 0 && (
-            <View style={{ flexDirection: "row", gap: 6, marginBottom: 12 }}>
+            <View style={{ flexDirection: "row", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
               {(["name", "updated", "kind"] as const).map((s) => (
                 <Pressable
                   key={s}
@@ -588,6 +615,23 @@ export default function CampaignDetailScreen() {
                   </Text>
                 </Pressable>
               ))}
+              {entities.some((e) => e.visibility === "gm_only") && (
+                <Pressable
+                  onPress={() => setShowGmOnly((v) => !v)}
+                  style={{
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 2,
+                    borderWidth: 1,
+                    borderColor: showGmOnly ? "#7A241860" : "#2C201415",
+                    backgroundColor: showGmOnly ? "#7A241810" : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: showGmOnly ? "#7A2418" : "#5A4D3E60" }}>
+                    GM Only
+                  </Text>
+                </Pressable>
+              )}
             </View>
           )}
           {entitiesByKind.length === 0 && sessions.length === 0 ? (
