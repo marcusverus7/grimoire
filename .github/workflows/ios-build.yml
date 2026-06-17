@@ -105,10 +105,16 @@ jobs:
       - name: Build archive
         working-directory: apps/mobile/ios
         run: |
-          # Find workspace name
-          WORKSPACE=$(ls *.xcworkspace | head -1)
-          SCHEME=$(echo "$WORKSPACE" | sed 's/.xcworkspace//')
-          echo "Building $WORKSPACE / $SCHEME"
+          echo "=== iOS directory contents ==="
+          ls -la
+          # Use -d so ls doesn't expand the xcworkspace directory
+          WORKSPACE=$(ls -d *.xcworkspace 2>/dev/null | head -1)
+          if [ -z "$WORKSPACE" ]; then
+            echo "ERROR: no .xcworkspace found"; exit 1
+          fi
+          SCHEME=$(echo "$WORKSPACE" | sed 's/\.xcworkspace//')
+          echo "Building workspace=$WORKSPACE scheme=$SCHEME"
+          set -o pipefail
           xcodebuild archive \
             -workspace "$WORKSPACE" \
             -scheme "$SCHEME" \
@@ -118,16 +124,14 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="Grimoire App Store" \
             CODE_SIGN_IDENTITY="Apple Distribution" \
-            DEVELOPMENT_TEAM=JQS67937W6 \
-            | xcpretty || (cat /tmp/xcodebuild.log 2>/dev/null; exit 1)
+            DEVELOPMENT_TEAM=JQS67937W6
 
       - name: Export IPA
         run: |
           xcodebuild -exportArchive \
             -archivePath "$GITHUB_WORKSPACE/grimoire.xcarchive" \
             -exportPath "$GITHUB_WORKSPACE/export" \
-            -exportOptionsPlist "$GITHUB_WORKSPACE/ExportOptions.plist" \
-            -allowProvisioningUpdates
+            -exportOptionsPlist "$GITHUB_WORKSPACE/ExportOptions.plist"
           ls -la "$GITHUB_WORKSPACE/export/"
 
       - name: Upload IPA as artifact
