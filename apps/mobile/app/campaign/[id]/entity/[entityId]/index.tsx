@@ -5,9 +5,11 @@ import { eq, and } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
-import { schema, nodeText } from "@grimoire/core";
+import { ParchmentScreen } from "@/components/ParchmentScreen";
+import { schema } from "@grimoire/core";
 import { backlinksFor, type EntityLinkRow } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
+import { RichTextRenderer } from "@/components/RichTextRenderer";
 
 type Entity = typeof schema.entities.$inferSelect;
 
@@ -94,8 +96,8 @@ export default function EntityDetailScreen() {
 
   if (!entity) {
     return (
-      <View className="flex-1 bg-leather items-center justify-center">
-        <Text className="text-parchment/50 font-inter text-sm">
+      <View className="flex-1 bg-parchment items-center justify-center">
+        <Text className="text-ink/50 font-inter text-sm">
           Entity not found
         </Text>
       </View>
@@ -129,6 +131,7 @@ export default function EntityDetailScreen() {
           ),
         }}
       />
+      <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView className="flex-1 bg-parchment-deep" contentContainerStyle={{ padding: 20 }}>
         {/* Header */}
         <Text
@@ -178,6 +181,41 @@ export default function EntityDetailScreen() {
           </View>
         ) : null}
 
+        {/* NPC/PC stat block */}
+        {(entity.kind === "npc" || entity.kind === "pc") && attrs != null &&
+          (attrs["hp"] || attrs["ac"] || attrs["initiative"]) ? (
+          <View
+            style={{
+              flexDirection: "row",
+              marginBottom: 16,
+              backgroundColor: "#2C20140A",
+              borderRadius: 2,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              gap: 20,
+            }}
+          >
+            {attrs["hp"] ? (
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>HP</Text>
+                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014" }}>{String(attrs["hp"])}</Text>
+              </View>
+            ) : null}
+            {attrs["ac"] ? (
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>AC</Text>
+                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014" }}>{String(attrs["ac"])}</Text>
+              </View>
+            ) : null}
+            {attrs["initiative"] ? (
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>Init</Text>
+                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014" }}>{String(attrs["initiative"])}</Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+
         {/* Summary */}
         {entity.summary ? (
           <Text
@@ -193,8 +231,49 @@ export default function EntityDetailScreen() {
         {/* Body */}
         {entity.body ? (
           <View className="mt-4 mb-6">
-            {renderBody(entity.body as RichTextNode)}
+            <RichTextRenderer body={entity.body as RichTextNode} campaignId={campaignId} />
           </View>
+        ) : null}
+
+        {/* GM Secret panel */}
+        {attrs?.["gmSecret"] ? (
+          <>
+            <GoldRule />
+            <View
+              style={{
+                marginTop: 16,
+                marginBottom: 8,
+                padding: 12,
+                backgroundColor: "#7A241808",
+                borderWidth: 1,
+                borderColor: "#7A241825",
+                borderRadius: 2,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "Inter_600SemiBold",
+                  fontSize: 10,
+                  color: "#7A2418",
+                  textTransform: "uppercase",
+                  letterSpacing: 1.5,
+                  marginBottom: 8,
+                }}
+              >
+                ⚿ GM Secret
+              </Text>
+              <Text
+                style={{
+                  fontFamily: "Inter_400Regular",
+                  fontSize: 14,
+                  color: "#2C2014",
+                  lineHeight: 21,
+                }}
+              >
+                {String(attrs["gmSecret"])}
+              </Text>
+            </View>
+          </>
         ) : null}
 
         {/* Backlinks */}
@@ -258,82 +337,8 @@ export default function EntityDetailScreen() {
 
         <View className="h-20" />
       </ScrollView>
+      </ParchmentScreen>
     </>
   );
 }
 
-function renderBody(body: RichTextNode): React.ReactNode {
-  if (!body.content) return null;
-  return body.content.map((block, i) => {
-    const text = nodeText(block);
-    if (!text.trim()) return null;
-
-    if (block.type === "heading") {
-      const level = (block.attrs?.["level"] as number) ?? 2;
-      return (
-        <Text
-          key={i}
-          className="text-ink mb-2"
-          style={{
-            fontFamily: "CormorantGaramond_700Bold",
-            fontSize: level === 1 ? 22 : level === 2 ? 19 : 17,
-          }}
-        >
-          {renderInline(block)}
-        </Text>
-      );
-    }
-
-    if (block.type === "blockquote") {
-      return (
-        <View key={i} className="border-l-2 border-gold/40 pl-3 mb-2">
-          <Text
-            className="text-ink/70 italic text-base leading-6"
-            style={{ fontFamily: "CormorantGaramond_400Regular_Italic" }}
-          >
-            {renderInline(block)}
-          </Text>
-        </View>
-      );
-    }
-
-    if (block.type === "bulletList" || block.type === "orderedList") {
-      return (
-        <View key={i} className="mb-2 pl-2">
-          {(block.content ?? []).map((li, j) => (
-            <View key={j} className="flex-row mb-1">
-              <Text
-                className="text-gold mr-2"
-                style={{ fontFamily: "Inter_400Regular", fontSize: 14 }}
-              >
-                {block.type === "orderedList" ? `${j + 1}.` : "•"}
-              </Text>
-              <Text
-                className="text-ink/80 text-base flex-1 leading-6"
-                style={{ fontFamily: "CormorantGaramond_400Regular" }}
-              >
-                {renderInline(li)}
-              </Text>
-            </View>
-          ))}
-        </View>
-      );
-    }
-
-    return (
-      <Text
-        key={i}
-        className="text-ink/80 text-base mb-2 leading-6"
-        style={{ fontFamily: "CormorantGaramond_400Regular" }}
-      >
-        {renderInline(block)}
-      </Text>
-    );
-  });
-}
-
-function renderInline(node: RichTextNode): string {
-  if (node.text != null) return node.text;
-  if (node.type === "mention") return `@${node.attrs?.["label"] ?? ""}`;
-  return (node.content ?? []).map(renderInline).join("");
-}

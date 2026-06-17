@@ -121,10 +121,10 @@ export default function RichTextEditor({
         keyboardAvoidingView: {},
         linkBarTheme: {
           addLinkContainer: { backgroundColor: "#1A1410" },
-          linkInput: { color: "#ECE3CF", borderColor: "#A07A2C50" },
+          linkInput: { color: "#2C2014", borderColor: "#A07A2C50" },
           placeholderTextColor: "#ECE3CF40",
           doneButton: { backgroundColor: "#A07A2C" },
-          doneButtonText: { color: "#ECE3CF" },
+          doneButtonText: { color: "#2C2014" },
           linkToolbarButton: {},
         },
       },

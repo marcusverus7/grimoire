@@ -76,6 +76,7 @@ export interface RecapData {
   tone: string;
   body: string;
   playedOn?: string | null;
+  quotes?: { text: string; attribution?: string | null }[];
 }
 
 async function resolveRecap(slug: string): Promise<RecapData | null> {
@@ -89,6 +90,10 @@ const DEMO_RECAP: RecapData = {
   sessionTitle: "The Siege of Ashford",
   tone: "epic",
   playedOn: "2025-06-08",
+  quotes: [
+    { text: "I didn't say I could hold the wall. I said I'd try.", attribution: "Sister Maren" },
+    { text: "The drowned god owes me nothing. I'm just reminding him of the debt.", attribution: "Theron" },
+  ],
   body: `The drums began at dawn. From the ramparts of Ashford, our heroes watched the Thornbound host emerge from the morning mist — a thousand strong, their banner the black briar on grey. Commander Varga had promised reinforcements from the river gate, but the river gate was ash and silence.
 
 Kael drew first blood, an impossible shot from the bell tower that felled the enemy's siege captain mid-command. The assault faltered for one precious minute — enough for Sister Maren to complete the ward that held the eastern wall through three charges. But wards do not last forever, and the Thornbound brought something older than wards.

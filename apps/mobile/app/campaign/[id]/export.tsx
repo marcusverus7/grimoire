@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { Paths, File, Directory } from "expo-file-system";
 import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
+import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { WaxSeal } from "@/components/WaxSeal";
 import { schema } from "@grimoire/core";
 import { exportCampaign, slugify } from "@grimoire/core";
@@ -13,6 +14,7 @@ import type { RichTextNode } from "@grimoire/core";
 export default function ExportScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const [exporting, setExporting] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [result, setResult] = useState<{ fileCount: number; jsonSize: number } | null>(null);
 
   const doExport = async () => {
@@ -40,6 +42,15 @@ export default function ExportScreen() {
         .where(eq(schema.sessions.campaignId, campaignId))
         .all();
 
+      const quotesData = db
+        .select()
+        .from(schema.quotes)
+        .where(eq(schema.quotes.campaignId, campaignId))
+        .all();
+
+      type CampaignSettings = { notes?: string; nextSession?: string; worldNotes?: RichTextNode };
+      const settings = (campaign.settings ?? {}) as CampaignSettings;
+
       const exportData = exportCampaign({
         campaign: {
           id: campaign.id,
@@ -62,8 +73,14 @@ export default function ExportScreen() {
           title: s.title,
           playedOn: s.playedOn,
           body: s.body as RichTextNode | null,
-          status: s.status as "planned" | "played",
+          status: s.status as "planned" | "in_progress" | "played",
         })),
+        quotes: quotesData.map((q) => ({
+          id: q.id,
+          attribution: q.attribution,
+          text: q.text,
+        })),
+        worldNotes: settings.worldNotes ?? null,
         includeGmOnly: true,
       });
 
@@ -108,11 +125,48 @@ export default function ExportScreen() {
     }
   };
 
+  const doShare = async () => {
+    setSharing(true);
+    try {
+      const campaign = db.select().from(schema.campaigns).where(eq(schema.campaigns.id, campaignId)).get();
+      if (!campaign) return;
+
+      const entities = db.select().from(schema.entities).where(eq(schema.entities.campaignId, campaignId)).all();
+      const sessions = db.select().from(schema.sessions).where(eq(schema.sessions.campaignId, campaignId)).all();
+      const quotesData = db.select().from(schema.quotes).where(eq(schema.quotes.campaignId, campaignId)).all();
+
+      type CampaignSettings = { notes?: string; nextSession?: string; worldNotes?: RichTextNode };
+      const settings = (campaign.settings ?? {}) as CampaignSettings;
+
+      const exportData = exportCampaign({
+        campaign: { id: campaign.id, name: campaign.name, systemTag: campaign.systemTag ?? undefined, status: campaign.status },
+        entities: entities.map((e) => ({ id: e.id, kind: e.kind, name: e.name, summary: e.summary, body: e.body as RichTextNode | null, attrs: e.attrs as Record<string, unknown> | null, visibility: e.visibility as "gm_only" | "table" })),
+        sessions: sessions.map((s) => ({ id: s.id, number: s.number, title: s.title, playedOn: s.playedOn, body: s.body as RichTextNode | null, status: s.status as "planned" | "in_progress" | "played" })),
+        quotes: quotesData.map((q) => ({ id: q.id, attribution: q.attribution, text: q.text })),
+        worldNotes: settings.worldNotes ?? null,
+        includeGmOnly: true,
+      });
+
+      const indexFile = exportData.files.find((f) => f.path === "index.md");
+      const text = indexFile?.content ?? exportData.json;
+
+      await Share.share({
+        title: `${campaign.name} — Grimoire Summary`,
+        message: text,
+      });
+    } catch (e) {
+      Alert.alert("Share Failed", e instanceof Error ? e.message : "Unexpected error");
+    } finally {
+      setSharing(false);
+    }
+  };
+
   return (
     <>
       <Stack.Screen options={{ title: "Export" }} />
+      <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-leather"
+        className="flex-1 bg-parchment"
         contentContainerStyle={{ padding: 20, alignItems: "center" }}
       >
         <View className="mt-8 mb-6">
@@ -120,13 +174,13 @@ export default function ExportScreen() {
         </View>
 
         <Text
-          className="text-parchment text-xl text-center mb-2"
+          className="text-ink text-xl text-center mb-2"
           style={{ fontFamily: "CormorantGaramond_700Bold" }}
         >
           Export Your Campaign
         </Text>
         <Text
-          className="text-parchment/60 text-sm text-center mb-8 px-4 leading-5"
+          className="text-ink-soft text-sm text-center mb-8 px-4 leading-5"
           style={{ fontFamily: "Inter_400Regular" }}
         >
           Export as Markdown files with [[wiki-links]] (Obsidian-compatible) and
@@ -144,6 +198,8 @@ export default function ExportScreen() {
           </Text>
           <BulletItem text="All entities (NPCs, locations, factions, items, quests)" />
           <BulletItem text="All sessions with notes" />
+          <BulletItem text="Memorable quotes (quotes.md)" />
+          <BulletItem text="World Notes (world-notes.md) if present" />
           <BulletItem text="GM-only content included" />
           <BulletItem text="Frontmatter metadata for each file" />
           <BulletItem text="Full JSON backup (campaign.json)" />
@@ -160,12 +216,38 @@ export default function ExportScreen() {
             style={{
               fontFamily: "Inter_600SemiBold",
               fontSize: 14,
-              color: "#ECE3CF",
+              color: "#FAF5EA",
               textTransform: "uppercase",
               letterSpacing: 1.5,
             }}
           >
             {exporting ? "Exporting…" : "Export Campaign"}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={doShare}
+          disabled={sharing}
+          style={{
+            marginTop: 12,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderWidth: 1,
+            borderColor: "#A07A2C50",
+            borderRadius: 2,
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: "Inter_500Medium",
+              fontSize: 13,
+              color: "#A07A2C",
+              textTransform: "uppercase",
+              letterSpacing: 1,
+              textAlign: "center",
+            }}
+          >
+            {sharing ? "Preparing…" : "Share as Text"}
           </Text>
         </Pressable>
 
@@ -182,6 +264,7 @@ export default function ExportScreen() {
 
         <View className="h-20" />
       </ScrollView>
+      </ParchmentScreen>
     </>
   );
 }
@@ -193,7 +276,7 @@ function BulletItem({ text }: { text: string }) {
         •
       </Text>
       <Text
-        className="text-parchment/70 text-sm flex-1"
+        className="text-ink-soft text-sm flex-1"
         style={{ fontFamily: "Inter_400Regular" }}
       >
         {text}

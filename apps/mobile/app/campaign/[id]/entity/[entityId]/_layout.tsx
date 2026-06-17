@@ -12,7 +12,7 @@ export default function EntityLayout() {
           color: colors.parchment.DEFAULT,
         },
         headerTintColor: colors.gold.DEFAULT,
-        contentStyle: { backgroundColor: colors.leather.DEFAULT },
+        contentStyle: { backgroundColor: colors.parchment.DEFAULT },
       }}
     />
   );

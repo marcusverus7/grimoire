@@ -12,6 +12,7 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
+import { ParchmentScreen } from "@/components/ParchmentScreen";
 import RichTextEditor from "@/components/RichTextEditor";
 import { schema, computeLinkChanges } from "@grimoire/core";
 import type { RichTextNode, EntityLinkRow } from "@grimoire/core";
@@ -48,6 +49,10 @@ export default function EntityFormScreen() {
   const [body, setBody] = useState<RichTextNode | null>(null);
   const [visibility, setVisibility] = useState<"table" | "gm_only">("table");
   const [questStatus, setQuestStatus] = useState<string>("rumoured");
+  const [hp, setHp] = useState("");
+  const [ac, setAc] = useState("");
+  const [initiative, setInitiative] = useState("");
+  const [gmSecret, setGmSecret] = useState("");
   const [loaded, setLoaded] = useState(false);
   const editorRef = useRef<EditorBridge | null>(null);
 
@@ -70,6 +75,10 @@ export default function EntityFormScreen() {
       setVisibility(entity.visibility);
       const attrs = entity.attrs as Record<string, unknown> | null;
       if (attrs?.["questStatus"]) setQuestStatus(String(attrs["questStatus"]));
+      if (attrs?.["hp"]) setHp(String(attrs["hp"]));
+      if (attrs?.["ac"]) setAc(String(attrs["ac"]));
+      if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
+      if (attrs?.["gmSecret"]) setGmSecret(String(attrs["gmSecret"]));
     }
     setLoaded(true);
   }, [entityId, isNew]);
@@ -95,6 +104,12 @@ export default function EntityFormScreen() {
       const now = Date.now();
       const attrs: Record<string, unknown> = {};
       if (kind === "quest") attrs["questStatus"] = questStatus;
+      if ((kind === "npc" || kind === "pc") && (hp || ac || initiative)) {
+        if (hp.trim()) attrs["hp"] = hp.trim();
+        if (ac.trim()) attrs["ac"] = ac.trim();
+        if (initiative.trim()) attrs["initiative"] = initiative.trim();
+      }
+      if (gmSecret.trim()) attrs["gmSecret"] = gmSecret.trim();
 
       let savedId = entityId;
       if (isNew) {
@@ -202,9 +217,11 @@ export default function EntityFormScreen() {
       <Stack.Screen
         options={{ title: isNew ? "New Entity" : "Edit Entity" }}
       />
+      <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-leather"
+        className="flex-1 bg-parchment"
         contentContainerStyle={{ padding: 16 }}
+        keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
       >
         {/* Name */}
@@ -213,9 +230,9 @@ export default function EntityFormScreen() {
           value={name}
           onChangeText={setName}
           placeholder="Enter name…"
-          placeholderTextColor="#ECE3CF40"
+          placeholderTextColor="#2C201440"
           className="border-b border-gold/20 pb-2 mb-5 text-lg"
-          style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#ECE3CF" }}
+          style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#2C2014" }}
         />
 
         {/* Kind */}
@@ -226,14 +243,14 @@ export default function EntityFormScreen() {
               key={k}
               onPress={() => setKind(k)}
               className={`mr-2 mb-2 px-3 py-1.5 rounded-sm border ${
-                kind === k ? "border-gold bg-gold/10" : "border-parchment/20"
+                kind === k ? "border-gold bg-gold/10" : "border-ink/20"
               }`}
             >
               <Text
                 style={{
                   fontFamily: "Inter_500Medium",
                   fontSize: 12,
-                  color: kind === k ? "#A07A2C" : "#ECE3CF80",
+                  color: kind === k ? "#A07A2C" : "#5A4D3E",
                 }}
               >
                 {KIND_LABELS[k]}
@@ -254,14 +271,14 @@ export default function EntityFormScreen() {
                   className={`mr-2 mb-2 px-3 py-1.5 rounded-sm border ${
                     questStatus === s
                       ? "border-gold bg-gold/10"
-                      : "border-parchment/20"
+                      : "border-ink/20"
                   }`}
                 >
                   <Text
                     style={{
                       fontFamily: "Inter_500Medium",
                       fontSize: 12,
-                      color: questStatus === s ? "#A07A2C" : "#ECE3CF80",
+                      color: questStatus === s ? "#A07A2C" : "#5A4D3E",
                       textTransform: "capitalize",
                     }}
                   >
@@ -273,17 +290,64 @@ export default function EntityFormScreen() {
           </>
         )}
 
+        {/* NPC/PC quick stats */}
+        {(kind === "npc" || kind === "pc") && (
+          <>
+            <Label text="Quick Stats (optional)" />
+            <View style={{ flexDirection: "row", marginBottom: 20 }}>
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
+                  HP
+                </Text>
+                <TextInput
+                  value={hp}
+                  onChangeText={setHp}
+                  placeholder="30"
+                  placeholderTextColor="#2C201440"
+                  keyboardType="default"
+                  style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 6, textAlign: "center" }}
+                />
+              </View>
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
+                  AC
+                </Text>
+                <TextInput
+                  value={ac}
+                  onChangeText={setAc}
+                  placeholder="14"
+                  placeholderTextColor="#2C201440"
+                  keyboardType="default"
+                  style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 6, textAlign: "center" }}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
+                  Initiative
+                </Text>
+                <TextInput
+                  value={initiative}
+                  onChangeText={setInitiative}
+                  placeholder="+2"
+                  placeholderTextColor="#2C201440"
+                  style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 6, textAlign: "center" }}
+                />
+              </View>
+            </View>
+          </>
+        )}
+
         {/* Summary */}
         <Label text="Summary" />
         <TextInput
           value={summary}
           onChangeText={setSummary}
           placeholder="Brief description…"
-          placeholderTextColor="#ECE3CF40"
+          placeholderTextColor="#2C201440"
           multiline
           numberOfLines={3}
           className="border border-parchment/15 rounded-sm p-3 mb-5"
-          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#ECE3CF", textAlignVertical: "top", minHeight: 80 }}
+          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", textAlignVertical: "top", minHeight: 80 }}
         />
 
         {/* Body */}
@@ -296,6 +360,40 @@ export default function EntityFormScreen() {
           />
         </View>
 
+        {/* GM Secret Notes */}
+        <Label text="GM Secret Notes" />
+        <Text
+          style={{
+            fontFamily: "Inter_400Regular",
+            fontSize: 11,
+            color: "#7A241860",
+            marginBottom: 6,
+          }}
+        >
+          Only visible in the GM view — never exported to players.
+        </Text>
+        <TextInput
+          value={gmSecret}
+          onChangeText={setGmSecret}
+          placeholder="Hidden motivations, secret identity, twist…"
+          placeholderTextColor="#2C201440"
+          multiline
+          numberOfLines={4}
+          style={{
+            fontFamily: "Inter_400Regular",
+            fontSize: 14,
+            color: "#2C2014",
+            minHeight: 90,
+            textAlignVertical: "top",
+            backgroundColor: "#7A241806",
+            borderWidth: 1,
+            borderColor: "#7A241825",
+            borderRadius: 2,
+            padding: 10,
+            marginBottom: 20,
+          }}
+        />
+
         {/* Visibility */}
         <Label text="Visibility" />
         <View className="flex-row mb-6">
@@ -304,14 +402,14 @@ export default function EntityFormScreen() {
             className={`mr-3 px-4 py-2 rounded-sm border ${
               visibility === "table"
                 ? "border-gold bg-gold/10"
-                : "border-parchment/20"
+                : "border-ink/20"
             }`}
           >
             <Text
               style={{
                 fontFamily: "Inter_500Medium",
                 fontSize: 12,
-                color: visibility === "table" ? "#A07A2C" : "#ECE3CF80",
+                color: visibility === "table" ? "#A07A2C" : "#5A4D3E",
               }}
             >
               Whole Table
@@ -322,14 +420,14 @@ export default function EntityFormScreen() {
             className={`px-4 py-2 rounded-sm border ${
               visibility === "gm_only"
                 ? "border-oxblood bg-oxblood/10"
-                : "border-parchment/20"
+                : "border-ink/20"
             }`}
           >
             <Text
               style={{
                 fontFamily: "Inter_500Medium",
                 fontSize: 12,
-                color: visibility === "gm_only" ? "#7A2418" : "#ECE3CF80",
+                color: visibility === "gm_only" ? "#7A2418" : "#5A4D3E",
               }}
             >
               GM Only
@@ -348,7 +446,7 @@ export default function EntityFormScreen() {
             style={{
               fontFamily: "Inter_600SemiBold",
               fontSize: 14,
-              color: "#ECE3CF",
+              color: "#FAF5EA",
               textTransform: "uppercase",
               letterSpacing: 1.5,
             }}
@@ -374,6 +472,7 @@ export default function EntityFormScreen() {
 
         <View className="h-20" />
       </ScrollView>
+      </ParchmentScreen>
     </>
   );
 }

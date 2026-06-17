@@ -156,7 +156,7 @@ export const sessions = sqliteTable(
     title: text("title"),
     playedOn: text("played_on"), // ISO date; the timeline is ORDER BY number
     body: text("body", { mode: "json" }),
-    status: text("status", { enum: ["planned", "played"] })
+    status: text("status", { enum: ["planned", "in_progress", "played"] })
       .notNull()
       .default("planned"),
   },
@@ -248,6 +248,22 @@ export const media = sqliteTable(
     ownerEntityId: text("owner_entity_id").references(() => entities.id),
   },
   (t) => [index("media_campaign_idx").on(t.campaignId)],
+);
+
+/** Memorable table quotes captured by the GM during or after a session. */
+export const quotes = sqliteTable(
+  "quotes",
+  {
+    id: id(),
+    campaignId: text("campaign_id")
+      .notNull()
+      .references(() => campaigns.id),
+    sessionId: text("session_id").references(() => sessions.id),
+    attribution: text("attribution"),
+    text: text("text").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("quotes_campaign_idx").on(t.campaignId)],
 );
 
 /** Backup snapshots first; last-write-wins bookkeeping when sync arrives. */

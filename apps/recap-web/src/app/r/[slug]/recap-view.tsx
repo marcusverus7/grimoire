@@ -48,6 +48,28 @@ export function RecapView({ recap }: { recap: RecapData }) {
         })}
       </div>
 
+      {/* Quotes */}
+      {recap.quotes && recap.quotes.length > 0 && (
+        <section style={{ marginTop: "2.5rem" }}>
+          <div style={styles.rule} />
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "0.65rem", color: "rgba(160,122,44,0.5)", textTransform: "uppercase" as const, letterSpacing: "0.2em", textAlign: "center" as const, margin: "1.25rem 0" }}>
+            Heard at the Table
+          </p>
+          {recap.quotes.map((q, i) => (
+            <blockquote key={i} style={{ borderLeft: "2px solid rgba(160,122,44,0.3)", paddingLeft: "1rem", marginLeft: 0, marginBottom: "1.25rem" }}>
+              <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.1rem", fontStyle: "italic", color: "#ECE3CF", margin: "0 0 0.35rem" }}>
+                &ldquo;{q.text}&rdquo;
+              </p>
+              {q.attribution && (
+                <cite style={{ fontFamily: "'Inter', sans-serif", fontSize: "0.7rem", color: "rgba(160,122,44,0.6)", textTransform: "uppercase" as const, letterSpacing: "0.1em", fontStyle: "normal" }}>
+                  — {q.attribution}
+                </cite>
+              )}
+            </blockquote>
+          ))}
+        </section>
+      )}
+
       {/* Footer */}
       <footer style={styles.footer}>
         <div style={styles.rule} />

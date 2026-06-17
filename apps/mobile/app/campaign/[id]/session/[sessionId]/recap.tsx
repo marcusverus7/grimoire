@@ -11,6 +11,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
+import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { WaxSeal } from "@/components/WaxSeal";
 import {
   schema,
@@ -151,8 +152,8 @@ export default function RecapScreen() {
 
   if (!session) {
     return (
-      <View className="flex-1 bg-leather items-center justify-center">
-        <Text className="text-parchment/50 text-sm" style={{ fontFamily: "Inter_400Regular" }}>
+      <View className="flex-1 bg-parchment items-center justify-center">
+        <Text className="text-ink/50 text-sm" style={{ fontFamily: "Inter_400Regular" }}>
           Session not found
         </Text>
       </View>
@@ -163,16 +164,16 @@ export default function RecapScreen() {
     return (
       <>
         <Stack.Screen options={{ title: "Create Recap" }} />
-        <View className="flex-1 bg-leather items-center justify-center px-8">
+        <View className="flex-1 bg-parchment items-center justify-center px-8">
           <WaxSeal size={48} />
           <Text
-            className="text-parchment text-center mt-4 text-lg"
+            className="text-ink text-center mt-4 text-lg"
             style={{ fontFamily: "CormorantGaramond_600SemiBold" }}
           >
             No session notes yet
           </Text>
           <Text
-            className="text-parchment/50 text-center mt-2 text-sm leading-5"
+            className="text-ink/50 text-center mt-2 text-sm leading-5"
             style={{ fontFamily: "Inter_400Regular" }}
           >
             Write session notes first, then return here to create a recap.
@@ -185,23 +186,26 @@ export default function RecapScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "Create Recap" }} />
+      <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-leather"
+        className="flex-1 bg-parchment"
         contentContainerStyle={{ padding: 20 }}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
       >
         <View className="items-center mb-4">
           <WaxSeal size={48} />
         </View>
 
         <Text
-          className="text-parchment text-xl text-center mb-1"
+          className="text-ink text-xl text-center mb-1"
           style={{ fontFamily: "CormorantGaramond_700Bold" }}
         >
           Session {session.number} Recap
         </Text>
         {session.title && (
           <Text
-            className="text-parchment/60 text-sm text-center mb-4"
+            className="text-ink-soft text-sm text-center mb-4"
             style={{ fontFamily: "Inter_400Regular" }}
           >
             {session.title}
@@ -225,14 +229,14 @@ export default function RecapScreen() {
                   key={t.value}
                   onPress={() => setTone(t.value)}
                   className={`mr-2 mb-2 px-3 py-2 rounded-sm border ${
-                    tone === t.value ? "border-gold bg-gold/10" : "border-parchment/20"
+                    tone === t.value ? "border-gold bg-gold/10" : "border-ink/20"
                   }`}
                 >
                   <Text
                     style={{
                       fontFamily: "Inter_500Medium",
                       fontSize: 12,
-                      color: tone === t.value ? "#A07A2C" : "#ECE3CF80",
+                      color: tone === t.value ? "#A07A2C" : "#5A4D3E",
                     }}
                   >
                     {t.label}
@@ -241,7 +245,7 @@ export default function RecapScreen() {
                     style={{
                       fontFamily: "Inter_400Regular",
                       fontSize: 10,
-                      color: tone === t.value ? "#A07A2C80" : "#ECE3CF40",
+                      color: tone === t.value ? "#A07A2C80" : "#8A7D6D",
                       marginTop: 2,
                     }}
                   >
@@ -259,7 +263,7 @@ export default function RecapScreen() {
               Select Beats ({selectedBeats.length}/{blocks.length})
             </Text>
             <Text
-              className="text-parchment/40 text-xs mb-4"
+              className="text-ink-faint text-xs mb-4"
               style={{ fontFamily: "Inter_400Regular" }}
             >
               Tap paragraphs to include or exclude them from the recap.
@@ -272,7 +276,7 @@ export default function RecapScreen() {
                 className={`mb-2 p-3 rounded-sm border ${
                   block.selected
                     ? "border-gold/30 bg-gold/5"
-                    : "border-parchment/10 bg-parchment/3"
+                    : "border-ink/10 bg-parchment/3"
                 }`}
               >
                 <View className="flex-row">
@@ -280,7 +284,7 @@ export default function RecapScreen() {
                     style={{
                       fontFamily: "Inter_500Medium",
                       fontSize: 14,
-                      color: block.selected ? "#A07A2C" : "#ECE3CF30",
+                      color: block.selected ? "#A07A2C" : "#8A7D6D",
                       marginRight: 8,
                       marginTop: 1,
                     }}
@@ -293,7 +297,7 @@ export default function RecapScreen() {
                       fontFamily: "CormorantGaramond_400Regular",
                       fontSize: 15,
                       lineHeight: 22,
-                      color: block.selected ? "#ECE3CF" : "#ECE3CF50",
+                      color: block.selected ? "#2C2014" : "#8A7D6D",
                     }}
                     numberOfLines={4}
                   >
@@ -311,7 +315,7 @@ export default function RecapScreen() {
               disabled={selectedBeats.length === 0}
               className={`mt-5 py-3 rounded-sm border items-center ${
                 selectedBeats.length === 0
-                  ? "border-parchment/10 bg-parchment/5"
+                  ? "border-ink/10 bg-parchment/5"
                   : "border-gold/30 bg-oxblood"
               }`}
             >
@@ -319,7 +323,7 @@ export default function RecapScreen() {
                 style={{
                   fontFamily: "Inter_600SemiBold",
                   fontSize: 14,
-                  color: selectedBeats.length === 0 ? "#ECE3CF40" : "#ECE3CF",
+                  color: selectedBeats.length === 0 ? "#8A7D6D" : "#FAF5EA",
                   textTransform: "uppercase",
                   letterSpacing: 1.5,
                 }}
@@ -340,7 +344,7 @@ export default function RecapScreen() {
 
             <View className="p-4 bg-parchment/5 rounded-sm border border-gold/10 mb-4">
               <Text
-                className="text-parchment text-base mb-3"
+                className="text-ink text-base mb-3"
                 style={{
                   fontFamily: "CormorantGaramond_700Bold",
                   fontSize: 18,
@@ -349,7 +353,7 @@ export default function RecapScreen() {
                 Previously on {campaignName}
               </Text>
               <Text
-                className="text-parchment/80 text-base leading-7"
+                className="text-ink/80 text-base leading-7"
                 style={{ fontFamily: "CormorantGaramond_400Regular" }}
               >
                 {recapText}
@@ -358,7 +362,7 @@ export default function RecapScreen() {
 
             <View className="mb-3 p-2 bg-parchment/5 rounded-sm border border-gold/10">
               <Text
-                className="text-parchment/40 text-xs text-center"
+                className="text-ink-faint text-xs text-center"
                 style={{ fontFamily: "Inter_400Regular" }}
               >
                 Tone: {TONES.find((t) => t.value === tone)?.label ?? tone}
@@ -371,13 +375,13 @@ export default function RecapScreen() {
             <View className="flex-row mt-5">
               <Pressable
                 onPress={() => setPreview(false)}
-                className="flex-1 mr-2 py-3 rounded-sm border border-parchment/20 items-center"
+                className="flex-1 mr-2 py-3 rounded-sm border border-ink/20 items-center"
               >
                 <Text
                   style={{
                     fontFamily: "Inter_500Medium",
                     fontSize: 13,
-                    color: "#ECE3CF80",
+                    color: "#5A4D3E",
                   }}
                 >
                   Back to Edit
@@ -394,7 +398,7 @@ export default function RecapScreen() {
                   style={{
                     fontFamily: "Inter_600SemiBold",
                     fontSize: 13,
-                    color: "#ECE3CF",
+                    color: "#FAF5EA",
                     textTransform: "uppercase",
                     letterSpacing: 1,
                   }}
@@ -412,6 +416,7 @@ export default function RecapScreen() {
 
         <View className="h-20" />
       </ScrollView>
+      </ParchmentScreen>
     </>
   );
 }

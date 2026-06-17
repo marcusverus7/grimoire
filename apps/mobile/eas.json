@@ -1,0 +1,49 @@
+{
+  "cli": {
+    "version": ">= 20.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "node": "22.13.0",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "node": "22.13.0",
+      "ios": {
+        "distribution": "store",
+        "autoIncrement": true
+      },
+      "android": {
+        "distribution": "internal",
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "node": "22.13.0",
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "preview": {
+      "ios": {
+        "ascAppId": "6781072827",
+        "ascApiKeyId": "V7JYZ8YUDH",
+        "ascApiKeyIssuerId": "de9eacfa-8bf1-4d2e-bbcb-e6ef66dac8c4",
+        "ascApiKeyPath": "./AuthKey_V7JYZ8YUDH.p8"
+      }
+    },
+    "production": {
+      "ios": {
+        "ascAppId": "6781072827",
+        "ascApiKeyId": "V7JYZ8YUDH",
+        "ascApiKeyIssuerId": "de9eacfa-8bf1-4d2e-bbcb-e6ef66dac8c4",
+        "ascApiKeyPath": "./AuthKey_V7JYZ8YUDH.p8"
+      }
+    }
+  }
+}

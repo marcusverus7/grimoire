@@ -1,14 +1,17 @@
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView, Alert } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
 import { eq } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
-import { schema, nodeText } from "@grimoire/core";
+import { ParchmentScreen } from "@/components/ParchmentScreen";
+import { schema } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
+import { RichTextRenderer } from "@/components/RichTextRenderer";
 
 type Session = typeof schema.sessions.$inferSelect;
+type Quote = typeof schema.quotes.$inferSelect;
 
 export default function SessionDetailScreen() {
   const { id: campaignId, sessionId } = useLocalSearchParams<{
@@ -20,6 +23,7 @@ export default function SessionDetailScreen() {
   const [linkedEntities, setLinkedEntities] = useState<
     { id: string; name: string; kind: string }[]
   >([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
 
   const load = useCallback(() => {
     const s = db
@@ -52,6 +56,13 @@ export default function SessionDetailScreen() {
         .sort((a, b) => a.name.localeCompare(b.name));
 
       setLinkedEntities(entities);
+
+      const sessionQuotes = db
+        .select()
+        .from(schema.quotes)
+        .where(eq(schema.quotes.sessionId, sessionId))
+        .all();
+      setQuotes(sessionQuotes);
     }
   }, [sessionId]);
 
@@ -59,8 +70,8 @@ export default function SessionDetailScreen() {
 
   if (!session) {
     return (
-      <View className="flex-1 bg-leather items-center justify-center">
-        <Text className="text-parchment/50 font-inter text-sm">
+      <View className="flex-1 bg-parchment items-center justify-center">
+        <Text className="text-ink/50 font-inter text-sm">
           Session not found
         </Text>
       </View>
@@ -94,10 +105,33 @@ export default function SessionDetailScreen() {
           ),
         }}
       />
+      <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
         className="flex-1 bg-parchment-deep"
         contentContainerStyle={{ padding: 20 }}
       >
+        {/* Prep shortcut for planned/in_progress sessions */}
+        {(session.status === "planned" || session.status === "in_progress") && (
+          <Pressable
+            onPress={() => router.push(`/campaign/${campaignId}/session/${sessionId}/prep` as Parameters<typeof router.push>[0])}
+            style={{
+              marginBottom: 16,
+              paddingVertical: 12,
+              backgroundColor: "#7A241808",
+              borderWidth: 1,
+              borderColor: "#7A241830",
+              borderRadius: 2,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#7A2418", textTransform: "uppercase", letterSpacing: 1.5 }}>
+              ◈ Session Prep
+            </Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginTop: 2 }}>
+              Recap · Quests · Key Characters
+            </Text>
+          </Pressable>
+        )}
         {/* Header */}
         <Text
           className="text-ink text-2xl mb-1"
@@ -111,7 +145,7 @@ export default function SessionDetailScreen() {
             className="text-xs uppercase tracking-wider"
             style={{
               fontFamily: "Inter_500Medium",
-              color: session.status === "played" ? "#A07A2C" : "#4A3F32",
+              color: session.status === "played" ? "#A07A2C" : session.status === "in_progress" ? "#7A2418" : "#4A3F32",
             }}
           >
             {session.status}
@@ -131,8 +165,46 @@ export default function SessionDetailScreen() {
         {/* Body */}
         {session.body ? (
           <View className="mt-4 mb-6">
-            {renderBody(session.body as RichTextNode)}
+            <RichTextRenderer body={session.body as RichTextNode} campaignId={campaignId} />
           </View>
+        ) : null}
+
+        {/* Mark Played quick action */}
+        {session.status !== "played" ? (
+          <Pressable
+            onPress={() => {
+              Alert.alert(
+                "Mark as Played?",
+                "This will set the session status to Played.",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Mark Played",
+                    onPress: () => {
+                      db.update(schema.sessions)
+                        .set({ status: "played" })
+                        .where(eq(schema.sessions.id, sessionId))
+                        .run();
+                      setSession((prev) => prev ? { ...prev, status: "played" } : prev);
+                    },
+                  },
+                ],
+              );
+            }}
+            style={{
+              marginBottom: 12,
+              paddingVertical: 10,
+              borderWidth: 1,
+              borderColor: "#4A7A2C40",
+              borderRadius: 2,
+              alignItems: "center",
+              backgroundColor: "#4A7A2C08",
+            }}
+          >
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#4A7A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+              ✓ Mark Session Played
+            </Text>
+          </Pressable>
         ) : null}
 
         {/* Create Recap */}
@@ -149,7 +221,7 @@ export default function SessionDetailScreen() {
               style={{
                 fontFamily: "Inter_600SemiBold",
                 fontSize: 13,
-                color: "#ECE3CF",
+                color: "#FAF5EA",
                 textTransform: "uppercase",
                 letterSpacing: 1.5,
               }}
@@ -158,6 +230,45 @@ export default function SessionDetailScreen() {
             </Text>
           </Pressable>
         ) : null}
+
+        {/* Quotes section */}
+        <GoldRule />
+        <View style={{ marginTop: 12, marginBottom: 8 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#5A4D3E", textTransform: "uppercase", letterSpacing: 1.5 }}>
+              Quotes
+            </Text>
+            <Pressable
+              onPress={() =>
+                router.push(
+                  `/campaign/${campaignId}/quotes?sessionId=${sessionId}` as Parameters<typeof router.push>[0],
+                )
+              }
+            >
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C" }}>
+                + Add Quote
+              </Text>
+            </Pressable>
+          </View>
+          {quotes.length === 0 ? (
+            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 15, color: "#2C201440", fontStyle: "italic" }}>
+              No quotes yet — memorable lines, player jokes, dramatic moments…
+            </Text>
+          ) : (
+            quotes.map((q) => (
+              <View key={q.id} style={{ marginBottom: 12, paddingLeft: 14, borderLeftWidth: 2, borderLeftColor: "#A07A2C50" }}>
+                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: "#2C2014CC", fontStyle: "italic", lineHeight: 23 }}>
+                  "{q.text}"
+                </Text>
+                {q.attribution ? (
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E", marginTop: 4 }}>
+                    — {q.attribution}
+                  </Text>
+                ) : null}
+              </View>
+            ))
+          )}
+        </View>
 
         {/* Linked entities */}
         {linkedEntities.length > 0 && (
@@ -205,82 +316,8 @@ export default function SessionDetailScreen() {
 
         <View className="h-20" />
       </ScrollView>
+      </ParchmentScreen>
     </>
   );
 }
 
-function renderBody(body: RichTextNode): React.ReactNode {
-  if (!body.content) return null;
-  return body.content.map((block, i) => {
-    const text = nodeText(block);
-    if (!text.trim()) return null;
-
-    if (block.type === "heading") {
-      const level = (block.attrs?.["level"] as number) ?? 2;
-      return (
-        <Text
-          key={i}
-          className="text-ink mb-2"
-          style={{
-            fontFamily: "CormorantGaramond_700Bold",
-            fontSize: level === 1 ? 22 : level === 2 ? 19 : 17,
-          }}
-        >
-          {renderInline(block)}
-        </Text>
-      );
-    }
-
-    if (block.type === "blockquote") {
-      return (
-        <View key={i} className="border-l-2 border-gold/40 pl-3 mb-2">
-          <Text
-            className="text-ink/70 italic text-base leading-6"
-            style={{ fontFamily: "CormorantGaramond_400Regular_Italic" }}
-          >
-            {renderInline(block)}
-          </Text>
-        </View>
-      );
-    }
-
-    if (block.type === "bulletList" || block.type === "orderedList") {
-      return (
-        <View key={i} className="mb-2 pl-2">
-          {(block.content ?? []).map((li, j) => (
-            <View key={j} className="flex-row mb-1">
-              <Text
-                className="text-gold mr-2"
-                style={{ fontFamily: "Inter_400Regular", fontSize: 14 }}
-              >
-                {block.type === "orderedList" ? `${j + 1}.` : "•"}
-              </Text>
-              <Text
-                className="text-ink/80 text-base flex-1 leading-6"
-                style={{ fontFamily: "CormorantGaramond_400Regular" }}
-              >
-                {renderInline(li)}
-              </Text>
-            </View>
-          ))}
-        </View>
-      );
-    }
-
-    return (
-      <Text
-        key={i}
-        className="text-ink/80 text-base mb-2 leading-6"
-        style={{ fontFamily: "CormorantGaramond_400Regular" }}
-      >
-        {renderInline(block)}
-      </Text>
-    );
-  });
-}
-
-function renderInline(node: RichTextNode): string {
-  if (node.text != null) return node.text;
-  if (node.type === "mention") return `@${node.attrs?.["label"] ?? ""}`;
-  return (node.content ?? []).map(renderInline).join("");
-}

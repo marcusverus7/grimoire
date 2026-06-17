@@ -49,14 +49,43 @@ read Part IV (build plan) before starting any phase.
   (Markdown + JSON), security audit + RLS on all Supabase tables
 - Phase 3: recap creation screen (beat selection, tone picker, share slug),
   open-quests view, campaign timeline, social card meta tags on recap-web
+- Phase 4: navigation fix (← Campaigns back button), remove Design tab, Quotes
+  Board (schema + CRUD screen + campaign list count + export to quotes.md),
+  campaign Notes + Next Session date (stored in settings JSON, shown on detail),
+  Session Zero & Safety Tools screen (X-Card, Lines & Veils, tone, stored in
+  settings JSON, accessible from Settings → Session Zero), NPC/PC quick stat
+  block (HP, AC, Initiative stored in attrs, shown on entity detail + edit),
+  session-scoped quote capture (session detail links to quotes with sessionId),
+  export includes quotes (quotes.md), cascade delete includes quotes on campaign
+  delete. Design tab hidden via href:null.
+- Phase 5: Session Prep screen (aggregates last session recap + open quests +
+  key entities; Begin Session sets status to in_progress), Dice Vault modal
+  (d4/d6/d8/d10/d12/d20/d100 with modifier + history; accessible from campaign
+  detail), NPC Combat Tracker (live HP ± controls + colour bar per combatant,
+  sort by initiative, Reset All; also exposes Dice button), "Prep" shortcut on
+  campaign detail countdown banner, "Mark Played" quick action on session detail,
+  session status extended to planned/in_progress/played, entity kind filter pills,
+  archived campaign toggle, quote display on recap-web.
+- Phase 6: Lore Search (full-text across entities/sessions/quotes, real-time,
+  kind badges), "Previously on…" preview card on campaign detail, World Notes
+  screen (rich-text scratchpad in campaign.settings.worldNotes, @-mention aware,
+  previewed on campaign detail), Entity GM Secret Notes (attrs.gmSecret,
+  collapsible ⚿ panel on entity detail), Campaign stats bar (sessions played/
+  total, entity count, quote count), Shared RichTextRenderer component (entity
+  detail + session detail refactored to use it), Export: world-notes.md included,
+  ExportSession status updated to include "in_progress", gmSecret stripped from
+  player exports, recap-web extractBodyText improved (handles headings/lists/
+  blockquotes), Supabase quotes migration applied. Version bumped to 1.0.0.
+  Build #4 submitted to TestFlight; build #6 queued on EAS.
 
-## What to build next (phase 4–5)
+## What to build next (phase 6–7)
 
-1. MVP polish: onboarding flow, empty states, performance.
-2. Founders run 4 weeks of own game (Path-A test).
-3. @-mention autocomplete (requires tentap-editor customSource HTML).
-4. Backup to Supabase (cloud snapshot push).
-5. Session scheduling card (date + RSVP stub).
+1. @-mention autocomplete (requires tentap-editor customSource HTML).
+2. Backup to Supabase (cloud snapshot push).
+3. Player invites & roles (Phase 7 — requires auth).
+4. Character passports UI (schema exists: character_profiles).
+5. Per-entity secrets & progressive reveal (schema exists: reveals table).
+6. Onboarding flow for first-time users (empty state wizard).
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).

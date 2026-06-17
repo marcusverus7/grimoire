@@ -1,0 +1,6 @@
+.git
+.claude
+build-inspect
+supabase
+apps/recap-web
+**/*.p8

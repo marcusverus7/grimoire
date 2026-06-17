@@ -17,9 +17,11 @@ export async function fetchRecapBySlug(
       tone,
       published_at,
       session:sessions!inner (
+        id,
         number,
         title,
         played_on,
+        campaign_id,
         campaign:campaigns!inner (
           name
         )
@@ -32,8 +34,23 @@ export async function fetchRecapBySlug(
 
   if (!recap) return null;
 
-  const session = recap.session as unknown as { number: number; title: string | null; played_on: string | null; campaign: { name: string } } | undefined;
+  const session = recap.session as unknown as { id: string; number: number; title: string | null; played_on: string | null; campaign_id: string; campaign: { name: string } } | undefined;
   const campaign = session?.campaign;
+
+  // Fetch quotes for this session — gracefully returns [] if table doesn't exist yet
+  let quotes: { text: string; attribution?: string | null }[] = [];
+  if (session?.id) {
+    try {
+      const { data: quotesData } = await supabase
+        .from("quotes")
+        .select("text, attribution")
+        .eq("session_id", session.id)
+        .order("created_at", { ascending: true });
+      if (quotesData) quotes = quotesData;
+    } catch {
+      // quotes table not yet migrated — ignore
+    }
+  }
 
   return {
     campaignName: campaign?.name ?? "Unknown Campaign",
@@ -42,18 +59,36 @@ export async function fetchRecapBySlug(
     tone: recap.tone ?? "plain",
     body: extractBodyText(recap.body),
     playedOn: session?.played_on ?? null,
+    quotes,
   };
+}
+
+type RTNode = { type?: string; text?: string; content?: RTNode[]; attrs?: Record<string, unknown> };
+
+function inlineText(node: RTNode): string {
+  if (node.text != null) return node.text;
+  if (node.type === "mention") return `@${String(node.attrs?.["label"] ?? "")}`;
+  return (node.content ?? []).map(inlineText).join("");
 }
 
 function extractBodyText(body: unknown): string {
   if (typeof body === "string") return body;
   if (!body || typeof body !== "object") return "";
-  const doc = body as { content?: Array<{ content?: Array<{ text?: string }> }> };
+  const doc = body as RTNode;
   if (!doc.content) return "";
   return doc.content
-    .map((block) =>
-      (block.content ?? []).map((inline) => inline.text ?? "").join(""),
-    )
+    .map((block) => {
+      switch (block.type) {
+        case "heading": return inlineText(block);
+        case "paragraph": return inlineText(block);
+        case "blockquote": return (block.content ?? []).map(inlineText).join(" ");
+        case "bulletList":
+          return (block.content ?? []).map((li) => `• ${inlineText(li)}`).join("\n");
+        case "orderedList":
+          return (block.content ?? []).map((li, i) => `${i + 1}. ${inlineText(li)}`).join("\n");
+        default: return inlineText(block);
+      }
+    })
     .filter(Boolean)
     .join("\n\n");
 }

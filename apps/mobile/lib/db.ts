@@ -156,6 +156,18 @@ CREATE TABLE IF NOT EXISTS \`media\` (
 );
 CREATE INDEX IF NOT EXISTS \`media_campaign_idx\` ON \`media\` (\`campaign_id\`);
 
+CREATE TABLE IF NOT EXISTS \`quotes\` (
+  \`id\` text PRIMARY KEY NOT NULL,
+  \`campaign_id\` text NOT NULL,
+  \`session_id\` text,
+  \`attribution\` text,
+  \`text\` text NOT NULL,
+  \`created_at\` integer NOT NULL,
+  FOREIGN KEY (\`campaign_id\`) REFERENCES \`campaigns\`(\`id\`),
+  FOREIGN KEY (\`session_id\`) REFERENCES \`sessions\`(\`id\`)
+);
+CREATE INDEX IF NOT EXISTS \`quotes_campaign_idx\` ON \`quotes\` (\`campaign_id\`);
+
 CREATE TABLE IF NOT EXISTS \`sync_log\` (
   \`id\` text PRIMARY KEY NOT NULL,
   \`table_name\` text NOT NULL,

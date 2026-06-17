@@ -2,20 +2,24 @@
   "expo": {
     "name": "Grimoire",
     "slug": "grimoire",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "grimoire",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.grimoire.app"
+      "bundleIdentifier": "com.grimoirettrpg.app",
+      "appleTeamId": "JQS67937W6",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
-      "package": "com.grimoire.app",
+      "package": "com.grimoirettrpg.app",
       "adaptiveIcon": {
-        "backgroundColor": "#1A1410"
+        "backgroundColor": "#F2E8D5"
       },
       "edgeToEdgeEnabled": true
     },
@@ -29,15 +33,23 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#1A1410"
+          "image": "./assets/images/icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#F2E8D5"
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "router": {}
-    }
+      "router": {},
+      "eas": {
+        "projectId": "b8d058b5-2dc8-41c0-a9d0-f6ee58464acd"
+      }
+    },
+    "owner": "marcusverus7"
   }
 }

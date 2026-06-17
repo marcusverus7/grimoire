@@ -1,9 +1,9 @@
 export const colors = {
   leather: { DEFAULT: "#1A1410", light: "#2A2118" },
-  parchment: { DEFAULT: "#ECE3CF", deep: "#E0D4BC", light: "#F5EFDE" },
-  gold: { DEFAULT: "#A07A2C", muted: "#C9A24A", bright: "#D4A843" },
+  parchment: { DEFAULT: "#F2E8D5", deep: "#E8DBBF", light: "#FAF5EA", warm: "#EDE0C8" },
+  gold: { DEFAULT: "#8B6914", muted: "#A68530", bright: "#C49A2C" },
   oxblood: { DEFAULT: "#7A2418", light: "#9A3428" },
-  ink: { DEFAULT: "#2A2118", soft: "#4A3F32" },
+  ink: { DEFAULT: "#2C2014", soft: "#5A4D3E", faint: "#8A7D6D" },
 } as const;
 
 export const fonts = {

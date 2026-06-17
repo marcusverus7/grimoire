@@ -4,6 +4,7 @@ import { useMemo, useState, useCallback } from "react";
 import { eq } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import Svg, { Circle, Line, Text as SvgText } from "react-native-svg";
+import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { db } from "@/lib/db";
 import { schema } from "@grimoire/core";
 import {
@@ -161,11 +162,12 @@ export default function GraphScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "Relationship Map" }} />
-      <View className="flex-1 bg-leather" style={{ padding: 16 }}>
+      <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
+      <View className="flex-1 bg-parchment" style={{ padding: 16 }}>
         {nodes.length === 0 ? (
           <View className="flex-1 items-center justify-center">
             <Text
-              className="text-parchment/50 text-sm text-center"
+              className="text-ink/50 text-sm text-center"
               style={{ fontFamily: "Inter_400Regular" }}
             >
               No entities yet — add NPCs, locations, and factions to see their
@@ -200,7 +202,7 @@ export default function GraphScreen() {
                   r={NODE_R}
                   fill={KIND_COLORS[node.kind] ?? "#4A3F32"}
                   opacity={0.85}
-                  stroke="#ECE3CF"
+                  stroke="#2C2014"
                   strokeWidth={1}
                   onPress={() =>
                     router.push(`/campaign/${campaignId}/entity/${node.id}`)
@@ -212,7 +214,7 @@ export default function GraphScreen() {
                   key={`label-${node.id}`}
                   x={node.x}
                   y={node.y + NODE_R + 14}
-                  fill="#ECE3CF"
+                  fill="#2C2014"
                   fontSize={10}
                   fontFamily="Inter_500Medium"
                   textAnchor="middle"
@@ -244,7 +246,7 @@ export default function GraphScreen() {
                       style={{
                         fontFamily: "Inter_400Regular",
                         fontSize: 10,
-                        color: "#ECE3CF80",
+                        color: "#5A4D3E",
                         textTransform: "capitalize",
                       }}
                     >
@@ -269,7 +271,7 @@ export default function GraphScreen() {
                   style={{
                     fontFamily: "Inter_400Regular",
                     fontSize: 10,
-                    color: "#ECE3CF60",
+                    color: "#2C201460",
                   }}
                 >
                   Direct mention
@@ -291,7 +293,7 @@ export default function GraphScreen() {
                   style={{
                     fontFamily: "Inter_400Regular",
                     fontSize: 10,
-                    color: "#ECE3CF60",
+                    color: "#2C201460",
                   }}
                 >
                   Same session
@@ -301,6 +303,7 @@ export default function GraphScreen() {
           </>
         )}
       </View>
+      </ParchmentScreen>
     </>
   );
 }

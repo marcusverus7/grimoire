@@ -8,16 +8,20 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
-import { eq, and, asc, desc } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
-import { schema } from "@grimoire/core";
+import { ParchmentScreen } from "@/components/ParchmentScreen";
+import { DiceRoller } from "@/components/DiceRoller";
+import { schema, nodeText } from "@grimoire/core";
+import type { RichTextNode } from "@grimoire/core";
 
 type Campaign = typeof schema.campaigns.$inferSelect;
 type Entity = typeof schema.entities.$inferSelect;
 type Session = typeof schema.sessions.$inferSelect;
+type CampaignSettings = { notes?: string; nextSession?: string; worldNotes?: RichTextNode };
 
 const ENTITY_KINDS = ["npc", "pc", "location", "faction", "item", "quest", "custom"] as const;
 const KIND_LABELS: Record<string, string> = {
@@ -36,9 +40,14 @@ export default function CampaignDetailScreen() {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [entities, setEntities] = useState<Entity[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [nextPlannedSessionId, setNextPlannedSessionId] = useState<string | null>(null);
+  const [lastPlayedSession, setLastPlayedSession] = useState<Session | null>(null);
+  const [stats, setStats] = useState({ sessionsPlayed: 0, sessionsTotal: 0, entityCount: 0, quoteCount: 0 });
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [search, setSearch] = useState("");
+  const [kindFilter, setKindFilter] = useState<string | null>(null);
+  const [showDice, setShowDice] = useState(false);
 
   const load = useCallback(() => {
     const c = db
@@ -57,14 +66,27 @@ export default function CampaignDetailScreen() {
           .orderBy(asc(schema.entities.name))
           .all(),
       );
-      setSessions(
-        db
-          .select()
-          .from(schema.sessions)
-          .where(eq(schema.sessions.campaignId, id))
-          .orderBy(asc(schema.sessions.number))
-          .all(),
+      const allSessions = db
+        .select()
+        .from(schema.sessions)
+        .where(eq(schema.sessions.campaignId, id))
+        .orderBy(asc(schema.sessions.number))
+        .all();
+      setSessions(allSessions);
+      const nextPlanned = allSessions.find(
+        (s) => s.status === "planned" || s.status === "in_progress",
       );
+      setNextPlannedSessionId(nextPlanned?.id ?? null);
+      const lastPlayed = [...allSessions].reverse().find((s) => s.status === "played");
+      setLastPlayedSession(lastPlayed ?? null);
+      const allEntities = db.select().from(schema.entities).where(eq(schema.entities.campaignId, id)).all();
+      const allQuotes = db.select().from(schema.quotes).where(eq(schema.quotes.campaignId, id)).all();
+      setStats({
+        sessionsPlayed: allSessions.filter((s) => s.status === "played").length,
+        sessionsTotal: allSessions.length,
+        entityCount: allEntities.length,
+        quoteCount: allQuotes.length,
+      });
     }
   }, [id]);
 
@@ -97,8 +119,8 @@ export default function CampaignDetailScreen() {
 
   if (!campaign) {
     return (
-      <View className="flex-1 bg-leather items-center justify-center">
-        <Text className="text-parchment/50 font-inter text-sm">
+      <View className="flex-1 bg-parchment items-center justify-center">
+        <Text className="text-ink/50 font-inter text-sm">
           Campaign not found
         </Text>
       </View>
@@ -106,22 +128,54 @@ export default function CampaignDetailScreen() {
   }
 
   const q = search.toLowerCase().trim();
-  const filtered = q
-    ? entities.filter((e) => e.name.toLowerCase().includes(q))
-    : entities;
+  const filtered = entities
+    .filter((e) => !kindFilter || e.kind === kindFilter)
+    .filter((e) => !q || e.name.toLowerCase().includes(q));
 
-  const entitiesByKind = ENTITY_KINDS
-    .map((kind) => ({
-      kind,
-      label: KIND_LABELS[kind] ?? kind,
-      items: filtered.filter((e) => e.kind === kind),
-    }))
-    .filter((g) => g.items.length > 0);
+  const entitiesByKind = (kindFilter
+    ? [{ kind: kindFilter, label: KIND_LABELS[kindFilter] ?? kindFilter, items: filtered }]
+    : ENTITY_KINDS.map((kind) => ({
+        kind,
+        label: KIND_LABELS[kind] ?? kind,
+        items: filtered.filter((e) => e.kind === kind),
+      }))
+  ).filter((g) => g.items.length > 0);
+
+  const presentKinds = ENTITY_KINDS.filter((k) => entities.some((e) => e.kind === k));
+
+  // Days until next session
+  const nextSessionDays = (() => {
+    const s = (campaign.settings ?? {}) as CampaignSettings;
+    if (!s.nextSession) return null;
+    const diff = Math.ceil((new Date(s.nextSession).getTime() - Date.now()) / 86400000);
+    return diff;
+  })();
 
   return (
     <>
-      <Stack.Screen options={{ title: campaign.name }} />
-      <ScrollView className="flex-1 bg-leather" contentContainerStyle={{ padding: 16 }}>
+      <Stack.Screen
+        options={{
+          title: campaign.name,
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.push("/")}
+              style={{ paddingHorizontal: 12, paddingVertical: 6 }}
+            >
+              <Text
+                style={{
+                  fontFamily: "Inter_500Medium",
+                  fontSize: 13,
+                  color: "#A07A2C",
+                }}
+              >
+                ‹ Campaigns
+              </Text>
+            </Pressable>
+          ),
+        }}
+      />
+      <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
+      <ScrollView className="flex-1 bg-parchment" contentContainerStyle={{ padding: 16 }} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
         {/* Campaign name — tap to edit */}
         {editing ? (
           <View className="flex-row items-center mb-4">
@@ -131,15 +185,15 @@ export default function CampaignDetailScreen() {
               onBlur={saveName}
               onSubmitEditing={saveName}
               autoFocus
-              className="flex-1 text-parchment font-cormorant-bold text-2xl border-b border-gold/30 pb-1"
-              style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 24, color: "#ECE3CF" }}
-              placeholderTextColor="#ECE3CF50"
+              className="flex-1 text-ink font-cormorant-bold text-2xl border-b border-gold/30 pb-1"
+              style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 24, color: "#2C2014" }}
+              placeholderTextColor="#8A7D6D"
             />
           </View>
         ) : (
           <Pressable onPress={() => setEditing(true)} className="mb-4">
             <Text
-              className="text-parchment text-2xl"
+              className="text-ink text-2xl"
               style={{ fontFamily: "CormorantGaramond_700Bold" }}
             >
               {campaign.name}
@@ -152,7 +206,119 @@ export default function CampaignDetailScreen() {
           </Pressable>
         )}
 
-        <GoldRule />
+        <GoldRule ornament />
+
+        {/* Stats bar */}
+        {(stats.sessionsTotal > 0 || stats.entityCount > 0) ? (
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-around",
+              paddingVertical: 10,
+              marginBottom: 4,
+              borderBottomWidth: 1,
+              borderBottomColor: "#A07A2C12",
+            }}
+          >
+            <StatPill label="Sessions" value={`${stats.sessionsPlayed}/${stats.sessionsTotal}`} />
+            <StatPill label="Entities" value={String(stats.entityCount)} />
+            {stats.quoteCount > 0 && (
+              <StatPill label="Quotes" value={String(stats.quoteCount)} />
+            )}
+          </View>
+        ) : null}
+
+        {/* Next Session countdown + GM Notes */}
+        {(nextSessionDays !== null || (campaign.settings as CampaignSettings)?.notes) ? (
+          <View style={{ marginTop: 16, marginBottom: 4 }}>
+            {nextSessionDays !== null ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "#A07A2C12",
+                  borderWidth: 1,
+                  borderColor: "#A07A2C25",
+                  borderRadius: 2,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  marginBottom: 8,
+                }}
+              >
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.2, marginRight: 8 }}>
+                  Next Session
+                </Text>
+                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 17, color: "#2C2014", flex: 1 }}>
+                  {(campaign.settings as CampaignSettings).nextSession}
+                </Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: nextSessionDays <= 0 ? "#7A2418" : nextSessionDays <= 3 ? "#A07A2C" : "#5A4D3E", marginRight: 8 }}>
+                  {nextSessionDays <= 0 ? "Today!" : nextSessionDays === 1 ? "Tomorrow" : `${nextSessionDays}d`}
+                </Text>
+                {nextPlannedSessionId ? (
+                  <Pressable
+                    onPress={() => router.push(`/campaign/${id}/session/${nextPlannedSessionId}/prep` as Parameters<typeof router.push>[0])}
+                    style={{ paddingHorizontal: 8, paddingVertical: 4, backgroundColor: "#7A2418", borderRadius: 2 }}
+                  >
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1 }}>
+                      Prep
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
+            {(campaign.settings as CampaignSettings)?.notes ? (
+              <Pressable onPress={() => router.push(`/campaign/${id}/settings`)}>
+                <Text numberOfLines={2} style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#5A4D3E80", fontStyle: "italic", lineHeight: 18 }}>
+                  {(campaign.settings as CampaignSettings).notes}
+                </Text>
+              </Pressable>
+            ) : null}
+            {(campaign.settings as CampaignSettings)?.worldNotes ? (
+              <Pressable
+                onPress={() => router.push(`/campaign/${id}/notes` as Parameters<typeof router.push>[0])}
+                style={{ marginTop: 6, flexDirection: "row", alignItems: "center" }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, marginRight: 6 }}>
+                  World Notes
+                </Text>
+                <Text numberOfLines={1} style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E60", flex: 1 }}>
+                  {nodeText((campaign.settings as CampaignSettings).worldNotes!).slice(0, 80)}
+                </Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C60" }}>›</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
+
+        {/* Last Played Session preview */}
+        {lastPlayedSession && !nextPlannedSessionId ? (
+          <Pressable
+            onPress={() => router.push(`/campaign/${id}/session/${lastPlayedSession.id}` as Parameters<typeof router.push>[0])}
+            style={{
+              marginTop: 16,
+              padding: 12,
+              borderWidth: 1,
+              borderColor: "#A07A2C20",
+              borderRadius: 2,
+              backgroundColor: "#A07A2C06",
+            }}
+          >
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
+              Previously on…
+            </Text>
+            <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", marginBottom: 4 }}>
+              Session {lastPlayedSession.number}{lastPlayedSession.title ? `: ${lastPlayedSession.title}` : ""}
+            </Text>
+            {lastPlayedSession.body ? (
+              <Text
+                numberOfLines={3}
+                style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 14, color: "#5A4D3E", lineHeight: 20, fontStyle: "italic" }}
+              >
+                {nodeText(lastPlayedSession.body as RichTextNode).slice(0, 200)}
+              </Text>
+            ) : null}
+          </Pressable>
+        ) : null}
 
         {/* Sessions */}
         <View className="mt-5">
@@ -165,7 +331,7 @@ export default function CampaignDetailScreen() {
             </Text>
             <View className="flex-row items-center">
               <Pressable onPress={() => router.push(`/campaign/${id}/timeline`)}>
-                <Text className="text-parchment/40 text-xs mr-4" style={{ fontFamily: "Inter_500Medium" }}>
+                <Text className="text-ink-faint text-xs mr-4" style={{ fontFamily: "Inter_500Medium" }}>
                   Timeline
                 </Text>
               </Pressable>
@@ -177,7 +343,7 @@ export default function CampaignDetailScreen() {
             </View>
           </View>
           {sessions.length === 0 ? (
-            <Text className="text-parchment/40 text-sm mb-4" style={{ fontFamily: "Inter_400Regular" }}>
+            <Text className="text-ink-faint text-sm mb-4" style={{ fontFamily: "Inter_400Regular" }}>
               No sessions yet
             </Text>
           ) : (
@@ -187,7 +353,7 @@ export default function CampaignDetailScreen() {
                 onPress={() => router.push(`/campaign/${id}/session/${s.id}`)}
                 className="py-2.5 px-2 mb-1"
               >
-                <Text className="text-parchment text-base" style={{ fontFamily: "CormorantGaramond_600SemiBold" }}>
+                <Text className="text-ink text-base" style={{ fontFamily: "CormorantGaramond_600SemiBold" }}>
                   Session {s.number}
                   {s.title ? `: ${s.title}` : ""}
                 </Text>
@@ -196,13 +362,13 @@ export default function CampaignDetailScreen() {
                     className="text-xs uppercase tracking-wider"
                     style={{
                       fontFamily: "Inter_400Regular",
-                      color: s.status === "played" ? "#A07A2C" : "#ECE3CF60",
+                      color: s.status === "played" ? "#A07A2C" : s.status === "in_progress" ? "#7A2418" : "#5A4D3E",
                     }}
                   >
                     {s.status}
                   </Text>
                   {s.playedOn ? (
-                    <Text className="text-parchment/30 text-xs ml-2" style={{ fontFamily: "Inter_400Regular" }}>
+                    <Text className="text-ink/30 text-xs ml-2" style={{ fontFamily: "Inter_400Regular" }}>
                       {s.playedOn}
                     </Text>
                   ) : null}
@@ -229,25 +395,66 @@ export default function CampaignDetailScreen() {
               </Text>
             </Pressable>
           </View>
+          {/* Kind filter pills — only when there are multiple kinds */}
+          {presentKinds.length > 1 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }} contentContainerStyle={{ paddingBottom: 2 }}>
+              <Pressable
+                onPress={() => setKindFilter(null)}
+                style={{
+                  marginRight: 6,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 12,
+                  backgroundColor: kindFilter === null ? "#A07A2C" : "transparent",
+                  borderWidth: 1,
+                  borderColor: kindFilter === null ? "#A07A2C" : "#A07A2C40",
+                }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: kindFilter === null ? "#FAF5EA" : "#A07A2C" }}>
+                  All
+                </Text>
+              </Pressable>
+              {presentKinds.map((k) => (
+                <Pressable
+                  key={k}
+                  onPress={() => setKindFilter(kindFilter === k ? null : k)}
+                  style={{
+                    marginRight: 6,
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 12,
+                    backgroundColor: kindFilter === k ? "#A07A2C" : "transparent",
+                    borderWidth: 1,
+                    borderColor: kindFilter === k ? "#A07A2C" : "#A07A2C40",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: kindFilter === k ? "#FAF5EA" : "#A07A2C" }}>
+                    {KIND_LABELS[k]}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          )}
+
           {entities.length > 5 && (
             <TextInput
               value={search}
               onChangeText={setSearch}
               placeholder="Search entities…"
-              placeholderTextColor="#ECE3CF30"
-              className="border border-parchment/10 rounded-sm px-3 py-2 mb-3"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#ECE3CF" }}
+              placeholderTextColor="#8A7D6D"
+              className="border border-ink/10 rounded-sm px-3 py-2 mb-3"
+              style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014" }}
             />
           )}
           {entitiesByKind.length === 0 ? (
-            <Text className="text-parchment/40 text-sm" style={{ fontFamily: "Inter_400Regular" }}>
+            <Text className="text-ink-faint text-sm" style={{ fontFamily: "Inter_400Regular" }}>
               No entities yet — create NPCs, locations, factions, and more
             </Text>
           ) : (
             entitiesByKind.map((group) => (
               <View key={group.kind} className="mb-4">
                 <Text
-                  className="text-parchment/50 text-xs uppercase tracking-wider mb-2"
+                  className="text-ink/50 text-xs uppercase tracking-wider mb-2"
                   style={{ fontFamily: "Inter_500Medium" }}
                 >
                   {group.label}
@@ -262,7 +469,7 @@ export default function CampaignDetailScreen() {
                   >
                     <View className="flex-row items-center">
                       <Text
-                        className="text-parchment text-base flex-1"
+                        className="text-ink text-base flex-1"
                         style={{ fontFamily: "CormorantGaramond_600SemiBold" }}
                       >
                         {entity.name}
@@ -278,7 +485,7 @@ export default function CampaignDetailScreen() {
                     </View>
                     {entity.summary ? (
                       <Text
-                        className="text-parchment/50 text-sm mt-0.5"
+                        className="text-ink/50 text-sm mt-0.5"
                         style={{ fontFamily: "Inter_400Regular" }}
                         numberOfLines={1}
                       >
@@ -295,79 +502,67 @@ export default function CampaignDetailScreen() {
         <GoldRule className="my-4" />
 
         {/* Actions */}
-        <View className="flex-row flex-wrap justify-between">
-          <Pressable
-            onPress={() => router.push(`/campaign/${id}/quests`)}
-            className="mr-1.5 mb-2 flex-1 py-2.5 border border-gold/20 rounded-sm items-center"
-            style={{ minWidth: "22%" }}
-          >
-            <Text
+        <View className="flex-row flex-wrap">
+          {[
+            { label: "Search", path: `/campaign/${id}/search`, gold: true },
+            { label: "Notes", path: `/campaign/${id}/notes`, gold: true },
+            { label: "Quests", path: `/campaign/${id}/quests`, gold: true },
+            { label: "Quotes", path: `/campaign/${id}/quotes`, gold: true },
+            { label: "Tracker", path: `/campaign/${id}/tracker`, gold: true },
+            { label: "Map", path: `/campaign/${id}/graph`, gold: true },
+            { label: "Export", path: `/campaign/${id}/export`, gold: true },
+            { label: "Settings", path: `/campaign/${id}/settings`, gold: false },
+          ].map((btn) => (
+            <Pressable
+              key={btn.label}
+              onPress={() => router.push(btn.path as Parameters<typeof router.push>[0])}
+              className="mb-2 mr-2 px-4 py-2.5 border rounded-sm items-center"
               style={{
-                fontFamily: "Inter_500Medium",
-                fontSize: 11,
-                color: "#A07A2C",
-                textTransform: "uppercase",
-                letterSpacing: 1,
+                borderColor: btn.gold ? "#A07A2C40" : "#8A7D6D30",
               }}
             >
-              Quests
-            </Text>
-          </Pressable>
+              <Text
+                style={{
+                  fontFamily: "Inter_500Medium",
+                  fontSize: 11,
+                  color: btn.gold ? "#A07A2C" : "#5A4D3E",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                }}
+              >
+                {btn.label}
+              </Text>
+            </Pressable>
+          ))}
           <Pressable
-            onPress={() => router.push(`/campaign/${id}/graph`)}
-            className="mx-1.5 mb-2 flex-1 py-2.5 border border-gold/20 rounded-sm items-center"
-            style={{ minWidth: "22%" }}
+            onPress={() => setShowDice(true)}
+            className="mb-2 mr-2 px-4 py-2.5 border rounded-sm items-center"
+            style={{ borderColor: "#A07A2C40" }}
           >
-            <Text
-              style={{
-                fontFamily: "Inter_500Medium",
-                fontSize: 11,
-                color: "#A07A2C",
-                textTransform: "uppercase",
-                letterSpacing: 1,
-              }}
-            >
-              Map
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push(`/campaign/${id}/export`)}
-            className="mx-1.5 mb-2 flex-1 py-2.5 border border-gold/20 rounded-sm items-center"
-            style={{ minWidth: "22%" }}
-          >
-            <Text
-              style={{
-                fontFamily: "Inter_500Medium",
-                fontSize: 11,
-                color: "#A07A2C",
-                textTransform: "uppercase",
-                letterSpacing: 1,
-              }}
-            >
-              Export
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push(`/campaign/${id}/settings`)}
-            className="ml-1.5 mb-2 flex-1 py-2.5 border border-parchment/15 rounded-sm items-center"
-            style={{ minWidth: "22%" }}
-          >
-            <Text
-              style={{
-                fontFamily: "Inter_500Medium",
-                fontSize: 11,
-                color: "#ECE3CF80",
-                textTransform: "uppercase",
-                letterSpacing: 1,
-              }}
-            >
-              Settings
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+              Dice
             </Text>
           </Pressable>
         </View>
 
         <View className="h-20" />
       </ScrollView>
+      </ParchmentScreen>
+
+      <DiceRoller visible={showDice} onClose={() => setShowDice(false)} />
     </>
+  );
+}
+
+function StatPill({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={{ alignItems: "center" }}>
+      <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014" }}>
+        {value}
+      </Text>
+      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1 }}>
+        {label}
+      </Text>
+    </View>
   );
 }

@@ -1,12 +1,12 @@
 import { Tabs } from "expo-router";
-import { View, Text } from "react-native";
+import { Text } from "react-native";
 import { colors } from "@/lib/theme";
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   return (
     <Text
       style={{
-        color: focused ? colors.gold.DEFAULT : colors.parchment.deep,
+        color: focused ? colors.gold.DEFAULT : colors.ink.faint,
         fontSize: 10,
         fontFamily: "Inter_500Medium",
         marginTop: 2,
@@ -37,7 +37,7 @@ export default function TabLayout() {
           borderTopWidth: 0.8,
           borderTopColor: colors.gold.DEFAULT,
         },
-        tabBarActiveTintColor: colors.gold.DEFAULT,
+        tabBarActiveTintColor: colors.gold.bright,
         tabBarInactiveTintColor: colors.parchment.deep,
         tabBarLabelStyle: {
           fontFamily: "Inter_500Medium",
@@ -55,8 +55,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="design"
         options={{
-          title: "Design",
-          tabBarLabel: "Design",
+          href: null,
         }}
       />
     </Tabs>

@@ -62,8 +62,8 @@ export default function RootLayout() {
 
   if (!dbReady) {
     return (
-      <View className="flex-1 bg-leather items-center justify-center">
-        <Text className="text-parchment font-inter text-sm">
+      <View className="flex-1 bg-parchment items-center justify-center">
+        <Text className="text-ink font-inter text-sm">
           Preparing your grimoire…
         </Text>
       </View>
@@ -72,11 +72,11 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: "#1A1410" },
+          contentStyle: { backgroundColor: "#F2E8D5" },
         }}
       >
         <Stack.Screen name="(tabs)" />

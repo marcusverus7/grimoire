@@ -21,7 +21,7 @@ export interface ExportSession {
   title?: string | null;
   playedOn?: string | null;
   body?: RichTextNode | null;
-  status: "planned" | "played";
+  status: "planned" | "in_progress" | "played";
 }
 
 export interface ExportCampaign {
@@ -29,6 +29,12 @@ export interface ExportCampaign {
   name: string;
   systemTag?: string | null;
   status: string;
+}
+
+export interface ExportQuote {
+  id: string;
+  attribution?: string | null;
+  text: string;
 }
 
 export interface ExportFile {
@@ -127,14 +133,24 @@ export function exportCampaign(args: {
   campaign: ExportCampaign;
   entities: ExportEntity[];
   sessions: ExportSession[];
+  quotes?: ExportQuote[];
+  worldNotes?: RichTextNode | null;
   /** GM export includes gm_only records; a player export must pass false. */
   includeGmOnly?: boolean;
 }): CampaignExport {
   const { campaign, includeGmOnly = true } = args;
-  const entities = args.entities.filter(
-    (e) => includeGmOnly || e.visibility === "table",
-  );
+  const entities = args.entities
+    .filter((e) => includeGmOnly || e.visibility === "table")
+    .map((e) => {
+      if (includeGmOnly) return e;
+      // Strip GM-only attrs from player exports
+      if (!e.attrs) return e;
+      const { gmSecret: _gs, ...rest } = e.attrs as Record<string, unknown> & { gmSecret?: unknown };
+      return { ...e, attrs: Object.keys(rest).length > 0 ? rest : null };
+    });
   const sessions = [...args.sessions].sort((a, b) => a.number - b.number);
+  const quotes = args.quotes ?? [];
+  const worldNotes = args.worldNotes ?? null;
 
   const files: ExportFile[] = [];
 
@@ -156,9 +172,39 @@ export function exportCampaign(args: {
       "",
       "## Entities",
       ...entities.map((e) => `- [[${e.name}]] (${e.kind})`),
+      ...(quotes.length > 0 ? ["", "## Quotes", `[[quotes]]`] : []),
+      ...(worldNotes ? ["", "## World Notes", `[[world-notes]]`] : []),
       "",
     ].join("\n"),
   });
+
+  if (worldNotes) {
+    files.push({
+      path: "world-notes.md",
+      content: [
+        frontmatter({ campaign: campaign.name }),
+        `# World Notes — ${campaign.name}`,
+        "",
+        richTextToMarkdown(worldNotes),
+        "",
+      ].join("\n"),
+    });
+  }
+
+  if (quotes.length > 0) {
+    files.push({
+      path: "quotes.md",
+      content: [
+        `# Quotes — ${campaign.name}`,
+        "",
+        ...quotes.map((q) =>
+          q.attribution
+            ? `> "${q.text}"\n>\n> — *${q.attribution}*\n`
+            : `> "${q.text}"\n`,
+        ),
+      ].join("\n"),
+    });
+  }
 
   // Slug collisions ("Varga" the npc and "Varga" the faction) get suffixes.
   const used = new Map<string, number>();
@@ -213,6 +259,7 @@ export function exportCampaign(args: {
       campaign,
       entities,
       sessions,
+      quotes,
     },
     null,
     2,

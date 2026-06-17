@@ -44,7 +44,7 @@ function Swatch({ name, hex, text }: (typeof PALETTE)[number]) {
 
 export default function DesignScreen() {
   return (
-    <ScrollView className="flex-1 bg-leather" contentContainerStyle={{ padding: 20 }}>
+    <ScrollView className="flex-1 bg-parchment" contentContainerStyle={{ padding: 20 }}>
       {/* ---- Wax Seal ---- */}
       <View className="items-center mb-6">
         <WaxSeal size={96} />
@@ -56,7 +56,7 @@ export default function DesignScreen() {
       <GoldRule double className="mb-6" />
 
       {/* ---- Colour Palette ---- */}
-      <Text className="font-cinzel text-parchment text-base mb-4">
+      <Text className="font-cinzel text-ink text-base mb-4">
         Colour Palette
       </Text>
       <View className="flex-row flex-wrap mb-6">
@@ -68,7 +68,7 @@ export default function DesignScreen() {
       <GoldRule className="mb-6" />
 
       {/* ---- Typography ---- */}
-      <Text className="font-cinzel text-parchment text-base mb-4">
+      <Text className="font-cinzel text-ink text-base mb-4">
         Type Scale
       </Text>
 
@@ -107,7 +107,7 @@ export default function DesignScreen() {
       <GoldRule className="mb-6" />
 
       {/* ---- Components ---- */}
-      <Text className="font-cinzel text-parchment text-base mb-4">
+      <Text className="font-cinzel text-ink text-base mb-4">
         Components
       </Text>
 
@@ -121,11 +121,11 @@ export default function DesignScreen() {
 
       {/* Gold rules */}
       <View className="mb-4">
-        <Text className="font-inter text-parchment/60 text-xs mb-2">
+        <Text className="font-inter text-ink-soft text-xs mb-2">
           Single rule
         </Text>
         <GoldRule />
-        <Text className="font-inter text-parchment/60 text-xs mt-3 mb-2">
+        <Text className="font-inter text-ink-soft text-xs mt-3 mb-2">
           Double rule (heading accent)
         </Text>
         <GoldRule double />
@@ -134,16 +134,16 @@ export default function DesignScreen() {
       <GoldRule className="mb-6" />
 
       {/* ---- Surface Contrast ---- */}
-      <Text className="font-cinzel text-parchment text-base mb-4">
+      <Text className="font-cinzel text-ink text-base mb-4">
         Surface Contrast
       </Text>
 
       {/* Dark (capture surface) */}
-      <View className="bg-leather-light border border-gold/20 rounded-sm p-4 mb-3">
-        <Text className="font-inter-medium text-parchment text-sm mb-1">
+      <View className="bg-parchment-deep border border-gold/20 rounded-sm p-4 mb-3">
+        <Text className="font-inter-medium text-ink text-sm mb-1">
           Capture Surface (Dark)
         </Text>
-        <Text className="font-inter text-parchment/60 text-xs">
+        <Text className="font-inter text-ink-soft text-xs">
           Plain, fast, one-handed — functional screens are simpler than showcase
           screens.
         </Text>
@@ -163,17 +163,17 @@ export default function DesignScreen() {
 
       {/* Oxblood CTA */}
       <View className="bg-oxblood border border-gold/30 rounded-sm p-4 mb-6 items-center">
-        <Text className="font-inter-semibold text-parchment text-sm tracking-wider uppercase">
+        <Text className="font-inter-semibold text-ink text-sm tracking-wider uppercase">
           Primary Action
         </Text>
-        <Text className="font-inter text-parchment/60 text-xs mt-1">
+        <Text className="font-inter text-ink-soft text-xs mt-1">
           Oxblood accent — wax seals, CTAs, page markers
         </Text>
       </View>
 
       <GoldRule double className="mb-4" />
 
-      <Text className="font-inter text-parchment/30 text-xs text-center mb-8">
+      <Text className="font-inter text-ink/30 text-xs text-center mb-8">
         The Grimoire Archive Design System · v0.1
       </Text>
     </ScrollView>

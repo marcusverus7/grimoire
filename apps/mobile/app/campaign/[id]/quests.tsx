@@ -5,6 +5,7 @@ import { eq, and } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
+import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
 
 type Entity = typeof schema.entities.$inferSelect;
@@ -12,7 +13,7 @@ type Entity = typeof schema.entities.$inferSelect;
 const STATUS_ORDER = ["active", "rumoured", "complete", "failed"] as const;
 const STATUS_COLORS: Record<string, string> = {
   active: "#A07A2C",
-  rumoured: "#ECE3CF60",
+  rumoured: "#5A4D3E",
   complete: "#4A7A2C",
   failed: "#7A2418",
 };
@@ -51,18 +52,19 @@ export default function QuestsScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "Quests" }} />
+      <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-leather"
+        className="flex-1 bg-parchment"
         contentContainerStyle={{ padding: 20 }}
       >
         <Text
-          className="text-parchment text-xl mb-1"
+          className="text-ink text-xl mb-1"
           style={{ fontFamily: "CormorantGaramond_700Bold" }}
         >
           Quest Log
         </Text>
         <Text
-          className="text-parchment/40 text-xs mb-4"
+          className="text-ink-faint text-xs mb-4"
           style={{ fontFamily: "Inter_400Regular" }}
         >
           {quests.length} quest{quests.length !== 1 ? "s" : ""}
@@ -73,7 +75,7 @@ export default function QuestsScreen() {
         {quests.length === 0 ? (
           <View className="mt-6 items-center">
             <Text
-              className="text-parchment/50 text-sm text-center"
+              className="text-ink/50 text-sm text-center"
               style={{ fontFamily: "Inter_400Regular" }}
             >
               No quests yet. Create a quest entity to track your party's
@@ -89,7 +91,7 @@ export default function QuestsScreen() {
                     width: 8,
                     height: 8,
                     borderRadius: 4,
-                    backgroundColor: STATUS_COLORS[group.status] ?? "#ECE3CF40",
+                    backgroundColor: STATUS_COLORS[group.status] ?? "#8A7D6D",
                     marginRight: 8,
                   }}
                 />
@@ -97,13 +99,13 @@ export default function QuestsScreen() {
                   className="text-xs uppercase tracking-wider"
                   style={{
                     fontFamily: "Inter_600SemiBold",
-                    color: STATUS_COLORS[group.status] ?? "#ECE3CF40",
+                    color: STATUS_COLORS[group.status] ?? "#8A7D6D",
                   }}
                 >
                   {group.status}
                 </Text>
                 <Text
-                  className="text-parchment/30 text-xs ml-2"
+                  className="text-ink/30 text-xs ml-2"
                   style={{ fontFamily: "Inter_400Regular" }}
                 >
                   {group.items.length}
@@ -118,17 +120,17 @@ export default function QuestsScreen() {
                       `/campaign/${campaignId}/entity/${quest.id}`,
                     )
                   }
-                  className="py-3 px-3 mb-1.5 rounded-sm border border-parchment/10 bg-parchment/3"
+                  className="py-3 px-3 mb-1.5 rounded-sm border border-ink/10 bg-parchment/3"
                 >
                   <Text
-                    className="text-parchment text-base"
+                    className="text-ink text-base"
                     style={{ fontFamily: "CormorantGaramond_600SemiBold" }}
                   >
                     {quest.name}
                   </Text>
                   {quest.summary ? (
                     <Text
-                      className="text-parchment/50 text-sm mt-1"
+                      className="text-ink/50 text-sm mt-1"
                       style={{ fontFamily: "Inter_400Regular" }}
                       numberOfLines={2}
                     >
@@ -143,6 +145,7 @@ export default function QuestsScreen() {
 
         <View className="h-20" />
       </ScrollView>
+      </ParchmentScreen>
     </>
   );
 }

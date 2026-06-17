@@ -12,6 +12,7 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
+import { ParchmentScreen } from "@/components/ParchmentScreen";
 import RichTextEditor from "@/components/RichTextEditor";
 import { schema, computeLinkChanges } from "@grimoire/core";
 import type { RichTextNode, EntityLinkRow } from "@grimoire/core";
@@ -30,7 +31,7 @@ export default function SessionFormScreen() {
   const [number, setNumber] = useState(1);
   const [playedOn, setPlayedOn] = useState("");
   const [body, setBody] = useState<RichTextNode | null>(null);
-  const [status, setStatus] = useState<"planned" | "played">("planned");
+  const [status, setStatus] = useState<"planned" | "in_progress" | "played">("planned");
   const [loaded, setLoaded] = useState(false);
   const editorRef = useRef<EditorBridge | null>(null);
 
@@ -148,15 +149,17 @@ export default function SessionFormScreen() {
           title: `Session ${number}`,
         }}
       />
+      <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-leather"
+        className="flex-1 bg-parchment"
         contentContainerStyle={{ padding: 16 }}
+        keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
       >
         {/* Session number (read-only) */}
         <Label text="Session Number" />
         <Text
-          className="text-parchment text-xl mb-5"
+          className="text-ink text-xl mb-5"
           style={{ fontFamily: "CormorantGaramond_700Bold" }}
         >
           {number}
@@ -168,9 +171,9 @@ export default function SessionFormScreen() {
           value={title}
           onChangeText={setTitle}
           placeholder="e.g. The Siege of Ashford"
-          placeholderTextColor="#ECE3CF40"
+          placeholderTextColor="#2C201440"
           className="border-b border-gold/20 pb-2 mb-5 text-lg"
-          style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#ECE3CF" }}
+          style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#2C2014" }}
         />
 
         {/* Played on */}
@@ -179,50 +182,40 @@ export default function SessionFormScreen() {
           value={playedOn}
           onChangeText={setPlayedOn}
           placeholder="2025-06-10"
-          placeholderTextColor="#ECE3CF40"
+          placeholderTextColor="#2C201440"
           className="border-b border-gold/20 pb-2 mb-5"
-          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#ECE3CF" }}
+          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014" }}
         />
 
         {/* Status */}
         <Label text="Status" />
         <View className="flex-row mb-6">
-          <Pressable
-            onPress={() => setStatus("planned")}
-            className={`mr-3 px-4 py-2 rounded-sm border ${
-              status === "planned"
-                ? "border-parchment/40 bg-parchment/5"
-                : "border-parchment/20"
-            }`}
-          >
-            <Text
+          {(["planned", "in_progress", "played"] as const).map((s) => (
+            <Pressable
+              key={s}
+              onPress={() => setStatus(s)}
               style={{
-                fontFamily: "Inter_500Medium",
-                fontSize: 12,
-                color: status === "planned" ? "#ECE3CF" : "#ECE3CF60",
+                marginRight: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 7,
+                borderRadius: 2,
+                borderWidth: 1,
+                borderColor: status === s ? "#A07A2C" : "#A07A2C25",
+                backgroundColor: status === s ? "#A07A2C15" : "transparent",
               }}
             >
-              Planned
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setStatus("played")}
-            className={`px-4 py-2 rounded-sm border ${
-              status === "played"
-                ? "border-gold bg-gold/10"
-                : "border-parchment/20"
-            }`}
-          >
-            <Text
-              style={{
-                fontFamily: "Inter_500Medium",
-                fontSize: 12,
-                color: status === "played" ? "#A07A2C" : "#ECE3CF60",
-              }}
-            >
-              Played
-            </Text>
-          </Pressable>
+              <Text
+                style={{
+                  fontFamily: "Inter_500Medium",
+                  fontSize: 12,
+                  color: status === s ? "#A07A2C" : "#5A4D3E",
+                  textTransform: "capitalize",
+                }}
+              >
+                {s === "in_progress" ? "In Progress" : s.charAt(0).toUpperCase() + s.slice(1)}
+              </Text>
+            </Pressable>
+          ))}
         </View>
 
         {/* Session Notes */}
@@ -246,7 +239,7 @@ export default function SessionFormScreen() {
             style={{
               fontFamily: "Inter_600SemiBold",
               fontSize: 14,
-              color: "#ECE3CF",
+              color: "#FAF5EA",
               textTransform: "uppercase",
               letterSpacing: 1.5,
             }}
@@ -270,6 +263,7 @@ export default function SessionFormScreen() {
 
         <View className="h-20" />
       </ScrollView>
+      </ParchmentScreen>
     </>
   );
 }
