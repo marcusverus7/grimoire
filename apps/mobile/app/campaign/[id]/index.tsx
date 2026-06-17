@@ -419,6 +419,27 @@ export default function CampaignDetailScreen() {
               <Pressable
                 key={s.id}
                 onPress={() => router.push(`/campaign/${id}/session/${s.id}`)}
+                onLongPress={() => {
+                  if (s.status === "played") return;
+                  Alert.alert(
+                    "Mark as Played?",
+                    `Mark Session ${s.number}${s.title ? `: ${s.title}` : ""} as played?`,
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      {
+                        text: "Mark Played",
+                        onPress: () => {
+                          const today = new Date().toISOString().slice(0, 10);
+                          db.update(schema.sessions)
+                            .set({ status: "played", playedOn: today })
+                            .where(eq(schema.sessions.id, s.id))
+                            .run();
+                          load();
+                        },
+                      },
+                    ],
+                  );
+                }}
                 className="py-2.5 px-2 mb-1"
               >
                 <Text className="text-ink text-base" style={{ fontFamily: "CormorantGaramond_600SemiBold" }}>
@@ -438,6 +459,11 @@ export default function CampaignDetailScreen() {
                   {s.playedOn ? (
                     <Text className="text-ink/30 text-xs ml-2" style={{ fontFamily: "Inter_400Regular" }}>
                       {s.playedOn}
+                    </Text>
+                  ) : null}
+                  {s.status !== "played" ? (
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#2C201425", marginLeft: 6 }}>
+                      long press to mark played
                     </Text>
                   ) : null}
                 </View>
@@ -544,7 +570,7 @@ export default function CampaignDetailScreen() {
               {[
                 { label: "Add your first character or NPC", icon: "👤", action: () => router.push(`/campaign/${id}/entity/new/edit` as Parameters<typeof router.push>[0]) },
                 { label: "Plan Session 1", icon: "📅", action: createSession },
-                { label: "Write world notes", icon: "🗺️", action: () => router.push(`/campaign/${id}/world-notes` as Parameters<typeof router.push>[0]) },
+                { label: "Write world notes", icon: "🗺️", action: () => router.push(`/campaign/${id}/notes` as Parameters<typeof router.push>[0]) },
               ].map((step, i) => (
                 <Pressable
                   key={i}
