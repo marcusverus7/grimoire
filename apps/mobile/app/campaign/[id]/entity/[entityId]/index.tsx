@@ -42,6 +42,9 @@ export default function EntityDetailScreen() {
   const [hpInput, setHpInput] = useState("");
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteInput, setNoteInput] = useState("");
+  const [showResourceModal, setShowResourceModal] = useState(false);
+  const [resourceName, setResourceName] = useState("");
+  const [resourceMax, setResourceMax] = useState("");
 
   const load = useCallback(() => {
     const e = db
@@ -185,6 +188,47 @@ export default function EntityDetailScreen() {
   }
 
   const attrs = entity.attrs as Record<string, unknown> | null;
+
+  const resources = Array.isArray(attrs?.["resources"])
+    ? (attrs["resources"] as { name: string; max: number; current: number }[])
+    : [];
+
+  const adjustResource = (idx: number, delta: number) => {
+    const res = resources[idx];
+    if (!res) return;
+    const newCurrent = Math.max(0, Math.min(res.max, res.current + delta));
+    const updated = resources.map((r, i) => i === idx ? { ...r, current: newCurrent } : r);
+    const next = { ...(entity.attrs ?? {}) as Record<string, unknown>, resources: updated };
+    db.update(schema.entities).set({ attrs: next, updatedAt: new Date() }).where(eq(schema.entities.id, entityId)).run();
+    setEntity((prev) => prev ? { ...prev, attrs: next } : prev);
+  };
+
+  const deleteResource = (idx: number) => {
+    const updated = resources.filter((_, i) => i !== idx);
+    const next = { ...(entity.attrs ?? {}) as Record<string, unknown>, resources: updated };
+    db.update(schema.entities).set({ attrs: next, updatedAt: new Date() }).where(eq(schema.entities.id, entityId)).run();
+    setEntity((prev) => prev ? { ...prev, attrs: next } : prev);
+  };
+
+  const saveNewResource = () => {
+    const maxVal = parseInt(resourceMax, 10);
+    if (!resourceName.trim() || isNaN(maxVal) || maxVal <= 0) return;
+    const updated = [...resources, { name: resourceName.trim(), max: maxVal, current: maxVal }];
+    const next = { ...(entity.attrs ?? {}) as Record<string, unknown>, resources: updated };
+    db.update(schema.entities).set({ attrs: next, updatedAt: new Date() }).where(eq(schema.entities.id, entityId)).run();
+    setEntity((prev) => prev ? { ...prev, attrs: next } : prev);
+    setResourceName("");
+    setResourceMax("");
+    setShowResourceModal(false);
+  };
+
+  const longRest = () => {
+    if (resources.length === 0) return;
+    const updated = resources.map((r) => ({ ...r, current: r.max }));
+    const next = { ...(entity.attrs ?? {}) as Record<string, unknown>, resources: updated };
+    db.update(schema.entities).set({ attrs: next, updatedAt: new Date() }).where(eq(schema.entities.id, entityId)).run();
+    setEntity((prev) => prev ? { ...prev, attrs: next } : prev);
+  };
 
   return (
     <>
@@ -787,6 +831,70 @@ export default function EntityDetailScreen() {
           </>
         ) : null}
 
+        {/* PC/NPC — Resource tracker */}
+        {(entity.kind === "pc" || entity.kind === "npc") ? (
+          <>
+            <GoldRule />
+            <View style={{ marginTop: 16, marginBottom: 4 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#5A4D3E", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+                  Resources
+                </Text>
+                {resources.length > 0 ? (
+                  <Pressable
+                    onPress={longRest}
+                    style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 2, borderWidth: 1, borderColor: "#4A806050", backgroundColor: "#4A806008", marginRight: 8 }}
+                  >
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#4A8060", textTransform: "uppercase", letterSpacing: 1 }}>Long Rest</Text>
+                  </Pressable>
+                ) : null}
+                <Pressable
+                  onPress={() => { setResourceName(""); setResourceMax(""); setShowResourceModal(true); }}
+                  style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C50", backgroundColor: "#A07A2C08" }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>+ Add</Text>
+                </Pressable>
+              </View>
+              {resources.length === 0 ? (
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E60", paddingBottom: 4 }}>
+                  No resources — add spell slots, rage uses, ki points…
+                </Text>
+              ) : resources.map((res, i) => {
+                const pct = res.max > 0 ? res.current / res.max : 0;
+                const barColor = res.current === 0 ? "#7A2418" : res.current < res.max / 2 ? "#A07A2C" : "#4A8060";
+                return (
+                  <View key={i} style={{ marginBottom: 10 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#2C2014", flex: 1 }}>{res.name}</Text>
+                      <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 16, color: barColor, marginRight: 10 }}>
+                        {res.current}<Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E60" }}>/{res.max}</Text>
+                      </Text>
+                      <Pressable
+                        onPress={() => adjustResource(i, -1)}
+                        style={{ width: 28, height: 28, borderRadius: 2, borderWidth: 1, borderColor: "#7A241830", alignItems: "center", justifyContent: "center", marginRight: 4 }}
+                      >
+                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#7A2418" }}>−</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => adjustResource(i, 1)}
+                        style={{ width: 28, height: 28, borderRadius: 2, borderWidth: 1, borderColor: "#4A806030", alignItems: "center", justifyContent: "center", marginRight: 8 }}
+                      >
+                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#4A8060" }}>+</Text>
+                      </Pressable>
+                      <Pressable onPress={() => deleteResource(i)}>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#7A241840" }}>×</Text>
+                      </Pressable>
+                    </View>
+                    <View style={{ height: 3, backgroundColor: "#2C201415", borderRadius: 2, overflow: "hidden" }}>
+                      <View style={{ height: 3, backgroundColor: barColor, borderRadius: 2, width: `${Math.round(pct * 100)}%` as `${number}%` }} />
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          </>
+        ) : null}
+
         {/* Location — sub-locations */}
         {entity.kind === "location" ? (() => {
           const subs = db.select({ id: schema.entities.id, name: schema.entities.name, kind: schema.entities.kind, attrs: schema.entities.attrs })
@@ -907,6 +1015,55 @@ export default function EntityDetailScreen() {
                     <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1 }}>Save</Text>
                   </Pressable>
                 </View>
+              </View>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Add Resource modal */}
+      <Modal visible={showResourceModal} transparent animationType="fade" onRequestClose={() => setShowResourceModal(false)}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+          <Pressable onPress={() => setShowResourceModal(false)} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", paddingHorizontal: 24 }}>
+            <Pressable onPress={() => {}} style={{ backgroundColor: "#FAF5EA", borderRadius: 4, borderWidth: 1, borderColor: "#C9A24A40", padding: 20 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 16, color: "#2C2014", marginBottom: 4 }}>
+                Add Resource
+              </Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginBottom: 12 }}>
+                Spell slots, ki points, rage uses, luck points…
+              </Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+                Name
+              </Text>
+              <TextInput
+                value={resourceName}
+                onChangeText={setResourceName}
+                placeholder="e.g. Spell Slots (3rd), Rage"
+                placeholderTextColor="#2C201440"
+                autoFocus
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderWidth: 1, borderColor: "#C9A24A30", borderRadius: 2, padding: 10, backgroundColor: "#FFFDF7", marginBottom: 12 }}
+              />
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+                Maximum
+              </Text>
+              <TextInput
+                value={resourceMax}
+                onChangeText={setResourceMax}
+                placeholder="e.g. 3"
+                placeholderTextColor="#2C201440"
+                keyboardType="number-pad"
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderWidth: 1, borderColor: "#C9A24A30", borderRadius: 2, padding: 10, backgroundColor: "#FFFDF7", marginBottom: 16 }}
+              />
+              <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 12 }}>
+                <Pressable onPress={() => setShowResourceModal(false)} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#5A4D3E" }}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  onPress={saveNewResource}
+                  style={{ paddingHorizontal: 20, paddingVertical: 10, backgroundColor: "#C9A24A", borderRadius: 2 }}
+                >
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1 }}>Add</Text>
+                </Pressable>
               </View>
             </Pressable>
           </Pressable>
