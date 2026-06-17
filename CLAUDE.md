@@ -148,14 +148,25 @@ read Part IV (build plan) before starting any phase.
   (random name/role/hook/secret, one-tap save). Version bumped to 1.3.0.
   Build #14 queue Jul 1 2026.
 
-## What to build next (phase 13)
+- Phase 13: Scene notepad per session (app_kv, Notes button in In-Play bar + session
+  detail); Location entity assignment (attrs.locationId for NPC/PC/item, shown in
+  location tree as resident chips + tappable badge on entity detail); Timeline
+  enriched with entity mention chips per session + total play time; Scene notes
+  exported to scene-notes/ dir in file export + appended to text share; Entity
+  quick session note (amber banner via ✎ header button, stored in attrs.sessionNote);
+  Recap link sharing from session detail (Share ↗ button alongside Create/Edit Recap);
+  Round counter in combat tracker (persists via app_kv, resets with HP reset);
+  In-app recap library (/recaps) with accordion view, share link, edit + delete.
+  Version bumped to 1.4.0. Build #14 queue Jul 1 2026.
+
+## What to build next (phase 14)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
 2. Backup to Supabase (cloud snapshot push — needs auth).
 3. Player invites & roles (needs auth).
-4. Location map — tap a location node to see sub-locations and pinned entities.
-5. Scene notepad — floating rich-text during in-progress session for quick scene captures.
+4. Resource tracker for PCs (spell slots, ki points, rage uses — stored in attrs.resources).
+5. NPC quick-status (alive/dead/missing badge on entity detail + campaign list).
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).
