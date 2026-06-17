@@ -169,14 +169,20 @@ read Part IV (build plan) before starting any phase.
   party HP bars + resources + conditions, dead/missing list, active quests.
   Version bumped to 1.5.0. Build #14 queue Jul 1 2026.
 
-## What to build next (phase 15)
+- Phase 15: Session wrap-up resource reset prompt (toggleable chips per PC resource, all
+  checked by default for long rest, confirmation shows what will restore); Lore search
+  npcStatus filter pills (Dead / Missing — browse all dead or missing characters without
+  needing a text query, optionally narrowed by search term). Build pipeline fixed: symlink
+  babel-preset-expo into apps/mobile/node_modules after pnpm install so Metro jest-worker
+  processes find it; expo prebuild --no-install to skip redundant package manager run.
+  Build #15 queued (GH Actions run 13 → TestFlight).
+
+## What to build next (phase 16)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
 2. Backup to Supabase (cloud snapshot push — needs auth).
 3. Player invites & roles (needs auth).
-4. Session wrap-up resource reset prompt (ask which resources to restore at session end).
-5. Lore search: filter by npcStatus (dead/missing only).
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).
