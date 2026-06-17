@@ -13,6 +13,7 @@ import {
 import { useState, useCallback } from "react";
 import { eq } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { db } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
@@ -47,6 +48,7 @@ function getOrCreateGmId(): string {
 }
 
 export default function CharactersScreen() {
+  const router = useRouter();
   const [characters, setCharacters] = useState<CharacterProfile[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState<CharacterProfile | null>(null);
@@ -305,7 +307,7 @@ export default function CharactersScreen() {
               const classParts = [attrs["race"], attrs["class"], attrs["level"] ? `Lv ${attrs["level"]}` : ""].filter(Boolean).join(" · ");
               return (
                 <Pressable
-                  onPress={() => openEdit(item)}
+                  onPress={() => router.push(`/character/${item.id}` as Parameters<typeof router.push>[0])}
                   onLongPress={() => handleArchive(item)}
                   style={{ paddingVertical: 12, paddingHorizontal: 4 }}
                 >
@@ -330,7 +332,7 @@ export default function CharactersScreen() {
                     </Text>
                   ) : null}
                   <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D50", marginTop: 4 }}>
-                    Tap to edit · Long press to archive
+                    Tap to view · Long press to archive
                   </Text>
                 </Pressable>
               );
