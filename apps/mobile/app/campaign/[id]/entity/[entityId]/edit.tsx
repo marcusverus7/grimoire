@@ -35,6 +35,14 @@ const KIND_LABELS: Record<Kind, string> = {
 
 const QUEST_STATUSES = ["rumoured", "active", "complete", "failed"] as const;
 
+const NPC_GIVEN = ["Aldric","Mirra","Tavorn","Sela","Karath","Vessa","Dunn","Orwyn","Thessa","Bren","Isolde","Maren","Cael","Rynn","Doreth","Lira","Oswin","Thal","Vera","Grim","Nessa","Ulrik","Petra","Corvin","Sira","Halek","Mira","Fenwick","Aella","Rudgar","Tyra","Caspian","Lysa","Darak","Solene"];
+const NPC_FAMILY = ["Stone","Mire","Ashford","Vale","Crowe","Blackwood","Wren","Fell","Marsh","Dunmore","Hollowell","Crag","Thorn","Greaves","Harwick","Moon","Dusk","Ivry","Colm","Steele","Vane","Holt","Brooke","Sallow","Fenn"];
+function randomName(): string {
+  const g = NPC_GIVEN[Math.floor(Math.random() * NPC_GIVEN.length)] ?? "Aldric";
+  const f = NPC_FAMILY[Math.floor(Math.random() * NPC_FAMILY.length)] ?? "Stone";
+  return `${g} ${f}`;
+}
+
 export default function EntityFormScreen() {
   const { id: campaignId, entityId } = useLocalSearchParams<{
     id: string;
@@ -295,14 +303,23 @@ export default function EntityFormScreen() {
       >
         {/* Name */}
         <Label text="Name" />
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          placeholder="Enter name…"
-          placeholderTextColor="#2C201440"
-          className="border-b border-gold/20 pb-2 mb-5 text-lg"
-          style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#2C2014" }}
-        />
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Enter name…"
+            placeholderTextColor="#2C201440"
+            style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8 }}
+          />
+          {(kind === "npc" || kind === "pc" || kind === "custom") && (
+            <Pressable
+              onPress={() => setName(randomName())}
+              style={{ marginLeft: 10, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2 }}
+            >
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C" }}>⚄ Gen</Text>
+            </Pressable>
+          )}
+        </View>
 
         {/* Kind */}
         <Label text="Kind" />
