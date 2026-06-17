@@ -311,6 +311,21 @@ export default function EntityDetailScreen() {
           )}
         </View>
 
+        {/* Location breadcrumb */}
+        {entity.kind === "location" && attrs?.["parentId"] ? (() => {
+          const parent = db.select({ id: schema.entities.id, name: schema.entities.name }).from(schema.entities).where(eq(schema.entities.id, String(attrs["parentId"]))).get();
+          return parent ? (
+            <Pressable
+              onPress={() => router.push(`/campaign/${campaignId}/entity/${parent.id}`)}
+              style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}
+            >
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#4A806090" }}>{parent.name}</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#4A806060", marginHorizontal: 6 }}>›</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#4A8060" }}>{entity.name}</Text>
+            </Pressable>
+          ) : null;
+        })() : null}
+
         {/* Quest status quick-toggle */}
         {entity.kind === "quest" && attrs != null ? (
           <View style={{ marginBottom: 16, flexDirection: "row", gap: 8 }}>
@@ -694,6 +709,38 @@ export default function EntityDetailScreen() {
             </View>
           </>
         ) : null}
+
+        {/* Location — sub-locations */}
+        {entity.kind === "location" ? (() => {
+          const subs = db.select({ id: schema.entities.id, name: schema.entities.name, kind: schema.entities.kind, attrs: schema.entities.attrs })
+            .from(schema.entities)
+            .where(eq(schema.entities.campaignId, campaignId))
+            .all()
+            .filter((e) => e.kind === "location" && (e.attrs as Record<string, unknown> | null)?.["parentId"] === entity.id)
+            .sort((a, b) => a.name.localeCompare(b.name));
+          if (subs.length === 0) return null;
+          return (
+            <>
+              <GoldRule />
+              <View style={{ marginTop: 16, marginBottom: 4 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#5A4D3E", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
+                  Sub-locations
+                </Text>
+                {subs.map((sub) => (
+                  <Pressable
+                    key={sub.id}
+                    onPress={() => router.push(`/campaign/${campaignId}/entity/${sub.id}`)}
+                    style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6, paddingHorizontal: 4, marginBottom: 2 }}
+                  >
+                    <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#4A806050", marginRight: 10 }} />
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", flex: 1 }}>{sub.name}</Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#4A8060" }}>›</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          );
+        })() : null}
 
         {/* PC/NPC — Quest involvement */}
         {questHooks.length > 0 ? (

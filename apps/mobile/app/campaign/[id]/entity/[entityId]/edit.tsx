@@ -68,6 +68,8 @@ export default function EntityFormScreen() {
   const [level, setLevel] = useState("");
   const [xp, setXp] = useState("");
   const [maxXp, setMaxXp] = useState("");
+  const [parentId, setParentId] = useState<string | null>(null);
+  const [campaignLocations, setCampaignLocations] = useState<{ id: string; name: string }[]>([]);
   const [hp, setHp] = useState("");
   const [ac, setAc] = useState("");
   const [initiative, setInitiative] = useState("");
@@ -110,8 +112,17 @@ export default function EntityFormScreen() {
       if (attrs?.["ac"]) setAc(String(attrs["ac"]));
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
       if (attrs?.["gmSecret"]) setGmSecret(String(attrs["gmSecret"]));
+      if (typeof attrs?.["parentId"] === "string") setParentId(attrs["parentId"]);
       if (entity.characterProfileId) setCharacterProfileId(entity.characterProfileId);
     }
+    // Load campaign location entities for parent picker
+    const locations = db.select({ id: schema.entities.id, name: schema.entities.name, kind: schema.entities.kind })
+      .from(schema.entities)
+      .where(eq(schema.entities.campaignId, campaignId))
+      .all()
+      .filter((e) => e.kind === "location" && e.id !== entityId)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    setCampaignLocations(locations);
     // Load all character profiles for the PC picker
     const profiles = db.select({ id: schema.characterProfiles.id, name: schema.characterProfiles.name })
       .from(schema.characterProfiles)
@@ -214,6 +225,11 @@ export default function EntityFormScreen() {
         delete attrs["maxXp"];
       }
       if (gmSecret.trim()) attrs["gmSecret"] = gmSecret.trim(); else delete attrs["gmSecret"];
+      if (kind === "location") {
+        if (parentId) attrs["parentId"] = parentId; else delete attrs["parentId"];
+      } else {
+        delete attrs["parentId"];
+      }
 
       let savedId = entityId;
       if (isNew) {
@@ -750,6 +766,40 @@ export default function EntityFormScreen() {
             minHeight={300}
           />
         </View>
+
+        {/* Parent Location (location kind only) */}
+        {kind === "location" && campaignLocations.length > 0 && (
+          <>
+            <Label text="Part of (optional)" />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }} contentContainerStyle={{ paddingBottom: 2 }}>
+              <Pressable
+                onPress={() => setParentId(null)}
+                style={{
+                  marginRight: 8, paddingHorizontal: 12, paddingVertical: 6,
+                  borderRadius: 2, borderWidth: 1,
+                  borderColor: parentId === null ? "#4A8060" : "#4A806040",
+                  backgroundColor: parentId === null ? "#4A806015" : "transparent",
+                }}
+              >
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: parentId === null ? "#4A8060" : "#5A4D3E80" }}>None</Text>
+              </Pressable>
+              {campaignLocations.map((loc) => (
+                <Pressable
+                  key={loc.id}
+                  onPress={() => setParentId(parentId === loc.id ? null : loc.id)}
+                  style={{
+                    marginRight: 8, paddingHorizontal: 12, paddingVertical: 6,
+                    borderRadius: 2, borderWidth: 1,
+                    borderColor: parentId === loc.id ? "#4A8060" : "#4A806040",
+                    backgroundColor: parentId === loc.id ? "#4A806015" : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: parentId === loc.id ? "#4A8060" : "#5A4D3E80" }}>{loc.name}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </>
+        )}
 
         {/* GM Secret Notes */}
         <Label text="GM Secret Notes" />
