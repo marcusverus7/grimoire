@@ -41,6 +41,14 @@ function insertLinks(
 }
 
 export function seedSampleCampaign(): string {
+  // Guard against double-seeding
+  const existingSample = db
+    .select({ id: schema.campaigns.id })
+    .from(schema.campaigns)
+    .where(eq(schema.campaigns.name, "The Sunken Throne"))
+    .get();
+  if (existingSample) return existingSample.id;
+
   const now = Date.now();
   const nowDate = new Date(now);
 

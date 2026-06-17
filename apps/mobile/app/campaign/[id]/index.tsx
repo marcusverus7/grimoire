@@ -57,6 +57,7 @@ export default function CampaignDetailScreen() {
   const [search, setSearch] = useState("");
   const [kindFilter, setKindFilter] = useState<string | null>(null);
   const [showDice, setShowDice] = useState(false);
+  const [entitySort, setEntitySort] = useState<"name" | "updated" | "kind">("name");
   const [recentlyRevealed, setRecentlyRevealed] = useState<{ entityId: string; name: string; revealedAt: number }[]>([]);
 
   const load = useCallback(() => {
@@ -160,7 +161,20 @@ export default function CampaignDetailScreen() {
   }
 
   const q = search.toLowerCase().trim();
-  const filtered = entities
+  const sortedEntities = [...entities].sort((a, b) => {
+    if (entitySort === "updated") {
+      const ta = a.updatedAt instanceof Date ? a.updatedAt.getTime() : a.updatedAt;
+      const tb = b.updatedAt instanceof Date ? b.updatedAt.getTime() : b.updatedAt;
+      return tb - ta;
+    }
+    if (entitySort === "kind") {
+      const ki = ENTITY_KINDS.indexOf(a.kind as typeof ENTITY_KINDS[number]);
+      const kj = ENTITY_KINDS.indexOf(b.kind as typeof ENTITY_KINDS[number]);
+      if (ki !== kj) return ki - kj;
+    }
+    return a.name.localeCompare(b.name);
+  });
+  const filtered = sortedEntities
     .filter((e) => !kindFilter || e.kind === kindFilter)
     .filter((e) => !q || e.name.toLowerCase().includes(q));
 
@@ -496,9 +510,31 @@ export default function CampaignDetailScreen() {
               onChangeText={setSearch}
               placeholder="Search entities…"
               placeholderTextColor="#8A7D6D"
-              className="border border-ink/10 rounded-sm px-3 py-2 mb-3"
+              className="border border-ink/10 rounded-sm px-3 py-2 mb-2"
               style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014" }}
             />
+          )}
+          {entities.length > 0 && (
+            <View style={{ flexDirection: "row", gap: 6, marginBottom: 12 }}>
+              {(["name", "updated", "kind"] as const).map((s) => (
+                <Pressable
+                  key={s}
+                  onPress={() => setEntitySort(s)}
+                  style={{
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 2,
+                    borderWidth: 1,
+                    borderColor: entitySort === s ? "#A07A2C60" : "#2C201415",
+                    backgroundColor: entitySort === s ? "#A07A2C10" : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: entitySort === s ? "#A07A2C" : "#5A4D3E60", textTransform: "capitalize" }}>
+                    {s === "updated" ? "Recent" : s}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
           )}
           {entitiesByKind.length === 0 ? (
             <Text className="text-ink-faint text-sm" style={{ fontFamily: "Inter_400Regular" }}>
