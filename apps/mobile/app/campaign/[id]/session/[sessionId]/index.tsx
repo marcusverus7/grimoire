@@ -12,6 +12,15 @@ import { RichTextRenderer } from "@/components/RichTextRenderer";
 
 type Session = typeof schema.sessions.$inferSelect;
 type Quote = typeof schema.quotes.$inferSelect;
+type SessionAttrs = { startedAt?: number; endedAt?: number };
+
+function formatDuration(ms: number): string {
+  const hours = Math.floor(ms / 3600000);
+  const minutes = Math.floor((ms % 3600000) / 60000);
+  if (hours === 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
+}
 
 export default function SessionDetailScreen() {
   const { id: campaignId, sessionId } = useLocalSearchParams<{
@@ -68,6 +77,16 @@ export default function SessionDetailScreen() {
 
   useFocusEffect(load);
 
+  const updateAttrs = (patch: Partial<SessionAttrs>) => {
+    const current = (session?.attrs ?? {}) as SessionAttrs;
+    const next = { ...current, ...patch };
+    db.update(schema.sessions)
+      .set({ attrs: next })
+      .where(eq(schema.sessions.id, sessionId))
+      .run();
+    setSession((prev) => prev ? { ...prev, attrs: next } : prev);
+  };
+
   if (!session) {
     return (
       <View className="flex-1 bg-parchment items-center justify-center">
@@ -77,6 +96,10 @@ export default function SessionDetailScreen() {
       </View>
     );
   }
+
+  const sessionAttrs = (session.attrs ?? {}) as SessionAttrs;
+  const { startedAt, endedAt } = sessionAttrs;
+  const durationMs = startedAt && endedAt ? endedAt - startedAt : null;
 
   return (
     <>
@@ -132,6 +155,7 @@ export default function SessionDetailScreen() {
             </Text>
           </Pressable>
         )}
+
         {/* Header */}
         <Text
           className="text-ink text-2xl mb-1"
@@ -140,7 +164,7 @@ export default function SessionDetailScreen() {
           Session {session.number}
           {session.title ? `: ${session.title}` : ""}
         </Text>
-        <View className="flex-row items-center mb-4">
+        <View className="flex-row items-center mb-1">
           <Text
             className="text-xs uppercase tracking-wider"
             style={{
@@ -159,6 +183,65 @@ export default function SessionDetailScreen() {
             </Text>
           ) : null}
         </View>
+
+        {/* Duration row */}
+        {durationMs !== null ? (
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80" }}>
+              ⏱ {formatDuration(durationMs)}
+            </Text>
+            <Pressable
+              onPress={() =>
+                Alert.alert("Clear Timer", "Remove the recorded duration?", [
+                  { text: "Cancel", style: "cancel" },
+                  { text: "Clear", style: "destructive", onPress: () => updateAttrs({ startedAt: undefined, endedAt: undefined }) },
+                ])
+              }
+              style={{ marginLeft: 8 }}
+            >
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E40" }}>clear</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={{ flexDirection: "row", marginBottom: 12, gap: 8 }}>
+            {!startedAt ? (
+              <Pressable
+                onPress={() => updateAttrs({ startedAt: Date.now() })}
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderWidth: 1,
+                  borderColor: "#5A4D3E30",
+                  borderRadius: 2,
+                }}
+              >
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E80" }}>
+                  ▷ Start Timer
+                </Text>
+              </Pressable>
+            ) : (
+              <>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60", alignSelf: "center" }}>
+                  ⏱ running…
+                </Text>
+                <Pressable
+                  onPress={() => updateAttrs({ endedAt: Date.now() })}
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderWidth: 1,
+                    borderColor: "#4A7A2C40",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#4A7A2C" }}>
+                    ◼ End Timer
+                  </Text>
+                </Pressable>
+              </>
+            )}
+          </View>
+        )}
 
         <GoldRule />
 
@@ -320,4 +403,3 @@ export default function SessionDetailScreen() {
     </>
   );
 }
-

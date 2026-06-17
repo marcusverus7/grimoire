@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS \`sessions\` (
   \`title\` text,
   \`played_on\` text,
   \`body\` text,
+  \`attrs\` text,
   \`status\` text DEFAULT 'planned' NOT NULL,
   FOREIGN KEY (\`campaign_id\`) REFERENCES \`campaigns\`(\`id\`)
 );
@@ -212,5 +213,16 @@ export function applyMigrations(): void {
       expoDb.execSync(stmt + ";");
     }
   });
+
+  // Incremental additive migrations (idempotent via kv flag)
+  if (!getKv("m_sessions_attrs")) {
+    try {
+      expoDb.execSync("ALTER TABLE `sessions` ADD COLUMN `attrs` TEXT");
+    } catch {
+      // Column already exists on a fresh-install build that has it in CREATE TABLE
+    }
+    setKv("m_sessions_attrs", "1");
+  }
+
   migrated = true;
 }

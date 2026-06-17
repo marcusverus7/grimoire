@@ -28,6 +28,22 @@ type CampaignRow = typeof schema.campaigns.$inferSelect & {
   quoteCount: number;
 };
 
+function remapMentionIds(node: unknown, idMap: Map<string, string>): unknown {
+  if (node === null || typeof node !== "object") return node;
+  if (Array.isArray(node)) return node.map((n) => remapMentionIds(n, idMap));
+  const obj = node as Record<string, unknown>;
+  if (obj.type === "mention" && obj.attrs && typeof obj.attrs === "object") {
+    const attrs = obj.attrs as Record<string, unknown>;
+    const mapped = idMap.get(attrs.id as string);
+    if (mapped) return { ...obj, attrs: { ...attrs, id: mapped } };
+  }
+  const result: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    result[k] = remapMentionIds(v, idMap);
+  }
+  return result;
+}
+
 export default function CampaignsScreen() {
   const [campaigns, setCampaigns] = useState<CampaignRow[]>([]);
   const [showCreate, setShowCreate] = useState(false);
@@ -35,6 +51,9 @@ export default function CampaignsScreen() {
   const [newName, setNewName] = useState("");
   const [newSystem, setNewSystem] = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showRename, setShowRename] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<CampaignRow | null>(null);
+  const [renameName, setRenameName] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -133,6 +152,98 @@ export default function CampaignsScreen() {
     setShowCreate(true);
   };
 
+  const renameCampaign = () => {
+    const trimmed = renameName.trim();
+    if (!trimmed || !renameTarget) return;
+    db.update(schema.campaigns)
+      .set({ name: trimmed })
+      .where(eq(schema.campaigns.id, renameTarget.id))
+      .run();
+    setShowRename(false);
+    setRenameTarget(null);
+    loadCampaigns();
+  };
+
+  const duplicateCampaign = (campaign: CampaignRow) => {
+    try {
+      const now = new Date();
+      const newCampaignId = newId();
+
+      const entities = db.select().from(schema.entities).where(eq(schema.entities.campaignId, campaign.id)).all();
+      const sessions = db.select().from(schema.sessions).where(eq(schema.sessions.campaignId, campaign.id)).all();
+      const quotesData = db.select().from(schema.quotes).where(eq(schema.quotes.campaignId, campaign.id)).all();
+
+      const entityIdMap = new Map<string, string>();
+      for (const e of entities) entityIdMap.set(e.id, newId());
+
+      const sessionIdMap = new Map<string, string>();
+      for (const s of sessions) sessionIdMap.set(s.id, newId());
+
+      db.insert(schema.campaigns).values({
+        id: newCampaignId,
+        name: `${campaign.name} (Copy)`,
+        systemTag: campaign.systemTag,
+        settings: campaign.settings as Record<string, unknown> | null,
+        status: "active",
+        createdAt: now,
+      }).run();
+
+      const gm = db.select().from(schema.profiles).where(eq(schema.profiles.username, "local_gm")).get();
+      if (gm) {
+        db.insert(schema.memberships).values({
+          id: newId(),
+          campaignId: newCampaignId,
+          userId: gm.id,
+          role: "gm",
+          joinedAt: now,
+        }).run();
+      }
+
+      for (const e of entities) {
+        db.insert(schema.entities).values({
+          id: entityIdMap.get(e.id)!,
+          campaignId: newCampaignId,
+          kind: e.kind as "npc" | "pc" | "location" | "faction" | "item" | "quest" | "custom",
+          name: e.name,
+          summary: e.summary,
+          body: e.body ? remapMentionIds(e.body, entityIdMap) as Record<string, unknown> : null,
+          attrs: e.attrs as Record<string, unknown> | null,
+          visibility: e.visibility as "gm_only" | "table",
+          characterProfileId: e.characterProfileId,
+          createdAt: now,
+          updatedAt: now,
+        }).run();
+      }
+
+      for (const s of sessions) {
+        db.insert(schema.sessions).values({
+          id: sessionIdMap.get(s.id)!,
+          campaignId: newCampaignId,
+          number: s.number,
+          title: s.title,
+          playedOn: s.playedOn,
+          body: s.body ? remapMentionIds(s.body, entityIdMap) as Record<string, unknown> : null,
+          status: s.status as "planned" | "in_progress" | "played",
+        }).run();
+      }
+
+      for (const q of quotesData) {
+        db.insert(schema.quotes).values({
+          id: newId(),
+          campaignId: newCampaignId,
+          sessionId: q.sessionId ? (sessionIdMap.get(q.sessionId) ?? null) : null,
+          attribution: q.attribution,
+          text: q.text,
+          createdAt: now,
+        }).run();
+      }
+
+      loadCampaigns();
+    } catch (e) {
+      Alert.alert("Duplicate Failed", e instanceof Error ? e.message : "An unexpected error occurred");
+    }
+  };
+
   const finishOnboarding = (action: "create" | "sample") => {
     setKv("onboarding_done", "1");
     setShowOnboarding(false);
@@ -210,12 +321,25 @@ export default function CampaignsScreen() {
               onLongPress={() => {
                 const isArchived = item.status === "archived";
                 Alert.alert(
-                  isArchived ? "Restore Campaign" : "Archive Campaign",
-                  `${isArchived ? "Restore" : "Archive"} "${item.name}"?`,
+                  item.name,
+                  "Campaign actions",
                   [
                     { text: "Cancel", style: "cancel" },
                     {
+                      text: "Rename…",
+                      onPress: () => {
+                        setRenameTarget(item);
+                        setRenameName(item.name);
+                        setShowRename(true);
+                      },
+                    },
+                    {
+                      text: "Duplicate",
+                      onPress: () => duplicateCampaign(item),
+                    },
+                    {
                       text: isArchived ? "Restore" : "Archive",
+                      style: "destructive",
                       onPress: () => {
                         db.update(schema.campaigns)
                           .set({ status: isArchived ? "active" : "archived" })
@@ -368,6 +492,93 @@ export default function CampaignsScreen() {
                     }}
                   >
                     Create
+                  </Text>
+                </Pressable>
+              </View>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Rename Campaign Modal */}
+      <Modal
+        visible={showRename}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowRename(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1"
+        >
+          <Pressable
+            onPress={() => setShowRename(false)}
+            className="flex-1 bg-black/50 justify-center px-6"
+          >
+            <Pressable
+              onPress={() => {}}
+              className="bg-parchment-warm rounded-sm border border-gold/30 p-5"
+            >
+              <Text
+                className="text-ink text-lg text-center mb-5"
+                style={{ fontFamily: "CormorantGaramond_700Bold" }}
+              >
+                Rename Campaign
+              </Text>
+
+              <Text
+                className="text-gold text-xs uppercase tracking-wider mb-1.5"
+                style={{ fontFamily: "Inter_600SemiBold" }}
+              >
+                Campaign Name
+              </Text>
+              <TextInput
+                value={renameName}
+                onChangeText={setRenameName}
+                autoFocus
+                className="border-b border-gold/30 pb-2 mb-6"
+                style={{
+                  fontFamily: "CormorantGaramond_600SemiBold",
+                  fontSize: 18,
+                  color: "#2C2014",
+                }}
+                onSubmitEditing={renameCampaign}
+              />
+
+              <View className="flex-row justify-end">
+                <Pressable
+                  onPress={() => setShowRename(false)}
+                  className="px-5 py-2.5 mr-3"
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Inter_500Medium",
+                      fontSize: 13,
+                      color: "#5A4D3E",
+                    }}
+                  >
+                    Cancel
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={renameCampaign}
+                  disabled={!renameName.trim()}
+                  className={`px-5 py-2.5 rounded-sm border ${
+                    renameName.trim()
+                      ? "bg-oxblood border-gold/30"
+                      : "bg-oxblood/30 border-ink/10"
+                  }`}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Inter_600SemiBold",
+                      fontSize: 13,
+                      color: renameName.trim() ? "#FAF5EA" : "#FAF5EA60",
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
+                    }}
+                  >
+                    Save
                   </Text>
                 </Pressable>
               </View>

@@ -156,6 +156,8 @@ export const sessions = sqliteTable(
     title: text("title"),
     playedOn: text("played_on"), // ISO date; the timeline is ORDER BY number
     body: text("body", { mode: "json" }),
+    /** Kind-specific fields, e.g. { startedAt: ms, endedAt: ms } for duration tracking. */
+    attrs: text("attrs", { mode: "json" }),
     status: text("status", { enum: ["planned", "in_progress", "played"] })
       .notNull()
       .default("planned"),
