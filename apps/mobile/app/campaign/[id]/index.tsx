@@ -792,6 +792,20 @@ export default function CampaignDetailScreen() {
                             Lv {String((entity.attrs as Record<string, unknown>)["level"])}
                           </Text>
                         ) : null}
+                        {(entity.kind === "npc" || entity.kind === "pc") && (() => {
+                          const st = (entity.attrs as Record<string, unknown> | null)?.["npcStatus"];
+                          if (st === "dead") return (
+                            <View style={{ marginLeft: 6, paddingHorizontal: 5, paddingVertical: 1, borderRadius: 2, backgroundColor: "#7A241810", borderWidth: 1, borderColor: "#7A241840" }}>
+                              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#7A2418" }}>☠ Dead</Text>
+                            </View>
+                          );
+                          if (st === "missing") return (
+                            <View style={{ marginLeft: 6, paddingHorizontal: 5, paddingVertical: 1, borderRadius: 2, backgroundColor: "#A07A2C10", borderWidth: 1, borderColor: "#A07A2C40" }}>
+                              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#A07A2C" }}>? Missing</Text>
+                            </View>
+                          );
+                          return null;
+                        })()}
                         {entity.visibility === "gm_only" && (
                           <Text
                             className="text-oxblood text-xs ml-2"

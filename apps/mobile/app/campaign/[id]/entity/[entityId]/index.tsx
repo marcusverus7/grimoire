@@ -230,6 +230,14 @@ export default function EntityDetailScreen() {
     setEntity((prev) => prev ? { ...prev, attrs: next } : prev);
   };
 
+  const cycleStatus = () => {
+    const cur = typeof attrs?.["npcStatus"] === "string" ? attrs["npcStatus"] : "alive";
+    const next = cur === "alive" ? "dead" : cur === "dead" ? "missing" : "alive";
+    const nextAttrs = { ...(entity.attrs ?? {}) as Record<string, unknown>, npcStatus: next };
+    db.update(schema.entities).set({ attrs: nextAttrs, updatedAt: new Date() }).where(eq(schema.entities.id, entityId)).run();
+    setEntity((prev) => prev ? { ...prev, attrs: nextAttrs } : prev);
+  };
+
   return (
     <>
       <Stack.Screen
@@ -317,6 +325,23 @@ export default function EntityDetailScreen() {
                 <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#7A2418" }}>{fn.name}</Text>
               </Pressable>
             ) : null;
+          })() : null}
+          {(entity.kind === "npc" || entity.kind === "pc") ? (() => {
+            const status = typeof attrs?.["npcStatus"] === "string" ? attrs["npcStatus"] : "alive";
+            const statusConfig: Record<string, { label: string; color: string; bg: string; border: string }> = {
+              alive: { label: "● Alive", color: "#4A806090", bg: "#4A806008", border: "#4A806030" },
+              dead: { label: "☠ Dead", color: "#7A2418", bg: "#7A241810", border: "#7A241840" },
+              missing: { label: "? Missing", color: "#A07A2C", bg: "#A07A2C10", border: "#A07A2C40" },
+            };
+            const cfg = statusConfig[status] ?? statusConfig["alive"];
+            return (
+              <Pressable
+                onPress={cycleStatus}
+                style={{ marginLeft: 8, paddingHorizontal: 7, paddingVertical: 2, borderRadius: 2, backgroundColor: cfg.bg, borderWidth: 1, borderColor: cfg.border }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: cfg.color }}>{cfg.label}</Text>
+              </Pressable>
+            );
           })() : null}
           {entity.visibility === "gm_only" && (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginLeft: 8 }}>
