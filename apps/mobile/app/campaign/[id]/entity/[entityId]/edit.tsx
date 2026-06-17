@@ -51,6 +51,8 @@ export default function EntityFormScreen() {
   const [questStatus, setQuestStatus] = useState<string>("rumoured");
   const [interestedEntityIds, setInterestedEntityIds] = useState<string[]>([]);
   const [campaignCharacters, setCampaignCharacters] = useState<{ id: string; name: string; kind: string }[]>([]);
+  const [factionRelationships, setFactionRelationships] = useState<{ factionId: string; type: string }[]>([]);
+  const [campaignFactions, setCampaignFactions] = useState<{ id: string; name: string }[]>([]);
   const [hp, setHp] = useState("");
   const [ac, setAc] = useState("");
   const [initiative, setInitiative] = useState("");
@@ -82,6 +84,7 @@ export default function EntityFormScreen() {
       setExistingAttrs(attrs ?? {});
       if (attrs?.["questStatus"]) setQuestStatus(String(attrs["questStatus"]));
       if (Array.isArray(attrs?.["interestedEntityIds"])) setInterestedEntityIds(attrs["interestedEntityIds"] as string[]);
+      if (Array.isArray(attrs?.["relationships"])) setFactionRelationships(attrs["relationships"] as { factionId: string; type: string }[]);
       if (attrs?.["hp"]) setHp(String(attrs["hp"]));
       if (attrs?.["ac"]) setAc(String(attrs["ac"]));
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
@@ -101,6 +104,14 @@ export default function EntityFormScreen() {
       .filter((e) => e.kind === "pc" || e.kind === "npc")
       .sort((a, b) => a.name.localeCompare(b.name));
     setCampaignCharacters(chars);
+    // Load campaign faction entities for relationship picker
+    const factions = db.select({ id: schema.entities.id, name: schema.entities.name, kind: schema.entities.kind })
+      .from(schema.entities)
+      .where(eq(schema.entities.campaignId, campaignId))
+      .all()
+      .filter((e) => e.kind === "faction" && e.id !== entityId)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    setCampaignFactions(factions);
     setLoaded(true);
   }, [entityId, isNew]);
 
@@ -132,6 +143,12 @@ export default function EntityFormScreen() {
       } else {
         delete attrs["questStatus"];
         delete attrs["interestedEntityIds"];
+      }
+      if (kind === "faction") {
+        if (factionRelationships.length > 0) attrs["relationships"] = factionRelationships;
+        else delete attrs["relationships"];
+      } else {
+        delete attrs["relationships"];
       }
       if (kind === "npc" || kind === "pc") {
         if (hp.trim()) attrs["hp"] = hp.trim(); else delete attrs["hp"];
@@ -358,6 +375,59 @@ export default function EntityFormScreen() {
                 </View>
               </>
             )}
+          </>
+        )}
+
+        {/* Faction relationships */}
+        {kind === "faction" && campaignFactions.length > 0 && (
+          <>
+            <Label text="Faction Relationships (optional)" />
+            <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 20 }}>
+              {campaignFactions.map((f) => {
+                const rel = factionRelationships.find((r) => r.factionId === f.id);
+                const relColors: Record<string, string> = { ally: "#4A8060", enemy: "#7A2418", rival: "#A07A2C", neutral: "#5A4D3E" };
+                const color = rel ? (relColors[rel.type] ?? "#5A4D3E") : "#2C201420";
+                return (
+                  <Pressable
+                    key={f.id}
+                    onPress={() => {
+                      if (!rel) {
+                        Alert.alert(f.name, "Set relationship type:", [
+                          { text: "Ally", onPress: () => setFactionRelationships((p) => [...p, { factionId: f.id, type: "ally" }]) },
+                          { text: "Enemy", onPress: () => setFactionRelationships((p) => [...p, { factionId: f.id, type: "enemy" }]) },
+                          { text: "Rival", onPress: () => setFactionRelationships((p) => [...p, { factionId: f.id, type: "rival" }]) },
+                          { text: "Neutral", onPress: () => setFactionRelationships((p) => [...p, { factionId: f.id, type: "neutral" }]) },
+                          { text: "Cancel", style: "cancel" },
+                        ]);
+                      } else {
+                        const types = ["ally", "enemy", "rival", "neutral"];
+                        const next = types[(types.indexOf(rel.type) + 1) % types.length];
+                        if (next === "ally" && rel.type === "neutral") {
+                          setFactionRelationships((p) => p.filter((r) => r.factionId !== f.id));
+                        } else {
+                          setFactionRelationships((p) => p.map((r) => r.factionId === f.id ? { ...r, type: next } : r));
+                        }
+                      }
+                    }}
+                    onLongPress={() => setFactionRelationships((p) => p.filter((r) => r.factionId !== f.id))}
+                    style={{
+                      marginRight: 8,
+                      marginBottom: 8,
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 2,
+                      borderWidth: 1,
+                      borderColor: rel ? color : "#2C201425",
+                      backgroundColor: rel ? `${color}12` : "transparent",
+                    }}
+                  >
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: rel ? color : "#5A4D3E60" }}>
+                      {f.name}{rel ? ` · ${rel.type}` : ""}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </>
         )}
 

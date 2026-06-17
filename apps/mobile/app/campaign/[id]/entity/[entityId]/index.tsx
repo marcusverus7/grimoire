@@ -284,6 +284,30 @@ export default function EntityDetailScreen() {
           </View>
         ) : null}
 
+        {/* Faction relationships */}
+        {entity.kind === "faction" && Array.isArray(attrs?.["relationships"]) && (attrs["relationships"] as { factionId: string; type: string }[]).length > 0 ? (
+          <View style={{ marginBottom: 16 }}>
+            {(attrs["relationships"] as { factionId: string; type: string }[]).map((rel) => {
+              const colors: Record<string, string> = { ally: "#4A8060", enemy: "#7A2418", rival: "#A07A2C", neutral: "#5A4D3E" };
+              const color = colors[rel.type] ?? "#5A4D3E";
+              const factionName = db.select({ name: schema.entities.name }).from(schema.entities).where(eq(schema.entities.id, rel.factionId)).get()?.name ?? rel.factionId;
+              return (
+                <Pressable
+                  key={rel.factionId}
+                  onPress={() => router.push(`/campaign/${campaignId}/entity/${rel.factionId}`)}
+                  style={{ flexDirection: "row", alignItems: "center", paddingVertical: 5, paddingHorizontal: 4, marginBottom: 2 }}
+                >
+                  <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 2, borderWidth: 1, borderColor: `${color}50`, backgroundColor: `${color}10`, marginRight: 10 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color, textTransform: "uppercase", letterSpacing: 1 }}>{rel.type}</Text>
+                  </View>
+                  <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", flex: 1 }}>{factionName}</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C" }}>›</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+
         {/* Quest — Interested Characters */}
         {entity.kind === "quest" && interestedEntities.length > 0 ? (
           <View style={{ marginBottom: 16, flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
