@@ -12,7 +12,7 @@ import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
 import { eq, and } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
-import { db } from "@/lib/db";
+import { db, getKv, setKv } from "@/lib/db";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { DiceRoller } from "@/components/DiceRoller";
 import { schema } from "@grimoire/core";
@@ -51,6 +51,7 @@ export default function TrackerScreen() {
   const [sortByInit, setSortByInit] = useState(false);
   const [showDice, setShowDice] = useState(false);
   const [conditionTarget, setConditionTarget] = useState<TrackerEntry | null>(null);
+  const [round, setRound] = useState(1);
 
   const load = useCallback(() => {
     const entities = db
@@ -80,6 +81,8 @@ export default function TrackerScreen() {
         return { ...e, currentHp, maxHp, ac, initiative, conditions };
       });
     setEntries(entities);
+    const savedRound = getKv(`tracker_round_${campaignId}`);
+    setRound(savedRound ? parseInt(savedRound, 10) || 1 : 1);
   }, [campaignId]);
 
   useFocusEffect(load);
@@ -128,8 +131,14 @@ export default function TrackerScreen() {
     }
   };
 
+  const changeRound = (delta: number) => {
+    const next = Math.max(1, round + delta);
+    setRound(next);
+    setKv(`tracker_round_${campaignId}`, String(next));
+  };
+
   const resetAll = () => {
-    Alert.alert("Reset HP", "Restore all combatants to full HP?", [
+    Alert.alert("Reset Combat", "Restore all combatants to full HP and reset round counter?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Reset All",
@@ -142,6 +151,8 @@ export default function TrackerScreen() {
               .run();
           });
           setEntries((prev) => prev.map((e) => ({ ...e, currentHp: e.maxHp })));
+          setRound(1);
+          setKv(`tracker_round_${campaignId}`, "1");
         },
       },
     ]);
@@ -188,26 +199,42 @@ export default function TrackerScreen() {
           </View>
         ) : (
           <>
-            {/* Sort toggle */}
-            <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#A07A2C15" }}>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D", flex: 1 }}>
-                {entries.length} combatant{entries.length !== 1 ? "s" : ""}
-              </Text>
-              <Pressable
-                onPress={() => setSortByInit((v) => !v)}
-                style={{
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  borderWidth: 1,
-                  borderColor: sortByInit ? "#A07A2C" : "#A07A2C40",
-                  borderRadius: 10,
-                  backgroundColor: sortByInit ? "#A07A2C15" : "transparent",
-                }}
-              >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C" }}>
-                  {sortByInit ? "Initiative Order" : "Sort by Initiative"}
+            {/* Round counter + sort toggle */}
+            <View style={{ borderBottomWidth: 1, borderBottomColor: "#A07A2C15" }}>
+              {/* Round counter row */}
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: "#7A241820", backgroundColor: "#7A241806" }}>
+                <Pressable onPress={() => changeRound(-1)} style={{ paddingHorizontal: 16, paddingVertical: 6 }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 18, color: "#7A2418" }}>−</Text>
+                </Pressable>
+                <View style={{ alignItems: "center", minWidth: 80 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#7A241870", textTransform: "uppercase", letterSpacing: 1.5 }}>Round</Text>
+                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 28, color: "#7A2418", lineHeight: 34 }}>{round}</Text>
+                </View>
+                <Pressable onPress={() => changeRound(1)} style={{ paddingHorizontal: 16, paddingVertical: 6 }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 18, color: "#7A2418" }}>+</Text>
+                </Pressable>
+              </View>
+              {/* Sort + count row */}
+              <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D", flex: 1 }}>
+                  {entries.length} combatant{entries.length !== 1 ? "s" : ""}
                 </Text>
-              </Pressable>
+                <Pressable
+                  onPress={() => setSortByInit((v) => !v)}
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderWidth: 1,
+                    borderColor: sortByInit ? "#A07A2C" : "#A07A2C40",
+                    borderRadius: 10,
+                    backgroundColor: sortByInit ? "#A07A2C15" : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C" }}>
+                    {sortByInit ? "Initiative Order" : "Sort by Initiative"}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
 
             <FlatList
