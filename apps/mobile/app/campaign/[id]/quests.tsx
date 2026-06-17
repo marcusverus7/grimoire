@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { eq, and } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
+import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
@@ -22,6 +23,7 @@ export default function QuestsScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [quests, setQuests] = useState<Entity[]>([]);
+  const [entityNames, setEntityNames] = useState<Record<string, string>>({});
 
   const load = useCallback(() => {
     const rows = db
@@ -35,7 +37,31 @@ export default function QuestsScreen() {
       )
       .all();
     setQuests(rows);
+    // Build a name map for interested-entity lookups
+    const allEntities = db.select({ id: schema.entities.id, name: schema.entities.name })
+      .from(schema.entities)
+      .where(eq(schema.entities.campaignId, campaignId))
+      .all();
+    const map: Record<string, string> = {};
+    for (const e of allEntities) map[e.id] = e.name;
+    setEntityNames(map);
   }, [campaignId]);
+
+  const createQuest = () => {
+    const qid = newId();
+    const now = new Date();
+    db.insert(schema.entities).values({
+      id: qid,
+      campaignId,
+      kind: "quest",
+      name: "New Quest",
+      visibility: "table",
+      attrs: { questStatus: "rumoured" },
+      createdAt: now,
+      updatedAt: now,
+    }).run();
+    router.push(`/campaign/${campaignId}/entity/${qid}/edit`);
+  };
 
   useFocusEffect(load);
 
@@ -51,7 +77,16 @@ export default function QuestsScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Quests" }} />
+      <Stack.Screen
+        options={{
+          title: "Quest Log",
+          headerRight: () => (
+            <Pressable onPress={createQuest} style={{ marginRight: 16 }}>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 22, color: "#A07A2C", lineHeight: 26 }}>+</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
         className="flex-1 bg-parchment"
@@ -112,33 +147,37 @@ export default function QuestsScreen() {
                 </Text>
               </View>
 
-              {group.items.map((quest) => (
-                <Pressable
-                  key={quest.id}
-                  onPress={() =>
-                    router.push(
-                      `/campaign/${campaignId}/entity/${quest.id}`,
-                    )
-                  }
-                  className="py-3 px-3 mb-1.5 rounded-sm border border-ink/10 bg-parchment/3"
-                >
-                  <Text
-                    className="text-ink text-base"
-                    style={{ fontFamily: "CormorantGaramond_600SemiBold" }}
+              {group.items.map((quest) => {
+                const qAttrs = quest.attrs as Record<string, unknown> | null;
+                const interested = Array.isArray(qAttrs?.["interestedEntityIds"])
+                  ? (qAttrs["interestedEntityIds"] as string[]).map((eid) => entityNames[eid]).filter(Boolean)
+                  : [];
+                return (
+                  <Pressable
+                    key={quest.id}
+                    onPress={() => router.push(`/campaign/${campaignId}/entity/${quest.id}`)}
+                    style={{ paddingVertical: 12, paddingHorizontal: 12, marginBottom: 8, borderRadius: 2, borderWidth: 1, borderColor: "#2C201415", backgroundColor: "#FAF5EA" }}
                   >
-                    {quest.name}
-                  </Text>
-                  {quest.summary ? (
-                    <Text
-                      className="text-ink/50 text-sm mt-1"
-                      style={{ fontFamily: "Inter_400Regular" }}
-                      numberOfLines={2}
-                    >
-                      {quest.summary}
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 17, color: "#2C2014", marginBottom: quest.summary || interested.length > 0 ? 4 : 0 }}>
+                      {quest.name}
                     </Text>
-                  ) : null}
-                </Pressable>
-              ))}
+                    {quest.summary ? (
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#5A4D3E80", lineHeight: 18, marginBottom: interested.length > 0 ? 6 : 0 }} numberOfLines={2}>
+                        {quest.summary}
+                      </Text>
+                    ) : null}
+                    {interested.length > 0 ? (
+                      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
+                        {interested.map((name) => (
+                          <View key={name} style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 20, backgroundColor: "#A07A2C12", borderWidth: 1, borderColor: "#A07A2C30" }}>
+                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C" }}>{name}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : null}
+                  </Pressable>
+                );
+              })}
             </View>
           ))
         )}
