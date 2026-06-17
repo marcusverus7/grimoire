@@ -159,14 +159,24 @@ read Part IV (build plan) before starting any phase.
   In-app recap library (/recaps) with accordion view, share link, edit + delete.
   Version bumped to 1.4.0. Build #14 queue Jul 1 2026.
 
-## What to build next (phase 14)
+- Phase 14: Resource tracker (attrs.resources[] on PC/NPC — add/remove/adjust via ±
+  buttons + modal, Long Rest resets all; shown in party overview + prep screen);
+  NPC/PC quick-status badge (attrs.npcStatus: alive/dead/missing — tappable cycle on
+  entity detail, dead/missing badges in campaign list + party overview);
+  Export includes npcStatus + resources in entity markdown (core tests green);
+  Play View dashboard (/playview, "Dash" in In-Play bar) — single in-session screen:
+  round counter (synced with tracker), scene note quick-add (last 5, long-press delete),
+  party HP bars + resources + conditions, dead/missing list, active quests.
+  Version bumped to 1.5.0. Build #14 queue Jul 1 2026.
+
+## What to build next (phase 15)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
 2. Backup to Supabase (cloud snapshot push — needs auth).
 3. Player invites & roles (needs auth).
-4. Resource tracker for PCs (spell slots, ki points, rage uses — stored in attrs.resources).
-5. NPC quick-status (alive/dead/missing badge on entity detail + campaign list).
+4. Session wrap-up resource reset prompt (ask which resources to restore at session end).
+5. Lore search: filter by npcStatus (dead/missing only).
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).
