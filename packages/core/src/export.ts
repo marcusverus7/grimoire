@@ -216,6 +216,17 @@ export function exportCampaign(args: {
   };
 
   for (const e of entities) {
+    const attrLines: string[] = [];
+    const a = e.attrs as Record<string, unknown> | null;
+    if (Array.isArray(a?.["tags"]) && (a["tags"] as string[]).length > 0) {
+      attrLines.push(`**Tags:** ${(a["tags"] as string[]).join(", ")}`);
+    }
+    if (Array.isArray(a?.["customAttrs"]) && (a["customAttrs"] as { key: string; value: string }[]).length > 0) {
+      attrLines.push("");
+      for (const ca of a["customAttrs"] as { key: string; value: string }[]) {
+        attrLines.push(`**${ca.key}:** ${ca.value}`);
+      }
+    }
     files.push({
       path: uniquePath(`entities/${e.kind}`, e.name),
       content: [
@@ -229,6 +240,7 @@ export function exportCampaign(args: {
         ...(e.summary ? ["", `*${e.summary}*`] : []),
         "",
         richTextToMarkdown(e.body),
+        ...(attrLines.length > 0 ? ["", ...attrLines] : []),
         "",
       ].join("\n"),
     });
