@@ -105,16 +105,27 @@ read Part IV (build plan) before starting any phase.
   sort toggles (Name/Recent/Kind) on campaign detail; seedSampleCampaign guard
   against double-seeding; First Steps checklist on empty campaign. Build #14
   queued (see below).
+- Phase 10: Quick-add entity modal (kind picker + name → navigate to edit);
+  Campaign rename + duplicate (long-press menu; duplicate deep-copies entities/
+  sessions/quotes with @-mention ID remapping); Session duration timer (Start/
+  End buttons via session.attrs.startedAt/endedAt; ALTER TABLE migration for
+  sessions.attrs); Campaign detail polish: GM-Only entity filter, total play time
+  in stats bar, session durations in list, Begin Session auto-starts timer;
+  Entity pinning (long-press → pin/unpin; pinned sort to top with ★); Session
+  Share button (markdown body + quotes via native share); Fix delete cascade
+  (reveals, recapEvents, recaps now correctly deleted before entities/sessions);
+  Prep screen Session Goals field (auto-saves to attrs.prepGoals on blur);
+  About button in Campaigns tab header; version bumped to 1.1.0.
+  Build #14 ready to queue Jul 1 2026.
 
-## What to build next (phase 10)
+## What to build next (phase 11)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
-2. Backup to Supabase (cloud snapshot push).
-3. Player invites & roles (requires auth).
-4. Campaign duplicate / rename from campaign list.
-5. Session duration tracking (start/end timestamp in attrs, auto-calculated).
-6. Export journal entries per character passport.
+2. Backup to Supabase (cloud snapshot push — needs auth).
+3. Player invites & roles (needs auth).
+4. Campaign "logline" tagline field shown on campaign list card.
+5. Per-character quest interest tracking.
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).

@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Text } from "react-native";
+import { Text, Pressable, Alert } from "react-native";
 import { colors } from "@/lib/theme";
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
@@ -50,6 +50,22 @@ export default function TabLayout() {
         options={{
           title: "Campaigns",
           tabBarLabel: "Campaigns",
+          headerRight: () => (
+            <Pressable
+              onPress={() =>
+                Alert.alert(
+                  "Grimoire TTRPG",
+                  "Version 1.1.0 · Beta\n\nAll your campaign data is stored locally on this device. Export any campaign to back it up.\n\nFeedback & bugs:\nmarkloughran7@gmail.com",
+                  [{ text: "OK" }],
+                )
+              }
+              style={{ marginRight: 16 }}
+            >
+              <Text style={{ color: colors.gold.DEFAULT, fontFamily: "Inter_400Regular", fontSize: 18 }}>
+                ℹ
+              </Text>
+            </Pressable>
+          ),
         }}
       />
       <Tabs.Screen
