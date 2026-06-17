@@ -2,14 +2,14 @@
 // Wrapper for react-native-xcode.sh bundle phase.
 // Strips --config-cmd and --entry-file before calling expo export:embed.
 //
-// --config-cmd: appended by react-native-xcode.sh; passes 'react-native config'
-//   which can alter Metro's projectRoot in jest-worker processes.
-// --entry-file: xcodebuild passes an absolute path into the pnpm virtual store
-//   (e.g. node_modules/.pnpm/expo-router@.../entry.js). When Metro sees an entry
-//   file outside the projectRoot, it adjusts how workers are initialised and how
-//   moduleMapper.js resolves packages, breaking babel-preset-expo resolution.
-//   Without --entry-file, expo resolves the entry from package.json "main" field,
-//   which matches what the working pre-bundle step does.
+// --config-cmd: appended by react-native-xcode.sh; passes 'react-native config'.
+// --entry-file: xcodebuild passes an absolute pnpm-store path which shifts Metro's
+//   worker initialisation context, breaking babel-preset-expo resolution.
+// --reset-cache: clears Metro's transform cache so every file must be re-Babel'd
+//   in jest-worker processes. Those workers, when spawned inside xcodebuild's
+//   stripped environment, cannot resolve babel-preset-expo. The pre-bundle step
+//   (run first, without --reset-cache) already populated the Metro cache; reusing
+//   that cache means Babel never runs again in the problematic worker context.
 const { spawnSync } = require('child_process');
 const args = process.argv.slice(2);
 const filtered = [];
@@ -17,6 +17,7 @@ let skip = 0;
 for (const arg of args) {
   if (skip > 0) { skip--; continue; }
   if (arg === '--config-cmd' || arg === '--entry-file') { skip = 1; continue; }
+  if (arg === '--reset-cache') { continue; }  // flag only — no value to skip
   filtered.push(arg);
 }
 const expoCli = process.env.REAL_EXPO_CLI;
