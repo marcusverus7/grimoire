@@ -35,6 +35,7 @@ export default function SessionDetailScreen() {
     { id: string; name: string; kind: string }[]
   >([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [recapSlug, setRecapSlug] = useState<string | null>(null);
 
   const load = useCallback(() => {
     const s = db
@@ -86,6 +87,13 @@ export default function SessionDetailScreen() {
         .where(eq(schema.quotes.sessionId, sessionId))
         .all();
       setQuotes(sessionQuotes);
+
+      const recap = db
+        .select({ shareSlug: schema.recaps.shareSlug })
+        .from(schema.recaps)
+        .where(eq(schema.recaps.sessionId, sessionId))
+        .get();
+      setRecapSlug(recap?.shareSlug ?? null);
     }
   }, [sessionId]);
 
@@ -374,28 +382,31 @@ export default function SessionDetailScreen() {
           </Pressable>
         ) : null}
 
-        {/* Create Recap */}
+        {/* Recap actions */}
         {session.body && session.status === "played" ? (
-          <Pressable
-            onPress={() =>
-              router.push(
-                `/campaign/${campaignId}/session/${sessionId}/recap`,
-              )
-            }
-            className="mb-6 py-3 rounded-sm border border-gold/30 bg-oxblood items-center"
-          >
-            <Text
-              style={{
-                fontFamily: "Inter_600SemiBold",
-                fontSize: 13,
-                color: "#FAF5EA",
-                textTransform: "uppercase",
-                letterSpacing: 1.5,
-              }}
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
+            <Pressable
+              onPress={() => router.push(`/campaign/${campaignId}/session/${sessionId}/recap`)}
+              style={{ flex: 1, paddingVertical: 12, borderRadius: 2, borderWidth: 1, borderColor: "#C9A24A40", backgroundColor: "#7A2418", alignItems: "center" }}
             >
-              Create Recap
-            </Text>
-          </Pressable>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1.5 }}>
+                {recapSlug ? "Edit Recap" : "Create Recap"}
+              </Text>
+            </Pressable>
+            {recapSlug ? (
+              <Pressable
+                onPress={async () => {
+                  const url = `https://grimoire-recap-web.vercel.app/r/${recapSlug}`;
+                  await Share.share({ title: `Session ${session.number} Recap`, message: url, url });
+                }}
+                style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C40", backgroundColor: "#A07A2C0A", alignItems: "center" }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+                  Share ↗
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         ) : null}
 
         {/* Quotes section */}
