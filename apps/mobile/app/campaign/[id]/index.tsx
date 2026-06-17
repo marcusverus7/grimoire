@@ -301,6 +301,7 @@ export default function CampaignDetailScreen() {
             </View>
             <View style={{ flexDirection: "row", backgroundColor: "#7A241808", paddingVertical: 8, paddingHorizontal: 14, gap: 16 }}>
               {[
+                { label: "Dash", path: `/campaign/${id}/playview` },
                 { label: "Tracker", path: `/campaign/${id}/tracker` },
                 { label: "Tables", path: `/campaign/${id}/tables` },
                 { label: "Party", path: `/campaign/${id}/party` },
