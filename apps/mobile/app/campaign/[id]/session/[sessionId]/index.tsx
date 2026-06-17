@@ -29,6 +29,8 @@ export default function SessionDetailScreen() {
   }>();
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
+  const [prevSession, setPrevSession] = useState<{ id: string; number: number } | null>(null);
+  const [nextSession, setNextSession] = useState<{ id: string; number: number } | null>(null);
   const [linkedEntities, setLinkedEntities] = useState<
     { id: string; name: string; kind: string }[]
   >([]);
@@ -41,6 +43,18 @@ export default function SessionDetailScreen() {
       .where(eq(schema.sessions.id, sessionId))
       .get();
     setSession(s ?? null);
+
+    if (s) {
+      // Adjacent session navigation
+      const allSessions = db.select({ id: schema.sessions.id, number: schema.sessions.number })
+        .from(schema.sessions)
+        .where(eq(schema.sessions.campaignId, s.campaignId))
+        .all()
+        .sort((a, b) => a.number - b.number);
+      const idx = allSessions.findIndex((x) => x.id === sessionId);
+      setPrevSession(idx > 0 ? allSessions[idx - 1] : null);
+      setNextSession(idx < allSessions.length - 1 ? allSessions[idx + 1] : null);
+    }
 
     if (s) {
       const links = db
@@ -425,6 +439,30 @@ export default function SessionDetailScreen() {
             </View>
           </>
         )}
+
+        {/* Session navigation */}
+        {(prevSession || nextSession) ? (
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#A07A2C20" }}>
+            {prevSession ? (
+              <Pressable
+                onPress={() => router.replace(`/campaign/${campaignId}/session/${prevSession.id}` as Parameters<typeof router.replace>[0])}
+                style={{ flex: 1, paddingVertical: 8, alignItems: "flex-start" }}
+              >
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C60", marginBottom: 2 }}>← Previous</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Session {prevSession.number}</Text>
+              </Pressable>
+            ) : <View style={{ flex: 1 }} />}
+            {nextSession ? (
+              <Pressable
+                onPress={() => router.replace(`/campaign/${campaignId}/session/${nextSession.id}` as Parameters<typeof router.replace>[0])}
+                style={{ flex: 1, paddingVertical: 8, alignItems: "flex-end" }}
+              >
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C60", marginBottom: 2 }}>Next →</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Session {nextSession.number}</Text>
+              </Pressable>
+            ) : <View style={{ flex: 1 }} />}
+          </View>
+        ) : null}
 
         <View className="h-20" />
       </ScrollView>
