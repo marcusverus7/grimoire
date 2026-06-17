@@ -177,9 +177,29 @@ CREATE TABLE IF NOT EXISTS \`sync_log\` (
   \`device_id\` text NOT NULL
 );
 CREATE INDEX IF NOT EXISTS \`sync_log_row_idx\` ON \`sync_log\` (\`table_name\`,\`row_id\`);
+
+CREATE TABLE IF NOT EXISTS \`app_kv\` (
+  \`key\` text PRIMARY KEY NOT NULL,
+  \`value\` text NOT NULL
+);
 `;
 
 let migrated = false;
+
+export function getKv(key: string): string | null {
+  const row = expoDb.getFirstSync<{ value: string }>(
+    "SELECT value FROM app_kv WHERE key = ?",
+    [key],
+  );
+  return row?.value ?? null;
+}
+
+export function setKv(key: string, value: string): void {
+  expoDb.runSync(
+    "INSERT OR REPLACE INTO app_kv (key, value) VALUES (?, ?)",
+    [key, value],
+  );
+}
 
 export function applyMigrations(): void {
   if (migrated) return;

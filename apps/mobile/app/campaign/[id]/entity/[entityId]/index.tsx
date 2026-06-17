@@ -1,9 +1,10 @@
-import { View, Text, Pressable, ScrollView, Share, TextInput } from "react-native";
+import { View, Text, Pressable, ScrollView, Share, TextInput, Alert } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
 import { eq, and } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
+import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
@@ -160,17 +161,50 @@ export default function EntityDetailScreen() {
             {KIND_LABELS[entity.kind] ?? entity.kind}
           </Text>
           {entity.visibility === "gm_only" && (
-            <View className="ml-2 px-2 py-0.5 bg-oxblood/10 rounded-sm">
-              <Text
-                style={{
-                  fontFamily: "Inter_600SemiBold",
-                  fontSize: 10,
-                  color: "#7A2418",
-                  textTransform: "uppercase",
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginLeft: 8 }}>
+              <View style={{ paddingHorizontal: 8, paddingVertical: 2, backgroundColor: "#7A241810", borderRadius: 2 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#7A2418", textTransform: "uppercase" }}>
+                  GM Only
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => {
+                  Alert.alert(
+                    "Reveal to Table",
+                    `Show "${entity.name}" to your players? This changes its visibility from GM-only to visible at the table.`,
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      {
+                        text: "Reveal",
+                        style: "default",
+                        onPress: () => {
+                          const now = Date.now();
+                          db.update(schema.entities)
+                            .set({ visibility: "table", updatedAt: new Date(now) })
+                            .where(eq(schema.entities.id, entityId))
+                            .run();
+                          db.insert(schema.reveals)
+                            .values({
+                              id: newId(),
+                              entityId,
+                              blockRef: null,
+                              revealedTo: "table",
+                              revealedToUserId: null,
+                              revealedAt: new Date(now),
+                            })
+                            .run();
+                          setEntity((prev) => prev ? { ...prev, visibility: "table" } : prev);
+                        },
+                      },
+                    ],
+                  );
                 }}
+                style={{ paddingHorizontal: 8, paddingVertical: 2, borderWidth: 1, borderColor: "#4A806050", borderRadius: 2, backgroundColor: "#4A806008" }}
               >
-                GM Only
-              </Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#4A8060", textTransform: "uppercase" }}>
+                  Reveal ↗
+                </Text>
+              </Pressable>
             </View>
           )}
         </View>

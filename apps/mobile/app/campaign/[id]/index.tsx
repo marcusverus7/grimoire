@@ -57,6 +57,7 @@ export default function CampaignDetailScreen() {
   const [search, setSearch] = useState("");
   const [kindFilter, setKindFilter] = useState<string | null>(null);
   const [showDice, setShowDice] = useState(false);
+  const [recentlyRevealed, setRecentlyRevealed] = useState<{ entityId: string; name: string; revealedAt: number }[]>([]);
 
   const load = useCallback(() => {
     const c = db
@@ -96,6 +97,28 @@ export default function CampaignDetailScreen() {
         entityCount: allEntities.length,
         quoteCount: allQuotes.length,
       });
+
+      // Load recently revealed entities (table-wide, last 5)
+      const campaignEntityIds = allEntities.map((e) => e.id);
+      if (campaignEntityIds.length > 0) {
+        const allReveals = db
+          .select({ entityId: schema.reveals.entityId, revealedAt: schema.reveals.revealedAt })
+          .from(schema.reveals)
+          .where(eq(schema.reveals.revealedTo, "table"))
+          .all();
+        const campaignReveals = allReveals
+          .filter((r) => campaignEntityIds.includes(r.entityId))
+          .sort((a, b) => (b.revealedAt instanceof Date ? b.revealedAt.getTime() : b.revealedAt) - (a.revealedAt instanceof Date ? a.revealedAt.getTime() : a.revealedAt))
+          .slice(0, 5);
+        const enrichedReveals = campaignReveals.map((r) => {
+          const ent = allEntities.find((e) => e.id === r.entityId);
+          const ts = r.revealedAt instanceof Date ? r.revealedAt.getTime() : r.revealedAt;
+          return { entityId: r.entityId, name: ent?.name ?? "Unknown", revealedAt: ts };
+        });
+        setRecentlyRevealed(enrichedReveals);
+      } else {
+        setRecentlyRevealed([]);
+      }
     }
   }, [id]);
 
@@ -327,6 +350,28 @@ export default function CampaignDetailScreen() {
               </Text>
             ) : null}
           </Pressable>
+        ) : null}
+
+        {/* Recently Revealed */}
+        {recentlyRevealed.length > 0 ? (
+          <View style={{ marginTop: 16 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#4A806080", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
+              Recently Revealed
+            </Text>
+            {recentlyRevealed.map((r) => (
+              <Pressable
+                key={r.entityId}
+                onPress={() => router.push(`/campaign/${id}/entity/${r.entityId}` as Parameters<typeof router.push>[0])}
+                style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: "#4A806020" }}
+              >
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#4A8060", marginRight: 6 }}>↗</Text>
+                <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", flex: 1 }}>{r.name}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E60" }}>
+                  {new Date(r.revealedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
         ) : null}
 
         {/* Sessions */}

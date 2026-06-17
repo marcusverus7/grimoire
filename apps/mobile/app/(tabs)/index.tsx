@@ -9,15 +9,16 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { eq, sql } from "drizzle-orm";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
-import { db } from "@/lib/db";
+import { db, getKv, setKv } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { WaxSeal } from "@/components/WaxSeal";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
+import { OnboardingModal } from "@/components/OnboardingModal";
 import { schema } from "@grimoire/core";
 import { seedSampleCampaign } from "@/lib/sampleData";
 
@@ -33,7 +34,13 @@ export default function CampaignsScreen() {
   const [showArchived, setShowArchived] = useState(false);
   const [newName, setNewName] = useState("");
   const [newSystem, setNewSystem] = useState("");
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const done = getKv("onboarding_done");
+    if (!done) setShowOnboarding(true);
+  }, []);
 
   const loadCampaigns = useCallback(() => {
     const rows = db
@@ -126,7 +133,25 @@ export default function CampaignsScreen() {
     setShowCreate(true);
   };
 
+  const finishOnboarding = (action: "create" | "sample") => {
+    setKv("onboarding_done", "1");
+    setShowOnboarding(false);
+    if (action === "sample") {
+      try {
+        const id = seedSampleCampaign();
+        loadCampaigns();
+        router.push(`/campaign/${id}`);
+      } catch (e) {
+        Alert.alert("Error", e instanceof Error ? e.message : "Could not load sample");
+      }
+    } else {
+      openCreate();
+    }
+  };
+
   return (
+    <>
+    <OnboardingModal visible={showOnboarding} onDone={finishOnboarding} />
     <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
     <View className="flex-1 bg-parchment">
       {campaigns.length === 0 ? (
@@ -332,5 +357,6 @@ export default function CampaignsScreen() {
       </Modal>
     </View>
     </ParchmentScreen>
+    </>
   );
 }
