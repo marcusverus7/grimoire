@@ -139,14 +139,23 @@ read Part IV (build plan) before starting any phase.
   Location hierarchy (parentId in attrs, parent picker in edit, breadcrumb +
   sub-locations on detail). Version bumped to 1.2.0. Build #14 queue Jul 1 2026.
 
-## What to build next (phase 12)
+- Phase 12: Entity tags (freeform pill tags, tag filter on campaign list); Enhanced
+  relationship map (faction-rel edges + NPC membership edges + mode filter:
+  All/Mentions/Factions); Lore search extended (tag, GM secret, custom attr value
+  matching); In-play bar on campaign detail when session in_progress (links to
+  Tracker/Tables/Party/Dice); Export renders tags + customAttrs in entity markdown;
+  Session prep Party Status section (PC HP + conditions); NPC Generator screen
+  (random name/role/hook/secret, one-tap save). Version bumped to 1.3.0.
+  Build #14 queue Jul 1 2026.
+
+## What to build next (phase 13)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
 2. Backup to Supabase (cloud snapshot push — needs auth).
 3. Player invites & roles (needs auth).
-4. Custom entity attributes (key-value pairs the GM can define per entity).
-5. NPC relationship web — visual graph of NPC-to-NPC faction/ally/enemy links.
+4. Location map — tap a location node to see sub-locations and pinned entities.
+5. Scene notepad — floating rich-text during in-progress session for quick scene captures.
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).
