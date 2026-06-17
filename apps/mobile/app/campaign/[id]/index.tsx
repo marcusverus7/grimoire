@@ -5,6 +5,9 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
@@ -58,6 +61,9 @@ export default function CampaignDetailScreen() {
   const [kindFilter, setKindFilter] = useState<string | null>(null);
   const [showDice, setShowDice] = useState(false);
   const [entitySort, setEntitySort] = useState<"name" | "updated" | "kind">("name");
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [quickAddKind, setQuickAddKind] = useState<string>("npc");
+  const [quickAddName, setQuickAddName] = useState("");
   const [recentlyRevealed, setRecentlyRevealed] = useState<{ entityId: string; name: string; revealedAt: number }[]>([]);
 
   const load = useCallback(() => {
@@ -148,6 +154,28 @@ export default function CampaignDetailScreen() {
       })
       .run();
     router.push(`/campaign/${id}/session/${sessionId}/edit`);
+  };
+
+  const quickAddEntity = () => {
+    const trimmed = quickAddName.trim();
+    if (!trimmed) return;
+    const entityId = newId();
+    const now = new Date();
+    db.insert(schema.entities)
+      .values({
+        id: entityId,
+        campaignId: id,
+        kind: quickAddKind as "npc" | "pc" | "location" | "faction" | "item" | "quest" | "custom",
+        name: trimmed,
+        visibility: "table",
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
+    setShowQuickAdd(false);
+    setQuickAddName("");
+    setQuickAddKind("npc");
+    router.push(`/campaign/${id}/entity/${entityId}/edit`);
   };
 
   if (!campaign) {
@@ -483,7 +511,7 @@ export default function CampaignDetailScreen() {
             >
               Entities
             </Text>
-            <Pressable onPress={() => router.push(`/campaign/${id}/entity/new/edit`)}>
+            <Pressable onPress={() => { setQuickAddName(""); setQuickAddKind("npc"); setShowQuickAdd(true); }}>
               <Text className="text-gold text-xs" style={{ fontFamily: "Inter_500Medium" }}>
                 + New
               </Text>
@@ -690,6 +718,82 @@ export default function CampaignDetailScreen() {
       </ParchmentScreen>
 
       <DiceRoller visible={showDice} onClose={() => setShowDice(false)} />
+
+      {/* Quick-add entity modal */}
+      <Modal
+        visible={showQuickAdd}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowQuickAdd(false)}
+      >
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+          <Pressable
+            onPress={() => setShowQuickAdd(false)}
+            style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", paddingHorizontal: 24 }}
+          >
+            <Pressable onPress={() => {}} style={{ backgroundColor: "#FAF5EA", borderRadius: 4, borderWidth: 1, borderColor: "#A07A2C30", padding: 20 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 16 }}>
+                Add Entity
+              </Text>
+
+              {/* Kind picker */}
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+                {ENTITY_KINDS.map((k) => (
+                  <Pressable
+                    key={k}
+                    onPress={() => setQuickAddKind(k)}
+                    style={{
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 2,
+                      borderWidth: 1,
+                      borderColor: quickAddKind === k ? "#A07A2C" : "#A07A2C30",
+                      backgroundColor: quickAddKind === k ? "#A07A2C15" : "transparent",
+                    }}
+                  >
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: quickAddKind === k ? "#A07A2C" : "#5A4D3E", textTransform: "capitalize" }}>
+                      {KIND_LABELS[k] ?? k}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <TextInput
+                value={quickAddName}
+                onChangeText={setQuickAddName}
+                placeholder="Name"
+                placeholderTextColor="#2C201440"
+                autoFocus
+                style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 20 }}
+                onSubmitEditing={quickAddEntity}
+                returnKeyType="done"
+              />
+
+              <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 12 }}>
+                <Pressable onPress={() => setShowQuickAdd(false)} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#5A4D3E" }}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  onPress={quickAddEntity}
+                  disabled={!quickAddName.trim()}
+                  style={{
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                    borderRadius: 2,
+                    backgroundColor: quickAddName.trim() ? "#7A2418" : "#7A241830",
+                    borderWidth: 1,
+                    borderColor: "#A07A2C30",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: quickAddName.trim() ? "#FAF5EA" : "#FAF5EA60", textTransform: "uppercase", letterSpacing: 1 }}>
+                    Create
+                  </Text>
+                </Pressable>
+              </View>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
     </>
   );
 }
