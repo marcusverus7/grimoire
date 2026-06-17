@@ -1,6 +1,6 @@
-import { View, Text, Pressable, Dimensions } from "react-native";
+import { View, Text, Pressable, Dimensions, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import { useMemo, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { eq } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import Svg, { Circle, Line, Text as SvgText } from "react-native-svg";
@@ -14,6 +14,17 @@ import {
   type GraphEntity,
 } from "@grimoire/core";
 import type { EntityLinkRow } from "@grimoire/core";
+
+type EdgeKind = "direct" | "co_mention" | "faction_member" | "faction_rel";
+type RelType = "ally" | "enemy" | "rival" | "neutral";
+type ExtEdge = { fromId: string; toId: string; kind: EdgeKind; relType?: RelType; weight: number };
+
+const REL_COLORS: Record<RelType, string> = {
+  ally: "#4A8060",
+  enemy: "#7A2418",
+  rival: "#A07A2C",
+  neutral: "#8A7D6D",
+};
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const GRAPH_W = SCREEN_WIDTH - 32;
@@ -37,7 +48,7 @@ interface LayoutNode extends GraphNode {
 
 function layoutGraph(
   nodes: GraphNode[],
-  edges: GraphEdge[],
+  edges: { fromId: string; toId: string }[],
 ): LayoutNode[] {
   if (nodes.length === 0) return [];
   if (nodes.length === 1) {
@@ -112,11 +123,14 @@ function layoutGraph(
   return placed;
 }
 
+type GraphMode = "all" | "mentions" | "factions";
+
 export default function GraphScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
-  const [edges, setEdges] = useState<GraphEdge[]>([]);
+  const [allEdges, setAllEdges] = useState<ExtEdge[]>([]);
+  const [graphMode, setGraphMode] = useState<GraphMode>("all");
 
   const load = useCallback(() => {
     const entities = db
@@ -153,19 +167,61 @@ export default function GraphScreen() {
       links: linkRows,
     });
 
-    setEdges(graph.edges);
-    setNodes(layoutGraph(graph.nodes, graph.edges));
+    // Build extended edges: mention-derived + faction relationships + NPC faction membership
+    const ext: ExtEdge[] = graph.edges.map((e: GraphEdge) => ({
+      fromId: e.fromId,
+      toId: e.toId,
+      kind: e.kind as "direct" | "co_mention",
+      weight: e.weight,
+    }));
+
+    for (const entity of entities) {
+      const attrs = entity.attrs as Record<string, unknown> | null;
+      if (entity.kind === "faction" && Array.isArray(attrs?.["relationships"])) {
+        for (const rel of attrs["relationships"] as { factionId: string; type: string }[]) {
+          if (entities.some((e) => e.id === rel.factionId)) {
+            // Avoid duplicate reverse edge
+            if (!ext.some((e) => (e.fromId === entity.id && e.toId === rel.factionId && e.kind === "faction_rel") || (e.fromId === rel.factionId && e.toId === entity.id && e.kind === "faction_rel"))) {
+              ext.push({ fromId: entity.id, toId: rel.factionId, kind: "faction_rel", relType: rel.type as RelType, weight: 2 });
+            }
+          }
+        }
+      }
+      if ((entity.kind === "npc" || entity.kind === "pc") && typeof attrs?.["factionId"] === "string") {
+        if (entities.some((e) => e.id === attrs["factionId"])) {
+          ext.push({ fromId: entity.id, toId: attrs["factionId"] as string, kind: "faction_member", weight: 1 });
+        }
+      }
+    }
+
+    // Compute which nodes appear in faction edges for "factions" mode
+    const factionEdgeIds = new Set(ext.filter(e => e.kind === "faction_rel" || e.kind === "faction_member").flatMap(e => [e.fromId, e.toId]));
+    const mentionEdgeIds = new Set(ext.filter(e => e.kind === "direct" || e.kind === "co_mention").flatMap(e => [e.fromId, e.toId]));
+    const allNodeIds = new Set([...factionEdgeIds, ...mentionEdgeIds]);
+    const filteredNodes = graph.nodes.filter((n: GraphNode) => allNodeIds.has(n.id));
+
+    setAllEdges(ext);
+    setNodes(layoutGraph(filteredNodes.length > 0 ? filteredNodes : graph.nodes, ext));
   }, [campaignId]);
 
   useFocusEffect(load);
+
+  const visibleEdges = allEdges.filter((e) => {
+    if (graphMode === "mentions") return e.kind === "direct" || e.kind === "co_mention";
+    if (graphMode === "factions") return e.kind === "faction_rel" || e.kind === "faction_member";
+    return true;
+  });
+
+  const visibleNodeIds = new Set(visibleEdges.flatMap((e) => [e.fromId, e.toId]));
+  const visibleNodes = graphMode === "all" ? nodes : nodes.filter((n) => visibleNodeIds.has(n.id));
 
   return (
     <>
       <Stack.Screen options={{ title: "Relationship Map" }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
-      <View className="flex-1 bg-parchment" style={{ padding: 16 }}>
+      <ScrollView className="flex-1 bg-parchment" contentContainerStyle={{ padding: 16 }}>
         {nodes.length === 0 ? (
-          <View className="flex-1 items-center justify-center">
+          <View style={{ paddingTop: 80, alignItems: "center" }}>
             <Text
               className="text-ink/50 text-sm text-center"
               style={{ fontFamily: "Inter_400Regular" }}
@@ -176,11 +232,39 @@ export default function GraphScreen() {
           </View>
         ) : (
           <>
+            {/* Mode filter */}
+            <View style={{ flexDirection: "row", justifyContent: "center", gap: 8, marginBottom: 12 }}>
+              {(["all", "mentions", "factions"] as GraphMode[]).map((mode) => (
+                <Pressable
+                  key={mode}
+                  onPress={() => setGraphMode(mode)}
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 5,
+                    borderRadius: 2,
+                    borderWidth: 1,
+                    borderColor: graphMode === mode ? "#A07A2C" : "#A07A2C40",
+                    backgroundColor: graphMode === mode ? "#A07A2C15" : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: graphMode === mode ? "#A07A2C" : "#A07A2C80", textTransform: "capitalize" }}>
+                    {mode === "all" ? "All" : mode === "mentions" ? "Mentions" : "Factions"}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
             <Svg width={GRAPH_W} height={GRAPH_H}>
-              {edges.map((edge, i) => {
-                const from = nodes.find((n) => n.id === edge.fromId);
-                const to = nodes.find((n) => n.id === edge.toId);
+              {visibleEdges.map((edge, i) => {
+                const from = visibleNodes.find((n) => n.id === edge.fromId);
+                const to = visibleNodes.find((n) => n.id === edge.toId);
                 if (!from || !to) return null;
+                const stroke = edge.kind === "faction_rel" && edge.relType
+                  ? REL_COLORS[edge.relType]
+                  : edge.kind === "faction_member"
+                  ? "#7A241840"
+                  : edge.kind === "direct" ? "#A07A2C" : "#A07A2C40";
+                const dashArray = edge.kind === "co_mention" ? "4,4" : edge.kind === "faction_member" ? "3,3" : undefined;
                 return (
                   <Line
                     key={i}
@@ -188,13 +272,13 @@ export default function GraphScreen() {
                     y1={from.y}
                     x2={to.x}
                     y2={to.y}
-                    stroke={edge.kind === "direct" ? "#A07A2C" : "#A07A2C40"}
-                    strokeWidth={Math.min(edge.weight + 0.5, 3)}
-                    strokeDasharray={edge.kind === "co_mention" ? "4,4" : undefined}
+                    stroke={stroke}
+                    strokeWidth={edge.kind === "faction_rel" ? 2 : Math.min(edge.weight + 0.5, 3)}
+                    strokeDasharray={dashArray}
                   />
                 );
               })}
-              {nodes.map((node) => (
+              {visibleNodes.map((node) => (
                 <Circle
                   key={node.id}
                   cx={node.x}
@@ -209,7 +293,7 @@ export default function GraphScreen() {
                   }
                 />
               ))}
-              {nodes.map((node) => (
+              {visibleNodes.map((node) => (
                 <SvgText
                   key={`label-${node.id}`}
                   x={node.x}
@@ -226,10 +310,10 @@ export default function GraphScreen() {
               ))}
             </Svg>
 
-            {/* Legend */}
+            {/* Kind legend */}
             <View className="mt-4 flex-row flex-wrap justify-center">
               {Object.entries(KIND_COLORS).map(([kind, color]) => {
-                const hasKind = nodes.some((n) => n.kind === kind);
+                const hasKind = visibleNodes.some((n) => n.kind === kind);
                 if (!hasKind) return null;
                 return (
                   <View key={kind} className="flex-row items-center mr-4 mb-2">
@@ -257,52 +341,38 @@ export default function GraphScreen() {
               })}
             </View>
 
-            <View className="mt-2 flex-row justify-center">
-              <View className="flex-row items-center mr-4">
-                <View
-                  style={{
-                    width: 16,
-                    height: 2,
-                    backgroundColor: "#A07A2C",
-                    marginRight: 4,
-                  }}
-                />
-                <Text
-                  style={{
-                    fontFamily: "Inter_400Regular",
-                    fontSize: 10,
-                    color: "#2C201460",
-                  }}
-                >
-                  Direct mention
-                </Text>
-              </View>
-              <View className="flex-row items-center">
-                <View
-                  style={{
-                    width: 16,
-                    height: 2,
-                    backgroundColor: "#A07A2C40",
-                    marginRight: 4,
-                    borderStyle: "dashed",
-                    borderWidth: 1,
-                    borderColor: "#A07A2C40",
-                  }}
-                />
-                <Text
-                  style={{
-                    fontFamily: "Inter_400Regular",
-                    fontSize: 10,
-                    color: "#2C201460",
-                  }}
-                >
-                  Same session
-                </Text>
-              </View>
+            {/* Edge legend */}
+            <View className="mt-2 flex-row flex-wrap justify-center">
+              {(graphMode === "all" || graphMode === "mentions") && (
+                <>
+                  <View className="flex-row items-center mr-4 mb-1">
+                    <View style={{ width: 16, height: 2, backgroundColor: "#A07A2C", marginRight: 4 }} />
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#2C201460" }}>Direct mention</Text>
+                  </View>
+                  <View className="flex-row items-center mr-4 mb-1">
+                    <View style={{ width: 16, height: 2, backgroundColor: "#A07A2C40", marginRight: 4, borderStyle: "dashed", borderWidth: 1, borderColor: "#A07A2C40" }} />
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#2C201460" }}>Co-mention</Text>
+                  </View>
+                </>
+              )}
+              {(graphMode === "all" || graphMode === "factions") && (
+                <>
+                  {(["ally", "enemy", "rival", "neutral"] as RelType[]).map((rt) => (
+                    <View key={rt} className="flex-row items-center mr-4 mb-1">
+                      <View style={{ width: 16, height: 2, backgroundColor: REL_COLORS[rt], marginRight: 4 }} />
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#2C201460", textTransform: "capitalize" }}>{rt}</Text>
+                    </View>
+                  ))}
+                  <View className="flex-row items-center mr-4 mb-1">
+                    <View style={{ width: 16, height: 2, backgroundColor: "#7A241840", marginRight: 4, borderStyle: "dashed", borderWidth: 1, borderColor: "#7A241840" }} />
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#2C201460" }}>Member</Text>
+                  </View>
+                </>
+              )}
             </View>
           </>
         )}
-      </View>
+      </ScrollView>
       </ParchmentScreen>
     </>
   );
