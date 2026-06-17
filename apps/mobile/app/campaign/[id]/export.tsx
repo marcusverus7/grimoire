@@ -8,7 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { WaxSeal } from "@/components/WaxSeal";
 import { schema } from "@grimoire/core";
-import { exportCampaign, slugify } from "@grimoire/core";
+import { exportCampaign, slugify, richTextToMarkdown } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
 
 export default function ExportScreen() {
@@ -148,7 +148,36 @@ export default function ExportScreen() {
       });
 
       const indexFile = exportData.files.find((f) => f.path === "index.md");
-      const text = indexFile?.content ?? exportData.json;
+      let text = indexFile?.content ?? exportData.json;
+
+      // Append character journals for PC entities in this campaign
+      const pcEntities = entities.filter((e) => e.kind === "pc" && e.characterProfileId);
+      if (pcEntities.length > 0) {
+        const journalSections: string[] = [];
+        for (const pc of pcEntities) {
+          const profile = db
+            .select({ name: schema.characterProfiles.name })
+            .from(schema.characterProfiles)
+            .where(eq(schema.characterProfiles.id, pc.characterProfileId!))
+            .get();
+          const journals = db
+            .select()
+            .from(schema.journals)
+            .where(eq(schema.journals.characterProfileId, pc.characterProfileId!))
+            .all();
+          if (profile && journals.length > 0) {
+            const entryTexts = journals.map((j) => {
+              const date = j.createdAt instanceof Date ? j.createdAt.toISOString().slice(0, 10) : String(j.createdAt);
+              const body = j.body ? richTextToMarkdown(j.body as RichTextNode) : "";
+              return `_${date}_\n\n${body}`;
+            });
+            journalSections.push(`## ${profile.name}\n\n${entryTexts.join("\n\n---\n\n")}`);
+          }
+        }
+        if (journalSections.length > 0) {
+          text += `\n\n---\n\n# Character Journals\n\n${journalSections.join("\n\n")}`;
+        }
+      }
 
       await Share.share({
         title: `${campaign.name} — Grimoire Summary`,
