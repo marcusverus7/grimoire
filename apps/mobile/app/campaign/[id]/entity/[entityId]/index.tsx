@@ -200,6 +200,20 @@ export default function EntityDetailScreen() {
                 </Text>
               </Pressable>
               <Pressable
+                onPress={() => {
+                  const current = (entity.attrs ?? {}) as Record<string, unknown>;
+                  const flagged = current["needsPrep"] === true;
+                  const next: Record<string, unknown> = { ...current };
+                  if (flagged) { delete next["needsPrep"]; } else { next["needsPrep"] = true; }
+                  db.update(schema.entities).set({ attrs: next, updatedAt: new Date() }).where(eq(schema.entities.id, entityId)).run();
+                  setEntity((prev) => prev ? { ...prev, attrs: next } : prev);
+                }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: attrs?.["needsPrep"] === true ? "#7A2418" : "#A07A2C80" }}>
+                  {attrs?.["needsPrep"] === true ? "⚑ Prep" : "⚑"}
+                </Text>
+              </Pressable>
+              <Pressable
                 onPress={() =>
                   router.push(`/campaign/${campaignId}/entity/${entityId}/edit`)
                 }

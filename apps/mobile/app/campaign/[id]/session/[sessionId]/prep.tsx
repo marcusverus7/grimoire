@@ -30,6 +30,7 @@ export default function SessionPrepScreen() {
   const [prevSession, setPrevSession] = useState<Session | null>(null);
   const [activeQuests, setActiveQuests] = useState<Entity[]>([]);
   const [keyEntities, setKeyEntities] = useState<Entity[]>([]);
+  const [flaggedEntities, setFlaggedEntities] = useState<Entity[]>([]);
   const [prepGoals, setPrepGoals] = useState("");
 
   const load = useCallback(() => {
@@ -57,6 +58,14 @@ export default function SessionPrepScreen() {
       .limit(1)
       .get();
     setPrevSession(prev ?? null);
+
+    // Entities flagged for prep
+    const flagged = db.select().from(schema.entities)
+      .where(eq(schema.entities.campaignId, campaignId))
+      .all()
+      .filter((e) => (e.attrs as Record<string, unknown> | null)?.["needsPrep"] === true)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    setFlaggedEntities(flagged);
 
     // Active quests
     const quests = db
@@ -118,6 +127,12 @@ export default function SessionPrepScreen() {
               })
               .where(eq(schema.sessions.id, sessionId))
               .run();
+            // Clear needsPrep flags from all flagged entities
+            for (const e of flaggedEntities) {
+              const a = { ...(e.attrs as Record<string, unknown> | null ?? {}) };
+              delete a["needsPrep"];
+              db.update(schema.entities).set({ attrs: Object.keys(a).length > 0 ? a : null, updatedAt: new Date() }).where(eq(schema.entities.id, e.id)).run();
+            }
             router.push(`/campaign/${campaignId}/session/${sessionId}/edit`);
           },
         },
@@ -207,6 +222,30 @@ export default function SessionPrepScreen() {
           </Section>
 
           <View style={{ marginVertical: 16 }}><GoldRule /></View>
+
+          {/* Flagged for Prep */}
+          {flaggedEntities.length > 0 && (
+            <>
+              <Section label="⚑ Flagged for This Session">
+                {flaggedEntities.map((e) => (
+                  <Pressable
+                    key={e.id}
+                    onPress={() => router.push(`/campaign/${campaignId}/entity/${e.id}`)}
+                    style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: "#7A241815" }}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: "#2C2014" }}>{e.name}</Text>
+                      {(e.attrs as Record<string, unknown> | null)?.["role"] ? (
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60" }}>{String((e.attrs as Record<string, unknown>)["role"])}</Text>
+                      ) : null}
+                    </View>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1 }}>{e.kind}</Text>
+                  </Pressable>
+                ))}
+              </Section>
+              <View style={{ marginVertical: 16 }}><GoldRule /></View>
+            </>
+          )}
 
           {/* Open Quests */}
           <Section label="Open Quests">
