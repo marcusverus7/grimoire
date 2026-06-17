@@ -405,6 +405,30 @@ export default function EntityDetailScreen() {
           </View>
         ) : null}
 
+        {/* PC level / XP bar */}
+        {entity.kind === "pc" && attrs != null && (attrs["level"] || attrs["xp"]) ? (
+          <View style={{ marginBottom: 12, flexDirection: "row", alignItems: "center" }}>
+            {attrs["level"] ? (
+              <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 2, borderWidth: 1, borderColor: "#C9A24A50", backgroundColor: "#C9A24A10", marginRight: 12 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#C9A24A" }}>Lv {String(attrs["level"])}</Text>
+              </View>
+            ) : null}
+            {attrs["xp"] && attrs["maxXp"] ? (
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E60" }}>XP</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E60" }}>{String(attrs["xp"])} / {String(attrs["maxXp"])}</Text>
+                </View>
+                <View style={{ height: 4, backgroundColor: "#C9A24A20", borderRadius: 2 }}>
+                  <View style={{ height: 4, backgroundColor: "#C9A24A", borderRadius: 2, width: `${Math.min(100, Math.round(Number(attrs["xp"]) / Number(attrs["maxXp"]) * 100))}%` }} />
+                </View>
+              </View>
+            ) : attrs["xp"] ? (
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80" }}>XP: {String(attrs["xp"])}</Text>
+            ) : null}
+          </View>
+        ) : null}
+
         {/* NPC/PC stat block */}
         {(entity.kind === "npc" || entity.kind === "pc") && attrs != null &&
           (attrs["hp"] || attrs["ac"] || attrs["initiative"]) ? (

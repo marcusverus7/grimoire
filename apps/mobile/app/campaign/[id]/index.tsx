@@ -710,6 +710,11 @@ export default function CampaignDetailScreen() {
                         >
                           {entity.name}
                         </Text>
+                        {entity.kind === "pc" && (entity.attrs as Record<string, unknown> | null)?.["level"] ? (
+                          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#C9A24A", marginLeft: 6 }}>
+                            Lv {String((entity.attrs as Record<string, unknown>)["level"])}
+                          </Text>
+                        ) : null}
                         {entity.visibility === "gm_only" && (
                           <Text
                             className="text-oxblood text-xs ml-2"

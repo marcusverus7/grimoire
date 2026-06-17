@@ -65,6 +65,9 @@ export default function EntityFormScreen() {
   const [campaignPCs, setCampaignPCs] = useState<{ id: string; name: string }[]>([]);
   const [role, setRole] = useState("");
   const [factionId, setFactionId] = useState<string | null>(null);
+  const [level, setLevel] = useState("");
+  const [xp, setXp] = useState("");
+  const [maxXp, setMaxXp] = useState("");
   const [hp, setHp] = useState("");
   const [ac, setAc] = useState("");
   const [initiative, setInitiative] = useState("");
@@ -100,6 +103,9 @@ export default function EntityFormScreen() {
       if (typeof attrs?.["heldBy"] === "string") setHeldBy(attrs["heldBy"]);
       if (typeof attrs?.["role"] === "string") setRole(attrs["role"]);
       if (typeof attrs?.["factionId"] === "string") setFactionId(attrs["factionId"]);
+      if (attrs?.["level"]) setLevel(String(attrs["level"]));
+      if (attrs?.["xp"]) setXp(String(attrs["xp"]));
+      if (attrs?.["maxXp"]) setMaxXp(String(attrs["maxXp"]));
       if (attrs?.["hp"]) setHp(String(attrs["hp"]));
       if (attrs?.["ac"]) setAc(String(attrs["ac"]));
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
@@ -197,6 +203,15 @@ export default function EntityFormScreen() {
         delete attrs["hp"];
         delete attrs["ac"];
         delete attrs["initiative"];
+      }
+      if (kind === "pc") {
+        if (level.trim()) attrs["level"] = level.trim(); else delete attrs["level"];
+        if (xp.trim()) attrs["xp"] = xp.trim(); else delete attrs["xp"];
+        if (maxXp.trim()) attrs["maxXp"] = maxXp.trim(); else delete attrs["maxXp"];
+      } else {
+        delete attrs["level"];
+        delete attrs["xp"];
+        delete attrs["maxXp"];
       }
       if (gmSecret.trim()) attrs["gmSecret"] = gmSecret.trim(); else delete attrs["gmSecret"];
 
@@ -599,6 +614,27 @@ export default function EntityFormScreen() {
                   placeholderTextColor="#2C201440"
                   style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 6, textAlign: "center" }}
                 />
+              </View>
+            </View>
+          </>
+        )}
+
+        {/* PC Level & XP */}
+        {kind === "pc" && (
+          <>
+            <Label text="Level & XP (optional)" />
+            <View style={{ flexDirection: "row", marginBottom: 20 }}>
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#C9A24A80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>Level</Text>
+                <TextInput value={level} onChangeText={setLevel} placeholder="5" placeholderTextColor="#2C201440" keyboardType="numeric" style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#C9A24A20", paddingBottom: 6, textAlign: "center" }} />
+              </View>
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#C9A24A80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>XP</Text>
+                <TextInput value={xp} onChangeText={setXp} placeholder="3200" placeholderTextColor="#2C201440" keyboardType="numeric" style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#C9A24A20", paddingBottom: 6, textAlign: "center" }} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#C9A24A80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>Max XP</Text>
+                <TextInput value={maxXp} onChangeText={setMaxXp} placeholder="6500" placeholderTextColor="#2C201440" keyboardType="numeric" style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#C9A24A20", paddingBottom: 6, textAlign: "center" }} />
               </View>
             </View>
           </>
