@@ -93,16 +93,28 @@ read Part IV (build plan) before starting any phase.
   linking (radio picker in edit, badge in detail), Lore search per-kind entity
   badge, EAS build fix (downgrade tentap-editor 1.0.1 → 0.4.58 — 0.4.x uses
   WebView, same API, no worklets dep; pin react-native-worklets@0.8.3 to stay
-  in reanimated 4.1.7's accepted range 0.5–0.8). Build #13 queued.
+  in reanimated 4.1.7's accepted range 0.5–0.8). Build #13 queued (quota
+  exhausted until Jul 1 2026).
+- Phase 9: app_kv SQLite table + getKv/setKv helpers; OnboardingModal (3-step
+  carousel, shown once via kv flag, CTAs branch to new campaign or sample);
+  Reveal to Table on gm_only entity detail (Alert confirm → sets visibility to
+  table + logs reveals row); Recently Revealed section on campaign detail;
+  Character Passport detail screen (class/race/level, linked campaigns, journal
+  list); Character edit screen (dedicated route + delete); Journal entry create
+  (rich-text) + view + delete; character list taps navigate to detail; entity
+  sort toggles (Name/Recent/Kind) on campaign detail; seedSampleCampaign guard
+  against double-seeding; First Steps checklist on empty campaign. Build #14
+  queued (see below).
 
-## What to build next (phase 9)
+## What to build next (phase 10)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
 2. Backup to Supabase (cloud snapshot push).
 3. Player invites & roles (requires auth).
-4. Per-entity secrets & progressive reveal (schema exists: reveals table).
-5. Onboarding flow for first-time users (empty state wizard).
+4. Campaign duplicate / rename from campaign list.
+5. Session duration tracking (start/end timestamp in attrs, auto-calculated).
+6. Export journal entries per character passport.
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).
