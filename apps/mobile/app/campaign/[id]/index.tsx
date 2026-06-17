@@ -536,9 +536,30 @@ export default function CampaignDetailScreen() {
               ))}
             </View>
           )}
-          {entitiesByKind.length === 0 ? (
+          {entitiesByKind.length === 0 && sessions.length === 0 ? (
+            <View style={{ marginTop: 8, padding: 16, borderWidth: 1, borderColor: "#A07A2C20", borderRadius: 2, backgroundColor: "#A07A2C05" }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014", marginBottom: 12 }}>
+                First steps
+              </Text>
+              {[
+                { label: "Add your first character or NPC", icon: "👤", action: () => router.push(`/campaign/${id}/entity/new/edit` as Parameters<typeof router.push>[0]) },
+                { label: "Plan Session 1", icon: "📅", action: createSession },
+                { label: "Write world notes", icon: "🗺️", action: () => router.push(`/campaign/${id}/world-notes` as Parameters<typeof router.push>[0]) },
+              ].map((step, i) => (
+                <Pressable
+                  key={i}
+                  onPress={step.action}
+                  style={{ flexDirection: "row", alignItems: "center", paddingVertical: 10, borderBottomWidth: i < 2 ? 0.5 : 0, borderBottomColor: "#A07A2C15" }}
+                >
+                  <Text style={{ fontSize: 18, marginRight: 12 }}>{step.icon}</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 1 }}>{step.label}</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C60" }}>›</Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : entitiesByKind.length === 0 ? (
             <Text className="text-ink-faint text-sm" style={{ fontFamily: "Inter_400Regular" }}>
-              No entities yet — create NPCs, locations, factions, and more
+              No entities match filters
             </Text>
           ) : (
             entitiesByKind.map((group) => (
