@@ -49,10 +49,13 @@ export default function EntityFormScreen() {
   const [body, setBody] = useState<RichTextNode | null>(null);
   const [visibility, setVisibility] = useState<"table" | "gm_only">("table");
   const [questStatus, setQuestStatus] = useState<string>("rumoured");
+  const [interestedEntityIds, setInterestedEntityIds] = useState<string[]>([]);
+  const [campaignCharacters, setCampaignCharacters] = useState<{ id: string; name: string; kind: string }[]>([]);
   const [hp, setHp] = useState("");
   const [ac, setAc] = useState("");
   const [initiative, setInitiative] = useState("");
   const [gmSecret, setGmSecret] = useState("");
+  const [existingAttrs, setExistingAttrs] = useState<Record<string, unknown>>({});
   const [characterProfileId, setCharacterProfileId] = useState<string | null>(null);
   const [characterProfiles, setCharacterProfiles] = useState<{ id: string; name: string }[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -76,7 +79,9 @@ export default function EntityFormScreen() {
       setBody(entity.body as RichTextNode | null);
       setVisibility(entity.visibility);
       const attrs = entity.attrs as Record<string, unknown> | null;
+      setExistingAttrs(attrs ?? {});
       if (attrs?.["questStatus"]) setQuestStatus(String(attrs["questStatus"]));
+      if (Array.isArray(attrs?.["interestedEntityIds"])) setInterestedEntityIds(attrs["interestedEntityIds"] as string[]);
       if (attrs?.["hp"]) setHp(String(attrs["hp"]));
       if (attrs?.["ac"]) setAc(String(attrs["ac"]));
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
@@ -88,6 +93,14 @@ export default function EntityFormScreen() {
       .from(schema.characterProfiles)
       .all();
     setCharacterProfiles(profiles);
+    // Load campaign PC/NPC entities for quest interest picker
+    const chars = db.select({ id: schema.entities.id, name: schema.entities.name, kind: schema.entities.kind })
+      .from(schema.entities)
+      .where(eq(schema.entities.campaignId, campaignId))
+      .all()
+      .filter((e) => e.kind === "pc" || e.kind === "npc")
+      .sort((a, b) => a.name.localeCompare(b.name));
+    setCampaignCharacters(chars);
     setLoaded(true);
   }, [entityId, isNew]);
 
@@ -110,14 +123,26 @@ export default function EntityFormScreen() {
 
     try {
       const now = Date.now();
-      const attrs: Record<string, unknown> = {};
-      if (kind === "quest") attrs["questStatus"] = questStatus;
-      if ((kind === "npc" || kind === "pc") && (hp || ac || initiative)) {
-        if (hp.trim()) attrs["hp"] = hp.trim();
-        if (ac.trim()) attrs["ac"] = ac.trim();
-        if (initiative.trim()) attrs["initiative"] = initiative.trim();
+      // Start from existing attrs to preserve pinned and other flags set elsewhere
+      const attrs: Record<string, unknown> = { ...existingAttrs };
+      if (kind === "quest") {
+        attrs["questStatus"] = questStatus;
+        if (interestedEntityIds.length > 0) attrs["interestedEntityIds"] = interestedEntityIds;
+        else delete attrs["interestedEntityIds"];
+      } else {
+        delete attrs["questStatus"];
+        delete attrs["interestedEntityIds"];
       }
-      if (gmSecret.trim()) attrs["gmSecret"] = gmSecret.trim();
+      if (kind === "npc" || kind === "pc") {
+        if (hp.trim()) attrs["hp"] = hp.trim(); else delete attrs["hp"];
+        if (ac.trim()) attrs["ac"] = ac.trim(); else delete attrs["ac"];
+        if (initiative.trim()) attrs["initiative"] = initiative.trim(); else delete attrs["initiative"];
+      } else {
+        delete attrs["hp"];
+        delete attrs["ac"];
+        delete attrs["initiative"];
+      }
+      if (gmSecret.trim()) attrs["gmSecret"] = gmSecret.trim(); else delete attrs["gmSecret"];
 
       let savedId = entityId;
       if (isNew) {
@@ -297,6 +322,42 @@ export default function EntityFormScreen() {
                 </Pressable>
               ))}
             </View>
+
+            {/* Interested Characters */}
+            {campaignCharacters.length > 0 && (
+              <>
+                <Label text="Interested Characters" />
+                <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 20 }}>
+                  {campaignCharacters.map((c) => {
+                    const selected = interestedEntityIds.includes(c.id);
+                    return (
+                      <Pressable
+                        key={c.id}
+                        onPress={() =>
+                          setInterestedEntityIds((prev) =>
+                            prev.includes(c.id) ? prev.filter((x) => x !== c.id) : [...prev, c.id],
+                          )
+                        }
+                        style={{
+                          marginRight: 8,
+                          marginBottom: 8,
+                          paddingHorizontal: 10,
+                          paddingVertical: 5,
+                          borderRadius: 2,
+                          borderWidth: 1,
+                          borderColor: selected ? "#A07A2C" : "#2C201430",
+                          backgroundColor: selected ? "#A07A2C12" : "transparent",
+                        }}
+                      >
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: selected ? "#A07A2C" : "#5A4D3E" }}>
+                          {c.kind === "pc" ? "★ " : ""}{c.name}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </>
+            )}
           </>
         )}
 

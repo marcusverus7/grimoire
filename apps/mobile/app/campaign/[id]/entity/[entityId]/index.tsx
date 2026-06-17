@@ -34,6 +34,8 @@ export default function EntityDetailScreen() {
   const [backlinks, setBacklinks] = useState<
     { fromType: string; fromId: string; name: string; snippet: string | null }[]
   >([]);
+  const [interestedEntities, setInterestedEntities] = useState<{ id: string; name: string; kind: string }[]>([]);
+  const [questHooks, setQuestHooks] = useState<{ id: string; name: string; questStatus: string }[]>([]);
   const [editingHp, setEditingHp] = useState(false);
   const [hpInput, setHpInput] = useState("");
 
@@ -92,6 +94,42 @@ export default function EntityDetailScreen() {
         };
       });
       setBacklinks(enriched);
+
+      // Quest interest tracking
+      if (e.kind === "quest") {
+        const ids = (e.attrs as Record<string, unknown> | null)?.["interestedEntityIds"];
+        if (Array.isArray(ids) && ids.length > 0) {
+          const chars = (ids as string[]).map((eid) =>
+            db.select({ id: schema.entities.id, name: schema.entities.name, kind: schema.entities.kind })
+              .from(schema.entities)
+              .where(eq(schema.entities.id, eid))
+              .get()
+          ).filter((c): c is NonNullable<typeof c> => c != null);
+          setInterestedEntities(chars);
+        } else {
+          setInterestedEntities([]);
+        }
+        setQuestHooks([]);
+      } else if (e.kind === "pc" || e.kind === "npc") {
+        const quests = db.select().from(schema.entities)
+          .where(eq(schema.entities.campaignId, campaignId))
+          .all()
+          .filter((q) => q.kind === "quest")
+          .filter((q) => {
+            const ids = (q.attrs as Record<string, unknown> | null)?.["interestedEntityIds"];
+            return Array.isArray(ids) && (ids as string[]).includes(e.id);
+          })
+          .map((q) => ({
+            id: q.id,
+            name: q.name,
+            questStatus: String((q.attrs as Record<string, unknown> | null)?.["questStatus"] ?? "open"),
+          }));
+        setQuestHooks(quests);
+        setInterestedEntities([]);
+      } else {
+        setInterestedEntities([]);
+        setQuestHooks([]);
+      }
     }
   }, [campaignId, entityId]);
 
@@ -243,6 +281,23 @@ export default function EntityDetailScreen() {
                 </Pressable>
               );
             })}
+          </View>
+        ) : null}
+
+        {/* Quest — Interested Characters */}
+        {entity.kind === "quest" && interestedEntities.length > 0 ? (
+          <View style={{ marginBottom: 16, flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {interestedEntities.map((c) => (
+              <Pressable
+                key={c.id}
+                onPress={() => router.push(`/campaign/${campaignId}/entity/${c.id}`)}
+                style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: "#A07A2C40", backgroundColor: "#A07A2C08" }}
+              >
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C" }}>
+                  {c.kind === "pc" ? "★ " : ""}{c.name}
+                </Text>
+              </Pressable>
+            ))}
           </View>
         ) : null}
 
@@ -484,6 +539,39 @@ export default function EntityDetailScreen() {
             </View>
           </>
         )}
+
+        {/* PC/NPC — Quest involvement */}
+        {questHooks.length > 0 ? (
+          <>
+            <GoldRule />
+            <View style={{ marginTop: 16 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#5A4D3E", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
+                Quest Involvement
+              </Text>
+              {questHooks.map((q) => {
+                const statusColors: Record<string, string> = { open: "#5A4D3E", active: "#A07A2C", completed: "#4A8060", failed: "#7A2418" };
+                const color = statusColors[q.questStatus] ?? "#5A4D3E";
+                return (
+                  <Pressable
+                    key={q.id}
+                    onPress={() => router.push(`/campaign/${campaignId}/entity/${q.id}`)}
+                    style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6, paddingHorizontal: 4, marginBottom: 2 }}
+                  >
+                    <View style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, borderWidth: 1, borderColor: `${color}40`, backgroundColor: `${color}0A`, marginRight: 10 }}>
+                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color, textTransform: "capitalize" }}>
+                        {q.questStatus}
+                      </Text>
+                    </View>
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", flex: 1 }}>
+                      {q.name}
+                    </Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C" }}>›</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </>
+        ) : null}
 
         <View className="h-20" />
       </ScrollView>
