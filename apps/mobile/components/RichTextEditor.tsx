@@ -101,7 +101,7 @@ export default function RichTextEditor({
 }: RichTextEditorProps) {
   const editor = useEditorBridge({
     bridgeExtensions: GRIMOIRE_BRIDGES,
-    initialContent: initialContent ?? undefined,
+    initialContent: initialContent ? JSON.stringify(initialContent) : undefined,
     autofocus: false,
     theme: {
       toolbar: {

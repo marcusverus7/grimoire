@@ -272,6 +272,66 @@ export default function EntityDetailScreen() {
           </View>
         ) : null}
 
+        {/* Character Passport link */}
+        {entity.kind === "pc" && entity.characterProfileId ? (
+          <View style={{ marginBottom: 12 }}>
+            {(() => {
+              const profile = db
+                .select({ name: schema.characterProfiles.name, summary: schema.characterProfiles.summary })
+                .from(schema.characterProfiles)
+                .where(eq(schema.characterProfiles.id, entity.characterProfileId!))
+                .get();
+              return profile ? (
+                <View
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 8,
+                    backgroundColor: "#A07A2C0A",
+                    borderWidth: 1,
+                    borderColor: "#A07A2C25",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Inter_600SemiBold",
+                      fontSize: 10,
+                      color: "#A07A2C",
+                      textTransform: "uppercase",
+                      letterSpacing: 1.5,
+                      marginBottom: 4,
+                    }}
+                  >
+                    Character Passport
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "CormorantGaramond_600SemiBold",
+                      fontSize: 16,
+                      color: "#2C2014",
+                    }}
+                  >
+                    {profile.name}
+                  </Text>
+                  {profile.summary ? (
+                    <Text
+                      style={{
+                        fontFamily: "Inter_400Regular",
+                        fontSize: 12,
+                        color: "#8A7D6D",
+                        marginTop: 2,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {profile.summary}
+                    </Text>
+                  ) : null}
+                </View>
+              ) : null;
+            })()}
+          </View>
+        ) : null}
+
         {/* Summary */}
         {entity.summary ? (
           <Text

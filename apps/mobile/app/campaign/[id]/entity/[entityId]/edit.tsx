@@ -53,6 +53,8 @@ export default function EntityFormScreen() {
   const [ac, setAc] = useState("");
   const [initiative, setInitiative] = useState("");
   const [gmSecret, setGmSecret] = useState("");
+  const [characterProfileId, setCharacterProfileId] = useState<string | null>(null);
+  const [characterProfiles, setCharacterProfiles] = useState<{ id: string; name: string }[]>([]);
   const [loaded, setLoaded] = useState(false);
   const editorRef = useRef<EditorBridge | null>(null);
 
@@ -79,7 +81,13 @@ export default function EntityFormScreen() {
       if (attrs?.["ac"]) setAc(String(attrs["ac"]));
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
       if (attrs?.["gmSecret"]) setGmSecret(String(attrs["gmSecret"]));
+      if (entity.characterProfileId) setCharacterProfileId(entity.characterProfileId);
     }
+    // Load all character profiles for the PC picker
+    const profiles = db.select({ id: schema.characterProfiles.id, name: schema.characterProfiles.name })
+      .from(schema.characterProfiles)
+      .all();
+    setCharacterProfiles(profiles);
     setLoaded(true);
   }, [entityId, isNew]);
 
@@ -124,6 +132,7 @@ export default function EntityFormScreen() {
             body: editorBody,
             visibility,
             attrs: Object.keys(attrs).length > 0 ? attrs : null,
+            characterProfileId: kind === "pc" ? characterProfileId : null,
             createdAt: new Date(now),
             updatedAt: new Date(now),
           })
@@ -137,6 +146,7 @@ export default function EntityFormScreen() {
             body: editorBody,
             visibility,
             attrs: Object.keys(attrs).length > 0 ? attrs : null,
+            characterProfileId: kind === "pc" ? characterProfileId : null,
             updatedAt: new Date(now),
           })
           .where(eq(schema.entities.id, entityId))
@@ -334,6 +344,94 @@ export default function EntityFormScreen() {
                 />
               </View>
             </View>
+          </>
+        )}
+
+        {/* Character Passport link (PC only) */}
+        {kind === "pc" && (
+          <>
+            <Label text="Character Passport" />
+            {characterProfiles.length === 0 ? (
+              <Text
+                style={{
+                  fontFamily: "Inter_400Regular",
+                  fontSize: 13,
+                  color: "#8A7D6D",
+                  fontStyle: "italic",
+                  marginBottom: 20,
+                }}
+              >
+                No character passports yet — create one in the Characters tab.
+              </Text>
+            ) : (
+              <View style={{ marginBottom: 20 }}>
+                <Pressable
+                  onPress={() => setCharacterProfileId(null)}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingVertical: 8,
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#A07A2C15",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 16,
+                      height: 16,
+                      borderRadius: 8,
+                      borderWidth: 1.5,
+                      borderColor: characterProfileId === null ? "#A07A2C" : "#A07A2C40",
+                      backgroundColor: characterProfileId === null ? "#A07A2C" : "transparent",
+                      marginRight: 10,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: "Inter_400Regular",
+                      fontSize: 14,
+                      color: characterProfileId === null ? "#A07A2C" : "#5A4D3E",
+                    }}
+                  >
+                    None
+                  </Text>
+                </Pressable>
+                {characterProfiles.map((p) => (
+                  <Pressable
+                    key={p.id}
+                    onPress={() => setCharacterProfileId(p.id)}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 8,
+                      borderBottomWidth: 1,
+                      borderBottomColor: "#A07A2C15",
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: 8,
+                        borderWidth: 1.5,
+                        borderColor: characterProfileId === p.id ? "#A07A2C" : "#A07A2C40",
+                        backgroundColor: characterProfileId === p.id ? "#A07A2C" : "transparent",
+                        marginRight: 10,
+                      }}
+                    />
+                    <Text
+                      style={{
+                        fontFamily: "CormorantGaramond_600SemiBold",
+                        fontSize: 16,
+                        color: characterProfileId === p.id ? "#A07A2C" : "#2C2014",
+                      }}
+                    >
+                      {p.name}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
           </>
         )}
 
