@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useState, useCallback } from "react";
 import { eq } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
-import Svg, { Circle, Line, Text as SvgText } from "react-native-svg";
+import Svg, { Circle, G, Line, Text as SvgText } from "react-native-svg";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { db } from "@/lib/db";
 import { schema } from "@grimoire/core";
@@ -279,34 +279,40 @@ export default function GraphScreen() {
                 );
               })}
               {visibleNodes.map((node) => (
-                <Circle
+                <G
                   key={node.id}
-                  cx={node.x}
-                  cy={node.y}
-                  r={NODE_R}
-                  fill={KIND_COLORS[node.kind] ?? "#4A3F32"}
-                  opacity={0.85}
-                  stroke="#2C2014"
-                  strokeWidth={1}
                   onPress={() =>
-                    router.push(`/campaign/${campaignId}/entity/${node.id}`)
+                    router.push(`/campaign/${campaignId}/entity/${node.id}` as Parameters<typeof router.push>[0])
                   }
-                />
-              ))}
-              {visibleNodes.map((node) => (
-                <SvgText
-                  key={`label-${node.id}`}
-                  x={node.x}
-                  y={node.y + NODE_R + 14}
-                  fill="#2C2014"
-                  fontSize={10}
-                  fontFamily="Inter_500Medium"
-                  textAnchor="middle"
                 >
-                  {node.name.length > 12
-                    ? node.name.slice(0, 11) + "…"
-                    : node.name}
-                </SvgText>
+                  <Circle
+                    cx={node.x}
+                    cy={node.y}
+                    r={NODE_R + 6}
+                    fill="transparent"
+                  />
+                  <Circle
+                    cx={node.x}
+                    cy={node.y}
+                    r={NODE_R}
+                    fill={KIND_COLORS[node.kind] ?? "#4A3F32"}
+                    opacity={0.85}
+                    stroke="#2C2014"
+                    strokeWidth={1}
+                  />
+                  <SvgText
+                    x={node.x}
+                    y={node.y + NODE_R + 14}
+                    fill="#2C2014"
+                    fontSize={10}
+                    fontFamily="Inter_500Medium"
+                    textAnchor="middle"
+                  >
+                    {node.name.length > 12
+                      ? node.name.slice(0, 11) + "…"
+                      : node.name}
+                  </SvgText>
+                </G>
               ))}
             </Svg>
 

@@ -266,7 +266,13 @@ export default function CampaignDetailScreen() {
           title: campaign.name,
           headerLeft: () => (
             <Pressable
-              onPress={() => router.push("/")}
+              onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/(tabs)" as Parameters<typeof router.replace>[0]);
+                }
+              }}
               style={{ paddingHorizontal: 12, paddingVertical: 6 }}
             >
               <Text

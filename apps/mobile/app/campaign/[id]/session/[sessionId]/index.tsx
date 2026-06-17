@@ -301,7 +301,27 @@ export default function SessionDetailScreen() {
           <View className="mt-4 mb-6">
             <RichTextRenderer body={session.body as RichTextNode} campaignId={campaignId} />
           </View>
-        ) : null}
+        ) : (
+          <View style={{ marginTop: 16, marginBottom: 16, padding: 16, borderWidth: 1, borderColor: "#A07A2C20", borderRadius: 2, backgroundColor: "#A07A2C05" }}>
+            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: "#2C201455", fontStyle: "italic", lineHeight: 23, marginBottom: 12 }}>
+              No notes yet. Tap Edit to record what happened, @-mention key characters, and capture important moments.
+            </Text>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <Pressable
+                onPress={() => router.push(`/campaign/${campaignId}/session/${sessionId}/edit` as Parameters<typeof router.push>[0])}
+                style={{ paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: "#A07A2C50", borderRadius: 2, backgroundColor: "#A07A2C0A" }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>✎ Add Notes</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => router.push(`/campaign/${campaignId}/session/${sessionId}/prep` as Parameters<typeof router.push>[0])}
+                style={{ paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: "#7A241830", borderRadius: 2, backgroundColor: "#7A241806" }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#7A2418", textTransform: "uppercase", letterSpacing: 1 }}>◈ Session Prep</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
 
         {/* Wrap Up shortcut for in_progress sessions */}
         {session.status === "in_progress" ? (

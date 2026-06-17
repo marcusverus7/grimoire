@@ -177,7 +177,13 @@ read Part IV (build plan) before starting any phase.
   processes find it; expo prebuild --no-install to skip redundant package manager run.
   Build #15 queued (GH Actions run 13 → TestFlight).
 
-## What to build next (phase 16)
+- Phase 16: Applied TestFlight tester feedback — navigation fix (‹ Campaigns back button now uses
+  router.back() / router.replace instead of push("/") which was stacking screens); relationship map
+  nodes made tappable via G wrapper (circle + label both trigger entity navigate); session detail
+  empty state adds "Add Notes" + "Session Prep" CTA prompts when body is null; export success card
+  now shows entity/session/quote counts alongside file count. Version bumped to 1.6.0.
+
+## What to build next (phase 17)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).

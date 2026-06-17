@@ -15,7 +15,7 @@ export default function ExportScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const [exporting, setExporting] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [result, setResult] = useState<{ fileCount: number; jsonSize: number } | null>(null);
+  const [result, setResult] = useState<{ fileCount: number; jsonSize: number; entityCount: number; sessionCount: number; quoteCount: number } | null>(null);
 
   const doExport = async () => {
     setExporting(true);
@@ -128,6 +128,9 @@ export default function ExportScreen() {
       setResult({
         fileCount: exportData.files.length + 1 + notesFileCount,
         jsonSize: Math.round(exportData.json.length / 1024),
+        entityCount: entities.length,
+        sessionCount: sessions.length,
+        quoteCount: quotesData.length,
       });
 
       if (Platform.OS !== "web") {
@@ -316,12 +319,15 @@ export default function ExportScreen() {
         </Pressable>
 
         {result && (
-          <View className="mt-6 p-4 bg-parchment/5 rounded-sm border border-gold/10">
-            <Text
-              className="text-gold text-sm text-center"
-              style={{ fontFamily: "Inter_500Medium" }}
-            >
-              Exported {result.fileCount} files ({result.jsonSize} KB JSON)
+          <View style={{ marginTop: 24, padding: 16, borderRadius: 2, borderWidth: 1, borderColor: "#4A8060" + "40", backgroundColor: "#4A806008" }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#4A8060", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8, textAlign: "center" }}>
+              ✓ Export Complete
+            </Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+              {result.entityCount} entities · {result.sessionCount} sessions · {result.quoteCount} quotes
+            </Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D", textAlign: "center" }}>
+              {result.fileCount} files · {result.jsonSize} KB JSON
             </Text>
           </View>
         )}
