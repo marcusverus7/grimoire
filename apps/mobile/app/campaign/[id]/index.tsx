@@ -850,6 +850,7 @@ export default function CampaignDetailScreen() {
             { label: "Tables", path: `/campaign/${id}/tables`, gold: true },
             { label: "Locations", path: `/campaign/${id}/locations`, gold: true },
             { label: "Map", path: `/campaign/${id}/graph`, gold: true },
+            { label: "Recaps", path: `/campaign/${id}/recaps`, gold: true },
             { label: "Export", path: `/campaign/${id}/export`, gold: true },
             { label: "Settings", path: `/campaign/${id}/settings`, gold: false },
           ].map((btn) => (
