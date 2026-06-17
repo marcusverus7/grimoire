@@ -32,7 +32,7 @@ export default function SessionPrepScreen() {
   const [keyEntities, setKeyEntities] = useState<Entity[]>([]);
   const [flaggedEntities, setFlaggedEntities] = useState<Entity[]>([]);
   const [prepGoals, setPrepGoals] = useState("");
-  const [partyStatus, setPartyStatus] = useState<{ id: string; name: string; hp: number | null; currentHp: number | null; conditions: string[] }[]>([]);
+  const [partyStatus, setPartyStatus] = useState<{ id: string; name: string; hp: number | null; currentHp: number | null; conditions: string[]; resources: { name: string; max: number; current: number }[] }[]>([]);
 
   const load = useCallback(() => {
     const s = db
@@ -95,7 +95,8 @@ export default function SessionPrepScreen() {
         const hp = a?.["hp"] != null ? Number(a["hp"]) : null;
         const currentHp = a?.["currentHp"] != null ? Number(a["currentHp"]) : hp;
         const conditions = Array.isArray(a?.["conditions"]) ? (a["conditions"] as string[]) : [];
-        return { id: e.id, name: e.name, hp, currentHp, conditions };
+        const resources = Array.isArray(a?.["resources"]) ? (a["resources"] as { name: string; max: number; current: number }[]) : [];
+        return { id: e.id, name: e.name, hp, currentHp, conditions, resources };
       });
     setPartyStatus(pcs);
 
@@ -274,23 +275,30 @@ export default function SessionPrepScreen() {
                     <Pressable
                       key={pc.id}
                       onPress={() => router.push(`/campaign/${campaignId}/entity/${pc.id}`)}
-                      style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: "#A07A2C12" }}
+                      style={{ paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: "#A07A2C12" }}
                     >
-                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: "#2C2014", flex: 1 }}>{pc.name}</Text>
-                      {pc.hp != null ? (
-                        <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: hpColor, marginRight: 8 }}>
-                          {pc.currentHp != null && pc.currentHp !== pc.hp ? `${pc.currentHp}/` : ""}{pc.hp} HP
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: "#2C2014", flex: 1 }}>{pc.name}</Text>
+                        {pc.hp != null ? (
+                          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: hpColor, marginRight: 8 }}>
+                            {pc.currentHp != null && pc.currentHp !== pc.hp ? `${pc.currentHp}/` : ""}{pc.hp} HP
+                          </Text>
+                        ) : null}
+                        {pc.conditions.length > 0 ? (
+                          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 3 }}>
+                            {pc.conditions.slice(0, 2).map((c) => (
+                              <View key={c} style={{ paddingHorizontal: 5, paddingVertical: 2, borderRadius: 2, borderWidth: 1, borderColor: "#7A241840", backgroundColor: "#7A241808" }}>
+                                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#7A2418", textTransform: "uppercase" }}>{c}</Text>
+                              </View>
+                            ))}
+                            {pc.conditions.length > 2 ? <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#7A241880" }}>+{pc.conditions.length - 2}</Text> : null}
+                          </View>
+                        ) : null}
+                      </View>
+                      {pc.resources.length > 0 ? (
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E80", marginTop: 2 }} numberOfLines={1}>
+                          {pc.resources.map((r) => `${r.name} ${r.current}/${r.max}`).join(" · ")}
                         </Text>
-                      ) : null}
-                      {pc.conditions.length > 0 ? (
-                        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 3 }}>
-                          {pc.conditions.slice(0, 2).map((c) => (
-                            <View key={c} style={{ paddingHorizontal: 5, paddingVertical: 2, borderRadius: 2, borderWidth: 1, borderColor: "#7A241840", backgroundColor: "#7A241808" }}>
-                              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#7A2418", textTransform: "uppercase" }}>{c}</Text>
-                            </View>
-                          ))}
-                          {pc.conditions.length > 2 ? <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#7A241880" }}>+{pc.conditions.length - 2}</Text> : null}
-                        </View>
                       ) : null}
                     </Pressable>
                   );
