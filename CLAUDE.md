@@ -76,13 +76,23 @@ read Part IV (build plan) before starting any phase.
   ExportSession status updated to include "in_progress", gmSecret stripped from
   player exports, recap-web extractBodyText improved (handles headings/lists/
   blockquotes), Supabase quotes migration applied. Version bumped to 1.0.0.
-  Build #4 submitted to TestFlight; build #6 queued on EAS.
+  Build #4 (v0.1.0) submitted to TestFlight. Build #9 errored (package.json/lock
+  mismatch + missing reanimated Babel plugin). Build #10 queued with fix.
+- Phase 7: Tappable @-mentions in RichTextRenderer (attrs.id → entity navigate),
+  Inline quotes on session detail (shows + "Add Quote" link), Share as Text on
+  export screen (shares index.md via native share), Share entity as markdown
+  (header button in entity detail), Quest status quick-toggle on entity detail
+  (open/active/completed/failed without full edit), HP inline-edit on entity
+  detail (tap HP → editable TextInput → saves to attrs), Entity kind color dots
+  on campaign detail group headers, EAS build fix (reanimated Babel plugin,
+  package.json aligned with pnpm-lock.yaml, expo-linear-gradient restored).
+  Build #10 queued (v1.0.0, all Phase 6-7 features).
 
-## What to build next (phase 6–7)
+## What to build next (phase 8)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML).
 2. Backup to Supabase (cloud snapshot push).
-3. Player invites & roles (Phase 7 — requires auth).
+3. Player invites & roles (Phase 8 — requires auth).
 4. Character passports UI (schema exists: character_profiles).
 5. Per-entity secrets & progressive reveal (schema exists: reveals table).
 6. Onboarding flow for first-time users (empty state wizard).
