@@ -22,6 +22,8 @@ type PCEntry = Entity & {
   passportName: string | null;
   conditions: string[];
   items: { id: string; name: string }[];
+  resources: { name: string; max: number; current: number }[];
+  npcStatus: string | null;
 };
 
 export default function PartyScreen() {
@@ -48,6 +50,9 @@ export default function PartyScreen() {
         : null;
       const inventory = allItems.filter((i) => (i.attrs as Attrs | null)?.["heldBy"] === pc.id).map((i) => ({ id: i.id, name: i.name }));
       const conditions = Array.isArray(attrs?.["conditions"]) ? attrs["conditions"] as string[] : [];
+      const resources = Array.isArray(attrs?.["resources"])
+        ? (attrs["resources"] as { name: string; max: number; current: number }[])
+        : [];
       return {
         ...pc,
         level: attrs?.["level"] != null ? String(attrs["level"]) : null,
@@ -60,6 +65,8 @@ export default function PartyScreen() {
         passportName,
         conditions,
         items: inventory,
+        resources,
+        npcStatus: attrs?.["npcStatus"] != null ? String(attrs["npcStatus"]) : null,
       };
     });
     setParty(enriched);
@@ -121,6 +128,15 @@ export default function PartyScreen() {
                         <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#C9A24A" }}>Lv {pc.level}</Text>
                       </View>
                     ) : null}
+                    {pc.npcStatus === "dead" ? (
+                      <View style={{ marginLeft: 6, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 2, backgroundColor: "#7A241810", borderWidth: 1, borderColor: "#7A241840" }}>
+                        <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#7A2418" }}>☠ Dead</Text>
+                      </View>
+                    ) : pc.npcStatus === "missing" ? (
+                      <View style={{ marginLeft: 6, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 2, backgroundColor: "#A07A2C10", borderWidth: 1, borderColor: "#A07A2C40" }}>
+                        <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#A07A2C" }}>? Missing</Text>
+                      </View>
+                    ) : null}
                     <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C80", marginLeft: 8, paddingTop: 4 }}>›</Text>
                   </Pressable>
 
@@ -180,7 +196,7 @@ export default function PartyScreen() {
 
                   {/* Inventory */}
                   {pc.items.length > 0 ? (
-                    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+                    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: pc.resources.length > 0 ? 10 : 0 }}>
                       {pc.items.map((item) => (
                         <Pressable
                           key={item.id}
@@ -190,6 +206,29 @@ export default function PartyScreen() {
                           <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#6A5ACD" }}>{item.name}</Text>
                         </Pressable>
                       ))}
+                    </View>
+                  ) : null}
+
+                  {/* Resources */}
+                  {pc.resources.length > 0 ? (
+                    <View style={{ marginTop: pc.items.length > 0 ? 0 : 4 }}>
+                      {pc.resources.map((res, ri) => {
+                        const pct = res.max > 0 ? res.current / res.max : 0;
+                        const barColor = res.current === 0 ? "#7A2418" : res.current < res.max / 2 ? "#A07A2C" : "#4A8060";
+                        return (
+                          <View key={ri} style={{ marginBottom: 6 }}>
+                            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
+                              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#5A4D3E", flex: 1 }}>{res.name}</Text>
+                              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: barColor }}>
+                                {res.current}<Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E50" }}>/{res.max}</Text>
+                              </Text>
+                            </View>
+                            <View style={{ height: 3, backgroundColor: "#2C201415", borderRadius: 2, overflow: "hidden" }}>
+                              <View style={{ height: 3, backgroundColor: barColor, borderRadius: 2, width: `${Math.round(pct * 100)}%` as `${number}%` }} />
+                            </View>
+                          </View>
+                        );
+                      })}
                     </View>
                   ) : null}
                 </View>
