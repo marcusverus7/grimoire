@@ -218,8 +218,18 @@ export function exportCampaign(args: {
   for (const e of entities) {
     const attrLines: string[] = [];
     const a = e.attrs as Record<string, unknown> | null;
+    if (typeof a?.["npcStatus"] === "string" && a["npcStatus"] !== "alive") {
+      attrLines.push(`**Status:** ${a["npcStatus"]}`);
+    }
     if (Array.isArray(a?.["tags"]) && (a["tags"] as string[]).length > 0) {
       attrLines.push(`**Tags:** ${(a["tags"] as string[]).join(", ")}`);
+    }
+    if (Array.isArray(a?.["resources"]) && (a["resources"] as { name: string; max: number; current: number }[]).length > 0) {
+      attrLines.push("");
+      attrLines.push("**Resources:**");
+      for (const res of a["resources"] as { name: string; max: number; current: number }[]) {
+        attrLines.push(`- ${res.name}: ${res.current}/${res.max}`);
+      }
     }
     if (Array.isArray(a?.["customAttrs"]) && (a["customAttrs"] as { key: string; value: string }[]).length > 0) {
       attrLines.push("");
