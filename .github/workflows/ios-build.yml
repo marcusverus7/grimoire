@@ -152,7 +152,7 @@ jobs:
             -destination "generic/platform=iOS" \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="Grimoire App Store" \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM=JQS67937W6 \
             NODE_BINARY="$(which node)" \
             CLI_PATH="/tmp/expo-filter.js" \
