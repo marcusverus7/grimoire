@@ -11,6 +11,7 @@ on:
     paths:
       - 'apps/mobile/**'
       - '.github/workflows/ios-build.yml'
+      - '.github/scripts/**'
 
 jobs:
   build:
