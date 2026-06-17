@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Alert } from "react-native";
+import { View, Text, Pressable, ScrollView, Alert, Share } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
 import { eq } from "drizzle-orm";
@@ -6,7 +6,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
-import { schema } from "@grimoire/core";
+import { schema, richTextToMarkdown } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
 import { RichTextRenderer } from "@/components/RichTextRenderer";
 
@@ -107,24 +107,41 @@ export default function SessionDetailScreen() {
         options={{
           title: `Session ${session.number}`,
           headerRight: () => (
-            <Pressable
-              onPress={() =>
-                router.push(
-                  `/campaign/${campaignId}/session/${sessionId}/edit`,
-                )
-              }
-            >
-              <Text
-                style={{
-                  fontFamily: "Inter_500Medium",
-                  fontSize: 14,
-                  color: "#A07A2C",
-                  marginRight: 8,
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Pressable
+                onPress={async () => {
+                  const title = `Session ${session.number}${session.title ? `: ${session.title}` : ""}`;
+                  const body = session.body ? richTextToMarkdown(session.body as RichTextNode) : "";
+                  const quoteText = quotes.length > 0
+                    ? "\n\n---\n\n**Quotes**\n\n" + quotes.map((q) => `> "${q.text}"${q.attribution ? `\n> — ${q.attribution}` : ""}`).join("\n\n")
+                    : "";
+                  await Share.share({ title, message: `# ${title}\n\n${body}${quoteText}` });
                 }}
+                style={{ marginRight: 12 }}
               >
-                Edit
-              </Text>
-            </Pressable>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#A07A2C" }}>
+                  Share
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() =>
+                  router.push(
+                    `/campaign/${campaignId}/session/${sessionId}/edit`,
+                  )
+                }
+                style={{ marginRight: 8 }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Inter_500Medium",
+                    fontSize: 14,
+                    color: "#A07A2C",
+                  }}
+                >
+                  Edit
+                </Text>
+              </Pressable>
+            </View>
           ),
         }}
       />

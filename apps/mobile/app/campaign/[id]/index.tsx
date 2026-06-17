@@ -204,6 +204,9 @@ export default function CampaignDetailScreen() {
 
   const q = search.toLowerCase().trim();
   const sortedEntities = [...entities].sort((a, b) => {
+    const aPinned = (a.attrs as Record<string, unknown> | null)?.pinned === true;
+    const bPinned = (b.attrs as Record<string, unknown> | null)?.pinned === true;
+    if (aPinned !== bPinned) return aPinned ? -1 : 1;
     if (entitySort === "updated") {
       const ta = a.updatedAt instanceof Date ? a.updatedAt.getTime() : a.updatedAt;
       const tb = b.updatedAt instanceof Date ? b.updatedAt.getTime() : b.updatedAt;
@@ -671,41 +674,63 @@ export default function CampaignDetailScreen() {
                     {group.label}
                   </Text>
                 </View>
-                {group.items.map((entity) => (
-                  <Pressable
-                    key={entity.id}
-                    onPress={() =>
-                      router.push(`/campaign/${id}/entity/${entity.id}`)
-                    }
-                    className="py-2 px-2 mb-0.5"
-                  >
-                    <View className="flex-row items-center">
-                      <Text
-                        className="text-ink text-base flex-1"
-                        style={{ fontFamily: "CormorantGaramond_600SemiBold" }}
-                      >
-                        {entity.name}
-                      </Text>
-                      {entity.visibility === "gm_only" && (
+                {group.items.map((entity) => {
+                  const isPinned = (entity.attrs as Record<string, unknown> | null)?.pinned === true;
+                  return (
+                    <Pressable
+                      key={entity.id}
+                      onPress={() =>
+                        router.push(`/campaign/${id}/entity/${entity.id}`)
+                      }
+                      onLongPress={() => {
+                        Alert.alert(entity.name, undefined, [
+                          { text: "Cancel", style: "cancel" },
+                          {
+                            text: isPinned ? "Unpin" : "Pin to top",
+                            onPress: () => {
+                              const current = (entity.attrs ?? {}) as Record<string, unknown>;
+                              db.update(schema.entities)
+                                .set({ attrs: { ...current, pinned: !isPinned }, updatedAt: new Date() })
+                                .where(eq(schema.entities.id, entity.id))
+                                .run();
+                              load();
+                            },
+                          },
+                        ]);
+                      }}
+                      className="py-2 px-2 mb-0.5"
+                    >
+                      <View className="flex-row items-center">
+                        {isPinned && (
+                          <Text style={{ fontSize: 10, color: "#A07A2C80", marginRight: 4 }}>★</Text>
+                        )}
                         <Text
-                          className="text-oxblood text-xs ml-2"
-                          style={{ fontFamily: "Inter_500Medium" }}
+                          className="text-ink text-base flex-1"
+                          style={{ fontFamily: "CormorantGaramond_600SemiBold" }}
                         >
-                          GM
+                          {entity.name}
                         </Text>
-                      )}
-                    </View>
-                    {entity.summary ? (
-                      <Text
-                        className="text-ink/50 text-sm mt-0.5"
-                        style={{ fontFamily: "Inter_400Regular" }}
-                        numberOfLines={1}
-                      >
-                        {entity.summary}
-                      </Text>
-                    ) : null}
-                  </Pressable>
-                ))}
+                        {entity.visibility === "gm_only" && (
+                          <Text
+                            className="text-oxblood text-xs ml-2"
+                            style={{ fontFamily: "Inter_500Medium" }}
+                          >
+                            GM
+                          </Text>
+                        )}
+                      </View>
+                      {entity.summary ? (
+                        <Text
+                          className="text-ink/50 text-sm mt-0.5"
+                          style={{ fontFamily: "Inter_400Regular" }}
+                          numberOfLines={1}
+                        >
+                          {entity.summary}
+                        </Text>
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
               </View>
             ))
           )}
