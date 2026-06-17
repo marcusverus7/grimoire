@@ -311,6 +311,27 @@ export default function EntityDetailScreen() {
           )}
         </View>
 
+        {/* Tags */}
+        {Array.isArray(attrs?.["tags"]) && (attrs["tags"] as string[]).length > 0 ? (
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+            {(attrs["tags"] as string[]).map((tag, i) => (
+              <View
+                key={i}
+                style={{
+                  paddingHorizontal: 9,
+                  paddingVertical: 3,
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: "#A07A2C40",
+                  backgroundColor: "#A07A2C0A",
+                }}
+              >
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C" }}>{tag}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
         {/* Location breadcrumb */}
         {entity.kind === "location" && attrs?.["parentId"] ? (() => {
           const parent = db.select({ id: schema.entities.id, name: schema.entities.name }).from(schema.entities).where(eq(schema.entities.id, String(attrs["parentId"]))).get();

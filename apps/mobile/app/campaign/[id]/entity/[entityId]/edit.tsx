@@ -71,6 +71,8 @@ export default function EntityFormScreen() {
   const [parentId, setParentId] = useState<string | null>(null);
   const [campaignLocations, setCampaignLocations] = useState<{ id: string; name: string }[]>([]);
   const [customAttrs, setCustomAttrs] = useState<{ key: string; value: string }[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [hp, setHp] = useState("");
   const [ac, setAc] = useState("");
   const [initiative, setInitiative] = useState("");
@@ -115,6 +117,7 @@ export default function EntityFormScreen() {
       if (attrs?.["gmSecret"]) setGmSecret(String(attrs["gmSecret"]));
       if (typeof attrs?.["parentId"] === "string") setParentId(attrs["parentId"]);
       if (Array.isArray(attrs?.["customAttrs"])) setCustomAttrs(attrs["customAttrs"] as { key: string; value: string }[]);
+      if (Array.isArray(attrs?.["tags"])) setTags(attrs["tags"] as string[]);
       if (entity.characterProfileId) setCharacterProfileId(entity.characterProfileId);
     }
     // Load campaign location entities for parent picker
@@ -234,6 +237,8 @@ export default function EntityFormScreen() {
       }
       const validCustom = customAttrs.filter((a) => a.key.trim() && a.value.trim());
       if (validCustom.length > 0) attrs["customAttrs"] = validCustom; else delete attrs["customAttrs"];
+      const validTags = tags.map((t) => t.trim()).filter(Boolean);
+      if (validTags.length > 0) attrs["tags"] = validTags; else delete attrs["tags"];
 
       let savedId = entityId;
       if (isNew) {
@@ -868,6 +873,58 @@ export default function EntityFormScreen() {
         >
           <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C80" }}>+ Add attribute</Text>
         </Pressable>
+
+        {/* Tags */}
+        <Label text="Tags (optional)" />
+        <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: tags.length > 0 ? 8 : 0 }}>
+          {tags.map((tag, i) => (
+            <Pressable
+              key={i}
+              onPress={() => setTags((prev) => prev.filter((_, j) => j !== i))}
+              style={{
+                marginRight: 6,
+                marginBottom: 6,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: "#A07A2C50",
+                backgroundColor: "#A07A2C10",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C" }}>{tag}</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C60", marginLeft: 4 }}>✕</Text>
+            </Pressable>
+          ))}
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
+          <TextInput
+            value={tagInput}
+            onChangeText={setTagInput}
+            placeholder="Add a tag…"
+            placeholderTextColor="#2C201440"
+            onSubmitEditing={() => {
+              const trimmed = tagInput.trim().toLowerCase();
+              if (trimmed && !tags.includes(trimmed)) setTags((prev) => [...prev, trimmed]);
+              setTagInput("");
+            }}
+            returnKeyType="done"
+            blurOnSubmit={false}
+            style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 4 }}
+          />
+          <Pressable
+            onPress={() => {
+              const trimmed = tagInput.trim().toLowerCase();
+              if (trimmed && !tags.includes(trimmed)) setTags((prev) => [...prev, trimmed]);
+              setTagInput("");
+            }}
+            style={{ marginLeft: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2 }}
+          >
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C" }}>Add</Text>
+          </Pressable>
+        </View>
 
         {/* Visibility */}
         <Label text="Visibility" />

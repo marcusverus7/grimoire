@@ -74,6 +74,7 @@ export default function CampaignDetailScreen() {
   const [quickAddName, setQuickAddName] = useState("");
   const [recentlyRevealed, setRecentlyRevealed] = useState<{ entityId: string; name: string; revealedAt: number }[]>([]);
   const [showGmOnly, setShowGmOnly] = useState(false);
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
 
   const load = useCallback(() => {
     const c = db
@@ -222,7 +223,19 @@ export default function CampaignDetailScreen() {
   const filtered = sortedEntities
     .filter((e) => !kindFilter || e.kind === kindFilter)
     .filter((e) => !showGmOnly || e.visibility === "gm_only")
+    .filter((e) => {
+      if (!tagFilter) return true;
+      const tags = (e.attrs as Record<string, unknown> | null)?.["tags"];
+      return Array.isArray(tags) && (tags as string[]).includes(tagFilter);
+    })
     .filter((e) => !q || e.name.toLowerCase().includes(q));
+
+  const allTags = Array.from(new Set(
+    entities.flatMap((e) => {
+      const tags = (e.attrs as Record<string, unknown> | null)?.["tags"];
+      return Array.isArray(tags) ? (tags as string[]) : [];
+    })
+  )).sort();
 
   const entitiesByKind = (kindFilter
     ? [{ kind: kindFilter, label: KIND_LABELS[kindFilter] ?? kindFilter, items: filtered }]
@@ -588,6 +601,31 @@ export default function CampaignDetailScreen() {
             </ScrollView>
           )}
 
+          {/* Tag filter chips */}
+          {allTags.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }} contentContainerStyle={{ paddingBottom: 2 }}>
+              {allTags.map((tag) => (
+                <Pressable
+                  key={tag}
+                  onPress={() => setTagFilter(tagFilter === tag ? null : tag)}
+                  style={{
+                    marginRight: 6,
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderColor: tagFilter === tag ? "#A07A2C" : "#A07A2C40",
+                    backgroundColor: tagFilter === tag ? "#A07A2C15" : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: tagFilter === tag ? "#A07A2C" : "#A07A2C80" }}>
+                    {tag}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          )}
+
           {entities.length > 5 && (
             <TextInput
               value={search}
@@ -737,6 +775,19 @@ export default function CampaignDetailScreen() {
                           {String((entity.attrs as Record<string, unknown>)["role"])}
                         </Text>
                       ) : null}
+                      {(() => {
+                        const tags = (entity.attrs as Record<string, unknown> | null)?.["tags"];
+                        if (!Array.isArray(tags) || tags.length === 0) return null;
+                        return (
+                          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 3 }}>
+                            {(tags as string[]).map((tag, ti) => (
+                              <View key={ti} style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8, borderWidth: 1, borderColor: "#A07A2C30", backgroundColor: "#A07A2C08" }}>
+                                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80" }}>{tag}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        );
+                      })()}
                     </Pressable>
                   );
                 })}
