@@ -102,14 +102,41 @@ jobs:
           </plist>
           PLIST
 
-      - name: Pre-bundle JS and fix .xcode.env.local
+      - name: Pre-bundle JS and create expo-filter CLI wrapper
         working-directory: apps/mobile
         run: |
           # Hard-code the CI node path so xcodebuild's bundle phase finds it
           NODE_PATH="$(which node)"
           echo "export NODE_BINARY=$NODE_PATH" > ios/.xcode.env.local
           echo "NODE_BINARY set to $NODE_PATH"
-          # Pre-bundle to catch any Metro/Babel errors in a readable log
+
+          # Locate expo's real CLI bin entry point
+          EXPO_CLI="$("$NODE_PATH" -e "const p=require.resolve('expo/package.json');const d=require('path').dirname(p);const b=require(p).bin;const e=typeof b==='string'?b:(b.expo||b);console.log(require('path').join(d,e))")"
+          echo "EXPO_CLI=$EXPO_CLI"
+
+          # Create a Node.js wrapper that strips --config-cmd from the invocation.
+          # react-native-xcode.sh appends --config-cmd which changes how Metro resolves
+          # projectRoot inside jest-worker processes, breaking babel-preset-expo resolution.
+          # Without --config-cmd, expo uses cwd (apps/mobile) as projectRoot — which works.
+          cat > /tmp/expo-filter.js << 'JSWRAPPER'
+#!/usr/bin/env node
+const { spawnSync } = require('child_process');
+const args = process.argv.slice(2);
+const filtered = [];
+let skip = 0;
+for (const arg of args) {
+  if (skip > 0) { skip--; continue; }
+  if (arg === '--config-cmd') { skip = 1; continue; }
+  filtered.push(arg);
+}
+const expoCli = process.env.REAL_EXPO_CLI;
+const result = spawnSync(process.execPath, [expoCli, ...filtered], { stdio: 'inherit' });
+process.exit(result.status || 0);
+JSWRAPPER
+          chmod +x /tmp/expo-filter.js
+          echo "EXPO_CLI_PATH=$EXPO_CLI" >> "$GITHUB_ENV"
+
+          # Pre-bundle to verify Metro/Babel works (readable error output)
           npx expo export:embed \
             --platform ios \
             --bundle-output /tmp/main.jsbundle \
@@ -119,20 +146,17 @@ jobs:
 
       - name: Build archive
         working-directory: apps/mobile/ios
+        env:
+          REAL_EXPO_CLI: ${{ env.EXPO_CLI_PATH }}
         run: |
-          # Use -d so ls doesn't expand the xcworkspace directory
           WORKSPACE=$(ls -d *.xcworkspace 2>/dev/null | head -1)
           if [ -z "$WORKSPACE" ]; then
             echo "ERROR: no .xcworkspace found"; exit 1
           fi
           SCHEME=$(echo "$WORKSPACE" | sed 's/\.xcworkspace//')
           echo "Building workspace=$WORKSPACE scheme=$SCHEME"
-          # Force the bundle phase to use expo export:embed (same as pre-bundle step).
-          # Locate expo's CLI entry point via require.resolve (works regardless of pnpm layout).
-          NODE_BIN="$(which node)"
-          EXPO_CLI="$("$NODE_BIN" -e "const p=require.resolve('expo/package.json');const d=require('path').dirname(p);const b=require(p).bin;const e=typeof b==='string'?b:(b.expo||b);console.log(require('path').join(d,e))")"
-          echo "NODE_BINARY=$NODE_BIN"
-          echo "EXPO_CLI=$EXPO_CLI"
+          echo "CLI_PATH wrapper: /tmp/expo-filter.js (strips --config-cmd)"
+          echo "REAL_EXPO_CLI=$REAL_EXPO_CLI"
           set -o pipefail
           xcodebuild archive \
             -workspace "$WORKSPACE" \
@@ -144,8 +168,8 @@ jobs:
             PROVISIONING_PROFILE_SPECIFIER="Grimoire App Store" \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM=JQS67937W6 \
-            NODE_BINARY="$NODE_BIN" \
-            CLI_PATH="$EXPO_CLI" \
+            NODE_BINARY="$(which node)" \
+            CLI_PATH="/tmp/expo-filter.js" \
             BUNDLE_COMMAND="export:embed"
 
       - name: Export IPA
