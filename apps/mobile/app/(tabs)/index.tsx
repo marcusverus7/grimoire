@@ -207,6 +207,26 @@ export default function CampaignsScreen() {
           renderItem={({ item }) => (
             <Pressable
               onPress={() => router.push(`/campaign/${item.id}`)}
+              onLongPress={() => {
+                const isArchived = item.status === "archived";
+                Alert.alert(
+                  isArchived ? "Restore Campaign" : "Archive Campaign",
+                  `${isArchived ? "Restore" : "Archive"} "${item.name}"?`,
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                      text: isArchived ? "Restore" : "Archive",
+                      onPress: () => {
+                        db.update(schema.campaigns)
+                          .set({ status: isArchived ? "active" : "archived" })
+                          .where(eq(schema.campaigns.id, item.id))
+                          .run();
+                        loadCampaigns();
+                      },
+                    },
+                  ],
+                );
+              }}
               className="py-3 px-2"
             >
               <View style={{ flexDirection: "row", alignItems: "center" }}>
