@@ -35,16 +35,47 @@ const ENTITY_KIND_COLORS: Record<string, string> = {
   secret: "#7A2418",
 };
 
+type StatusFilter = "all" | "dead" | "missing";
+
 export default function LoreSearchScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searched, setSearched] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   const search = useCallback(
-    (q: string) => {
+    (q: string, filter: StatusFilter = "all") => {
       const trimmed = q.trim().toLowerCase();
+
+      // Status filter mode: show all entities matching npcStatus regardless of query
+      if (filter !== "all") {
+        setSearched(true);
+        const allEntities = db
+          .select()
+          .from(schema.entities)
+          .where(eq(schema.entities.campaignId, campaignId))
+          .all();
+        const out: SearchResult[] = allEntities
+          .filter((e) => {
+            const npcStatus = (e.attrs as Record<string, unknown> | null)?.["npcStatus"];
+            return npcStatus === filter;
+          })
+          .filter((e) => !trimmed || e.name.toLowerCase().includes(trimmed) || (e.summary?.toLowerCase().includes(trimmed) ?? false))
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((e) => ({
+            id: e.id,
+            kind: "entity" as ResultKind,
+            entityKind: e.kind,
+            title: e.name,
+            subtitle: e.kind + (e.summary ? ` — ${e.summary.slice(0, 80)}` : ""),
+            href: `/campaign/${campaignId}/entity/${e.id}`,
+          }));
+        setResults(out);
+        return;
+      }
+
       if (!trimmed) {
         setResults([]);
         setSearched(false);
@@ -200,7 +231,12 @@ export default function LoreSearchScreen() {
 
   const handleChange = (text: string) => {
     setQuery(text);
-    search(text);
+    search(text, statusFilter);
+  };
+
+  const handleFilterChange = (f: StatusFilter) => {
+    setStatusFilter(f);
+    search(query, f);
   };
 
   return (
@@ -250,6 +286,33 @@ export default function LoreSearchScreen() {
             )}
           </View>
 
+          {/* Status filter pills */}
+          <View style={{ flexDirection: "row", paddingHorizontal: 16, gap: 6, marginBottom: 12 }}>
+            {(["all", "dead", "missing"] as StatusFilter[]).map((f) => {
+              const active = statusFilter === f;
+              const color = f === "dead" ? "#7A2418" : f === "missing" ? "#A07A2C" : "#4A3F32";
+              const label = f === "all" ? "All" : f === "dead" ? "☠ Dead" : "? Missing";
+              return (
+                <Pressable
+                  key={f}
+                  onPress={() => handleFilterChange(f)}
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: active ? color : `${color}40`,
+                    backgroundColor: active ? `${color}18` : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: active ? color : "#8A7D6D" }}>
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
           {/* Results */}
           {results.length === 0 && searched ? (
             <View style={{ alignItems: "center", marginTop: 48 }}>
@@ -257,7 +320,9 @@ export default function LoreSearchScreen() {
                 Nothing found
               </Text>
               <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", textAlign: "center" }}>
-                Try a different name, keyword, or phrase.
+                {statusFilter !== "all"
+                  ? `No ${statusFilter} characters in this campaign.`
+                  : "Try a different name, keyword, or phrase."}
               </Text>
             </View>
           ) : results.length === 0 && !searched ? (
@@ -266,7 +331,7 @@ export default function LoreSearchScreen() {
                 Lore Search
               </Text>
               <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", textAlign: "center", lineHeight: 20 }}>
-                Search across all entities, session notes, and captured quotes in this campaign.
+                Search across all entities, session notes, and captured quotes in this campaign. Filter by Dead or Missing to browse by status.
               </Text>
             </View>
           ) : (
