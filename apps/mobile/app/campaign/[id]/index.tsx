@@ -75,6 +75,7 @@ export default function CampaignDetailScreen() {
   const [recentlyRevealed, setRecentlyRevealed] = useState<{ entityId: string; name: string; revealedAt: number }[]>([]);
   const [showGmOnly, setShowGmOnly] = useState(false);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const [inProgressSession, setInProgressSession] = useState<Session | null>(null);
 
   const load = useCallback(() => {
     const c = db
@@ -104,6 +105,8 @@ export default function CampaignDetailScreen() {
         (s) => s.status === "planned" || s.status === "in_progress",
       );
       setNextPlannedSessionId(nextPlanned?.id ?? null);
+      const active = allSessions.find((s) => s.status === "in_progress");
+      setInProgressSession(active ?? null);
       const lastPlayed = [...allSessions].reverse().find((s) => s.status === "played");
       setLastPlayedSession(lastPlayed ?? null);
       const allEntities = db.select().from(schema.entities).where(eq(schema.entities.campaignId, id)).all();
@@ -281,6 +284,41 @@ export default function CampaignDetailScreen() {
       />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView className="flex-1 bg-parchment" contentContainerStyle={{ padding: 16 }} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
+        {/* In-Play bar — shown when a session is in progress */}
+        {inProgressSession ? (
+          <View style={{ marginBottom: 16, borderRadius: 2, overflow: "hidden", borderWidth: 1, borderColor: "#7A241840" }}>
+            <View style={{ backgroundColor: "#7A2418", paddingHorizontal: 14, paddingVertical: 8, flexDirection: "row", alignItems: "center" }}>
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#FAF5EA", marginRight: 8, opacity: 0.8 }} />
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+                Session {inProgressSession.number}{inProgressSession.title ? ` · ${inProgressSession.title}` : ""} — In Play
+              </Text>
+              <Pressable
+                onPress={() => router.push(`/campaign/${id}/session/${inProgressSession.id}` as Parameters<typeof router.push>[0])}
+                style={{ paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: "#FAF5EA40", borderRadius: 2 }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1 }}>Open</Text>
+              </Pressable>
+            </View>
+            <View style={{ flexDirection: "row", backgroundColor: "#7A241808", paddingVertical: 8, paddingHorizontal: 14, gap: 16 }}>
+              {[
+                { label: "Tracker", path: `/campaign/${id}/tracker` },
+                { label: "Tables", path: `/campaign/${id}/tables` },
+                { label: "Party", path: `/campaign/${id}/party` },
+              ].map((btn) => (
+                <Pressable
+                  key={btn.label}
+                  onPress={() => router.push(btn.path as Parameters<typeof router.push>[0])}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#7A2418" }}>{btn.label}</Text>
+                </Pressable>
+              ))}
+              <Pressable onPress={() => setShowDice(true)}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#7A2418" }}>Dice</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+
         {/* Campaign name — tap to edit */}
         {editing ? (
           <View className="flex-row items-center mb-4">
