@@ -220,8 +220,8 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
   const role = attrs.role as string | undefined;
   const pronouns = attrs.pronouns as string | undefined;
   const level = attrs.level as number | undefined;
-  const hp = attrs.hp as number | undefined;
-  const maxHp = attrs.maxHp as number | undefined;
+  const maxHp = attrs.hp != null ? Number(attrs.hp) : undefined;
+  const currentHp = attrs.currentHp != null ? Number(attrs.currentHp) : maxHp;
   const conditions = (attrs.conditions as string[] | undefined) ?? [];
   const isPinned = attrs.pinned === true;
   const isGmOnly = entity.visibility === "gm_only";
@@ -340,12 +340,14 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
 
       {/* Right: HP + status */}
       <View style={{ alignItems: "flex-end", marginLeft: 8 }}>
-        {hp !== undefined && maxHp !== undefined && isAlive ? (
+        {maxHp !== undefined && currentHp !== undefined && isAlive ? (
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: hp <= maxHp * 0.25 ? "#7A2418" : hp <= maxHp * 0.5 ? "#A07A2C" : "#4A8060" }}>
-              {hp}/{maxHp}
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: currentHp <= maxHp * 0.25 ? "#7A2418" : currentHp <= maxHp * 0.5 ? "#A07A2C" : "#4A8060" }}>
+              {currentHp}/{maxHp}
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 8, color: "#5A4D3E50", textTransform: "uppercase", letterSpacing: 1 }}>HP</Text>
+            <View style={{ width: 40, height: 3, backgroundColor: "#A07A2C15", borderRadius: 2, marginTop: 2 }}>
+              <View style={{ width: `${Math.round((currentHp / maxHp) * 100)}%`, height: 3, backgroundColor: currentHp <= maxHp * 0.25 ? "#7A2418" : currentHp <= maxHp * 0.5 ? "#A07A2C" : "#4A8060", borderRadius: 2 }} />
+            </View>
           </View>
         ) : null}
         {isDead && (
@@ -358,7 +360,7 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
             <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#A07A2C" }}>? Missing</Text>
           </View>
         )}
-        {isAlive && hp === undefined && (
+        {isAlive && maxHp === undefined && (
           <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C60" }}>›</Text>
         )}
       </View>
