@@ -58,6 +58,7 @@ export default function TrackerScreen() {
   const [conditionTarget, setConditionTarget] = useState<TrackerEntry | null>(null);
   const [round, setRound] = useState(1);
   const [hideDead, setHideDead] = useState(true);
+  const [activeTurnIndex, setActiveTurnIndex] = useState<number | null>(null);
 
   const load = useCallback(() => {
     // Load encounter filter if set
@@ -173,6 +174,7 @@ export default function TrackerScreen() {
           });
           setEntries((prev) => prev.map((e) => ({ ...e, currentHp: e.maxHp })));
           setRound(1);
+          setActiveTurnIndex(null);
           setKv(`tracker_round_${campaignId}`, "1");
         },
       },
@@ -191,6 +193,22 @@ export default function TrackerScreen() {
     : visible;
 
   const deadCount = entries.length - visible.length;
+
+  const advanceTurn = () => {
+    if (sorted.length === 0) return;
+    if (activeTurnIndex === null) {
+      setActiveTurnIndex(0);
+    } else {
+      const next = activeTurnIndex + 1;
+      if (next >= sorted.length) {
+        // New round
+        setActiveTurnIndex(0);
+        changeRound(1);
+      } else {
+        setActiveTurnIndex(next);
+      }
+    }
+  };
 
   return (
     <>
@@ -252,6 +270,28 @@ export default function TrackerScreen() {
                   <Text style={{ fontFamily: "Inter_500Medium", fontSize: 18, color: "#7A2418" }}>+</Text>
                 </Pressable>
               </View>
+              {/* Turn order bar */}
+              <Pressable
+                onPress={advanceTurn}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingHorizontal: 16,
+                  paddingVertical: 9,
+                  backgroundColor: activeTurnIndex !== null ? "#7A241815" : "transparent",
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: "#7A241820",
+                }}
+              >
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#7A241890", textTransform: "uppercase", letterSpacing: 1.2, flex: 1 }}>
+                  {activeTurnIndex === null
+                    ? "Tap to start turn order"
+                    : `Turn: ${sorted[activeTurnIndex]?.name ?? "—"}`}
+                </Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#7A2418" }}>
+                  {activeTurnIndex === null ? "▶ Start" : `Next ▶`}
+                </Text>
+              </Pressable>
               {/* Sort + count row */}
               <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, gap: 8 }}>
                 <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D", flex: 1 }}>
@@ -294,7 +334,7 @@ export default function TrackerScreen() {
               data={sorted}
               keyExtractor={(item) => item.id}
               contentContainerStyle={{ padding: 12 }}
-              renderItem={({ item }) => <CombatantRow entry={item} onAdjust={adjustHp} onSetHp={setHpDirect} onNavigate={() => router.push(`/campaign/${campaignId}/entity/${item.id}`)} onOpenConditions={() => setConditionTarget(item)} onToggleCondition={(c) => toggleCondition(item, c)} />}
+              renderItem={({ item, index }) => <CombatantRow entry={item} isActive={activeTurnIndex === index} onAdjust={adjustHp} onSetHp={setHpDirect} onNavigate={() => router.push(`/campaign/${campaignId}/entity/${item.id}`)} onOpenConditions={() => setConditionTarget(item)} onToggleCondition={(c) => toggleCondition(item, c)} />}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
               ListFooterComponent={tempCombatants.length > 0 ? (
                 <View style={{ paddingTop: 12 }}>
@@ -377,6 +417,7 @@ export default function TrackerScreen() {
 
 function CombatantRow({
   entry,
+  isActive,
   onAdjust,
   onSetHp,
   onNavigate,
@@ -384,6 +425,7 @@ function CombatantRow({
   onToggleCondition,
 }: {
   entry: TrackerEntry;
+  isActive: boolean;
   onAdjust: (e: TrackerEntry, delta: number) => void;
   onSetHp: (e: TrackerEntry, v: string) => void;
   onNavigate: () => void;
@@ -397,9 +439,9 @@ function CombatantRow({
   return (
     <View
       style={{
-        backgroundColor: isDead ? "#7A241808" : "#FAF5EA",
-        borderWidth: 1,
-        borderColor: isDead ? "#7A241830" : "#A07A2C20",
+        backgroundColor: isActive ? "#7A241812" : isDead ? "#7A241808" : "#FAF5EA",
+        borderWidth: isActive ? 2 : 1,
+        borderColor: isActive ? "#7A2418" : isDead ? "#7A241830" : "#A07A2C20",
         borderRadius: 4,
         padding: 12,
         opacity: isDead ? 0.7 : 1,
@@ -408,8 +450,8 @@ function CombatantRow({
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
         {/* Name + kind */}
         <Pressable style={{ flex: 1 }} onPress={onNavigate}>
-          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 17, color: isDead ? "#8A7D6D" : "#2C2014" }}>
-            {entry.name}
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 17, color: isDead ? "#8A7D6D" : isActive ? "#7A2418" : "#2C2014" }}>
+            {isActive ? "▶ " : ""}{entry.name}
             {isDead ? " ✝" : ""}
           </Text>
           <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 0.8 }}>
