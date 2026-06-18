@@ -28,6 +28,9 @@ importers:
       '@react-navigation/native':
         specifier: ^7.1.8
         version: 7.3.0(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.86.0(@babel/core@7.29.7))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      '@supabase/supabase-js':
+        specifier: ^2.108.1
+        version: 2.108.1
       drizzle-orm:
         specifier: ^0.44.2
         version: 0.44.7(expo-sqlite@16.0.10(expo@54.0.35)(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.86.0(@babel/core@7.29.7))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(sql.js@1.14.1)

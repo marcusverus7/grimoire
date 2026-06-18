@@ -21,12 +21,12 @@ import {
   Inter_600SemiBold,
 } from "@expo-google-fonts/inter";
 import { applyMigrations } from "@/lib/db";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayoutContent() {
   const [dbReady, setDbReady] = useState(false);
-
   const [fontsLoaded, fontError] = useFonts({
     CinzelDecorative_400Regular,
     CinzelDecorative_700Bold,
@@ -38,6 +38,8 @@ export default function RootLayout() {
     Inter_500Medium,
     Inter_600SemiBold,
   });
+
+  const { session, loading: authLoading } = useAuth();
 
   useEffect(() => {
     (async () => {
@@ -51,16 +53,16 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if ((fontsLoaded || fontError) && dbReady) {
+    if ((fontsLoaded || fontError) && dbReady && !authLoading) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError, dbReady]);
+  }, [fontsLoaded, fontError, dbReady, authLoading]);
 
   if (!fontsLoaded && !fontError) {
     return null;
   }
 
-  if (!dbReady) {
+  if (!dbReady || authLoading) {
     return (
       <View className="flex-1 bg-parchment items-center justify-center">
         <Text className="text-ink font-inter text-sm">
@@ -79,9 +81,18 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: "#F2E8D5" },
         }}
       >
+        <Stack.Screen name="auth" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="campaign/[id]" />
       </Stack>
     </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <RootLayoutContent />
+    </AuthProvider>
   );
 }
