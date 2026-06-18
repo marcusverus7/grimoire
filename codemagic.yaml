@@ -99,22 +99,13 @@ workflows:
 
       - name: Export IPA
         script: |
-          cat > "$CM_BUILD_DIR/ExportOptions.plist" << 'PLIST'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>teamID</key>
-            <string>JQS67937W6</string>
-          </dict>
-          </plist>
-          PLIST
+          OPTS="${CM_EXPORT_OPTIONS_PATH:-/Users/builder/export_options.plist}"
+          echo "Using export options: $OPTS"
+          cat "$OPTS"
           xcodebuild -exportArchive \
             -archivePath "$CM_BUILD_DIR/grimoire.xcarchive" \
             -exportPath "$CM_BUILD_DIR/export" \
-            -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist"
+            -exportOptionsPlist "$OPTS"
           ls -la "$CM_BUILD_DIR/export/"
 
     artifacts:
