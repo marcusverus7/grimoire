@@ -1,0 +1,116 @@
+workflows:
+  grimoire-ios:
+    name: Grimoire iOS → TestFlight
+    max_build_duration: 120
+    environment:
+      node: 22.13.1
+      xcode: latest
+      cocoapods: default
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+      groups:
+        - app_store_connect
+      vars:
+        BUNDLE_ID: "com.grimoirettrpg.app"
+        DEVELOPMENT_TEAM: "JQS67937W6"
+
+    scripts:
+      - name: Install pnpm
+        script: npm install -g pnpm@9
+
+      - name: Install dependencies
+        script: |
+          export COREPACK_INTEGRITY_KEYS=0
+          pnpm install --frozen-lockfile
+
+      - name: Symlink babel-preset-expo
+        script: |
+          PRESET_DIR=$(node -e "const p=require('path'),fs=require('fs');const e=p.dirname(require.resolve('expo/package.json',{paths:[p.resolve('apps/mobile')]}));const r=fs.realpathSync(e);process.stdout.write(p.dirname(require.resolve('babel-preset-expo/package.json',{paths:[r]})))")
+          echo "babel-preset-expo at: $PRESET_DIR"
+          if [ -z "$PRESET_DIR" ]; then echo "ERROR: could not locate babel-preset-expo"; exit 1; fi
+          ln -sfn "$PRESET_DIR" apps/mobile/node_modules/babel-preset-expo
+          echo "Symlinked OK"
+
+      - name: Expo prebuild
+        script: |
+          cd apps/mobile
+          npx expo prebuild --platform ios --clean --non-interactive --no-install
+
+      - name: Install CocoaPods
+        script: |
+          cd apps/mobile/ios
+          pod install
+
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          cd apps/mobile/ios
+          WORKSPACE=$(ls -d *.xcworkspace 2>/dev/null | head -1)
+          if [ -z "$WORKSPACE" ]; then echo "ERROR: no .xcworkspace found"; exit 1; fi
+          xcode-project use-profiles --workspace "$WORKSPACE"
+
+      - name: Pre-bundle JavaScript
+        script: |
+          cd apps/mobile
+          NODE_PATH="$(which node)"
+          echo "export NODE_BINARY=$NODE_PATH" > ios/.xcode.env.local
+
+          # Locate expo CLI entry point inside the pnpm virtual store
+          EXPO_CLI="$(node -e "const p=require('path');const pkg=require.resolve('expo/package.json',{paths:[p.resolve('.')]});const d=p.dirname(pkg);const b=require(pkg).bin;const e=typeof b==='string'?b:(b.expo||b);process.stdout.write(p.join(d,e))")"
+          echo "Expo CLI: $EXPO_CLI"
+          echo "EXPO_CLI_PATH=$EXPO_CLI" >> "$CM_ENV"
+
+          # Copy the expo-filter wrapper (strips --config-cmd/--entry-file/--reset-cache)
+          cp "../../.github/scripts/expo-filter.js" /tmp/expo-filter.js
+          chmod +x /tmp/expo-filter.js
+
+          # Pre-bundle to warm Metro cache in the correct process context
+          REAL_EXPO_CLI="$EXPO_CLI" npx expo export:embed \
+            --platform ios \
+            --bundle-output /tmp/main.jsbundle \
+            --assets-dest /tmp/ios-assets \
+            --dev false
+          echo "Bundle size: $(du -sh /tmp/main.jsbundle)"
+
+      - name: Build archive
+        script: |
+          cd apps/mobile/ios
+          WORKSPACE=$(ls -d *.xcworkspace 2>/dev/null | head -1)
+          SCHEME="${WORKSPACE%.xcworkspace}"
+          echo "Building workspace=$WORKSPACE scheme=$SCHEME"
+          echo "REAL_EXPO_CLI=$EXPO_CLI_PATH"
+          export REAL_EXPO_CLI="$EXPO_CLI_PATH"
+          xcodebuild archive \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -archivePath "$CM_BUILD_DIR/grimoire.xcarchive" \
+            -destination "generic/platform=iOS" \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+            NODE_BINARY="$(which node)" \
+            CLI_PATH="/tmp/expo-filter.js"
+
+      - name: Export IPA
+        script: |
+          xcodebuild -exportArchive \
+            -archivePath "$CM_BUILD_DIR/grimoire.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/export" \
+            -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist"
+          ls -la "$CM_BUILD_DIR/export/"
+
+    artifacts:
+      - $CM_BUILD_DIR/export/*.ipa
+
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
+        submit_to_app_store: false
