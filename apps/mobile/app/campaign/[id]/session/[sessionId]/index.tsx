@@ -12,7 +12,7 @@ import { RichTextRenderer } from "@/components/RichTextRenderer";
 
 type Session = typeof schema.sessions.$inferSelect;
 type Quote = typeof schema.quotes.$inferSelect;
-type SessionAttrs = { startedAt?: number; endedAt?: number; prepGoals?: string };
+type SessionAttrs = { startedAt?: number; endedAt?: number; prepGoals?: string; highlights?: string[] };
 
 function formatDuration(ms: number): string {
   const hours = Math.floor(ms / 3600000);
@@ -31,6 +31,9 @@ export default function SessionDetailScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [showXpAward, setShowXpAward] = useState(false);
   const [xpInput, setXpInput] = useState("");
+  const [highlights, setHighlights] = useState<string[]>([]);
+  const [showHighlightInput, setShowHighlightInput] = useState(false);
+  const [highlightInput, setHighlightInput] = useState("");
   const [prevSession, setPrevSession] = useState<{ id: string; number: number } | null>(null);
   const [nextSession, setNextSession] = useState<{ id: string; number: number } | null>(null);
   const [linkedEntities, setLinkedEntities] = useState<
@@ -46,6 +49,10 @@ export default function SessionDetailScreen() {
       .where(eq(schema.sessions.id, sessionId))
       .get();
     setSession(s ?? null);
+    if (s) {
+      const sa = (s.attrs ?? {}) as SessionAttrs;
+      setHighlights(Array.isArray(sa.highlights) ? sa.highlights : []);
+    }
 
     if (s) {
       // Adjacent session navigation
@@ -143,6 +150,25 @@ export default function SessionDetailScreen() {
     Alert.alert("XP Awarded", `+${amount} XP awarded to ${count} PC${count !== 1 ? "s" : ""}.`);
     setXpInput("");
     setShowXpAward(false);
+  };
+
+  const addHighlight = () => {
+    const text = highlightInput.trim();
+    if (!text || !session) return;
+    const next = [...highlights, text];
+    setHighlights(next);
+    setHighlightInput("");
+    setShowHighlightInput(false);
+    const current = (session.attrs ?? {}) as Record<string, unknown>;
+    db.update(schema.sessions).set({ attrs: { ...current, highlights: next } }).where(eq(schema.sessions.id, sessionId)).run();
+  };
+
+  const deleteHighlight = (index: number) => {
+    if (!session) return;
+    const next = highlights.filter((_, i) => i !== index);
+    setHighlights(next);
+    const current = (session.attrs ?? {}) as Record<string, unknown>;
+    db.update(schema.sessions).set({ attrs: { ...current, highlights: next } }).where(eq(schema.sessions.id, sessionId)).run();
   };
 
   if (!session) {
@@ -498,6 +524,47 @@ export default function SessionDetailScreen() {
             )}
           </View>
         ) : null}
+
+        {/* Memorable Moments / Highlights */}
+        <GoldRule />
+        <View style={{ marginTop: 12, marginBottom: 12 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#5A4D3E", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+              Memorable Moments
+            </Text>
+            <Pressable onPress={() => setShowHighlightInput((v) => !v)}>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C" }}>+ Add</Text>
+            </Pressable>
+          </View>
+          {showHighlightInput && (
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+              <TextInput
+                value={highlightInput}
+                onChangeText={setHighlightInput}
+                placeholder="What happened?"
+                placeholderTextColor="#8A7D6D60"
+                style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 4 }}
+                onSubmitEditing={addHighlight}
+                autoFocus
+              />
+              <Pressable onPress={addHighlight} style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: "#7A2418", borderRadius: 2 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#FAF5EA" }}>Add</Text>
+              </Pressable>
+            </View>
+          )}
+          {highlights.length === 0 && !showHighlightInput ? (
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D80", fontStyle: "italic" }}>
+              Record standout moments, unexpected turns, and great player decisions here.
+            </Text>
+          ) : (
+            highlights.map((h, i) => (
+              <Pressable key={i} onLongPress={() => deleteHighlight(i)} style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C12" }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C", marginRight: 8, marginTop: 1 }}>◆</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", flex: 1, lineHeight: 20 }}>{h}</Text>
+              </Pressable>
+            ))
+          )}
+        </View>
 
         {/* Quotes section */}
         <GoldRule />

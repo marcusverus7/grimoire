@@ -303,6 +303,24 @@ read Part IV (build plan) before starting any phase.
   stored in app_kv bonds_${campaignId}; modal picker for from/to/note; long-
   press to delete. Only shown when party has ≥2 PCs. Version bumped to 1.9.5.
 
+- Phase 39: Location & Faction Name Generator — mode picker (NPC/Location/
+  Faction) at top of NPC Gen screen; Location names from adjective+noun tables
+  (20+20 entries); Faction names from adjective+type+symbol tables; 6 results
+  per set with per-item ⚄ re-roll + "+ Use" saves directly to campaign entities.
+
+- Phase 40: Session Highlights — memorable moments list on session detail;
+  quick-add inline input; stored in session.attrs.highlights[]; long-press to
+  delete; shown between Award XP and Quotes sections.
+
+- Phase 41: Rumour Mill (/campaign/[id]/rumours) — 40 categorised rumours
+  (World News/Local Gossip/Dark Rumour/Plot Hook); category filter chips; per-
+  rumour ⚄ re-roll + Save to Campaign Notes; generate new set button. "Rumours"
+  added to campaign action grid.
+
+- Phase 42: CR Quick Stats — horizontal CR chip row in NPC Gen (NPC mode);
+  tapping CR shows HP/AC stats; selected CR auto-fills hp/ac/currentHp attrs
+  when saving NPC to campaign. Version bumped to 1.9.6.
+
 ## What to build next
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred

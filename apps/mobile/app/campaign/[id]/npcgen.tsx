@@ -66,6 +66,46 @@ const SECRETS = [
   "Is playing multiple factions against each other for profit",
 ];
 
+const LOC_ADJS = ["Ashen","Iron","Shadow","Broken","Hollow","Whispering","Sunken","Ancient","Forsaken","Silver","Frost","Ember","Lost","Cursed","Thorn","Crumbling","Silent","Bitter","Pale","Veiled"];
+const LOC_NOUNS = ["Vale","Keep","Crossing","Ruins","Hamlet","Port","Shrine","Bridge","Forge","Abbey","Crypt","Pass","Tower","Hold","Haven","Moor","Glen","Fen","Peak","Ridge"];
+const LOC_PREFIXES = ["The","Upper","Lower","Old","New","East","West","North","South","Far","High","Deep","Dead","Dark","White","Black","Red","Green","Pale"];
+const LOC_SUFFIXES = ["reach","wood","ford","holm","gate","wall","mere","cliff","fell","stone","barrow","hollow","briar","field","heath","ash","mound","well","watch","water"];
+
+const FACTION_ADJS = ["Crimson","Iron","Shadow","Golden","Silver","Ancient","Broken","Hidden","Scarlet","Hollow","Frost","Ember","Pale","Obsidian","Brass","Copper","Veiled","Ivory","Amber","Onyx"];
+const FACTION_TYPES = ["Brotherhood","Order","Circle","Covenant","Guild","Council","Society","Assembly","Hand","Eye","Watch","Lodge","Compact","Accord","Conclave","Legion","Union","Pact","Tribunal","Vigil"];
+const FACTION_SYMBOLS = ["Serpent","Crown","Flame","Lantern","Sword","Coin","Star","Moon","Sun","Rose","Raven","Wolf","Boar","Gate","Eye","Hand","Bell","Mask","Key","Compass"];
+
+function generateLocationName(): string {
+  const r = Math.random();
+  if (r < 0.4) {
+    return `${pick(LOC_ADJS)} ${pick(LOC_NOUNS)}`;
+  } else if (r < 0.7) {
+    return `${pick(LOC_PREFIXES)}${pick(LOC_SUFFIXES)}`;
+  } else {
+    return `The ${pick(LOC_ADJS)} ${pick(LOC_NOUNS)}`;
+  }
+}
+
+// D&D 5e typical HP/AC by CR (DMG reference)
+const CR_STATS: Record<string, { hp: number; ac: number }> = {
+  "0": { hp: 3, ac: 10 }, "1/8": { hp: 21, ac: 13 }, "1/4": { hp: 42, ac: 13 },
+  "1/2": { hp: 60, ac: 13 }, "1": { hp: 78, ac: 13 }, "2": { hp: 93, ac: 13 },
+  "3": { hp: 108, ac: 13 }, "4": { hp: 123, ac: 14 }, "5": { hp: 138, ac: 15 },
+  "6": { hp: 153, ac: 15 }, "7": { hp: 168, ac: 15 }, "8": { hp: 183, ac: 16 },
+  "9": { hp: 198, ac: 16 }, "10": { hp: 213, ac: 17 }, "12": { hp: 243, ac: 17 },
+  "15": { hp: 288, ac: 18 }, "20": { hp: 378, ac: 19 },
+};
+const CR_LIST = ["0","1/8","1/4","1/2","1","2","3","4","5","6","7","8","9","10","12","15","20"];
+
+function generateFactionName(): string {
+  const r = Math.random();
+  if (r < 0.5) {
+    return `The ${pick(FACTION_ADJS)} ${pick(FACTION_TYPES)}`;
+  } else {
+    return `${pick(FACTION_TYPES)} of the ${pick(FACTION_ADJS)} ${pick(FACTION_SYMBOLS)}`;
+  }
+}
+
 const APPEARANCES = [
   "Weathered face with deep-set eyes, grey at the temples",
   "Unnervingly still; rarely blinks",
@@ -132,18 +172,23 @@ type NpcDraft = ReturnType<typeof generateNpc>;
 export default function NpcGenScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const [mode, setMode] = useState<"npc" | "location" | "faction">("npc");
   const [npc, setNpc] = useState<NpcDraft>(generateNpc);
+  const [selectedCr, setSelectedCr] = useState<string | null>(null);
+  const [locNames, setLocNames] = useState<string[]>(() => Array.from({ length: 6 }, generateLocationName));
+  const [factionNames, setFactionNames] = useState<string[]>(() => Array.from({ length: 6 }, generateFactionName));
 
   const save = () => {
     const entityId = newId();
     const now = new Date();
+    const crStats = selectedCr ? CR_STATS[selectedCr] : null;
     db.insert(schema.entities).values({
       id: entityId,
       campaignId,
       kind: "npc",
       name: npc.name,
       summary: npc.role,
-      attrs: { role: npc.role, gmSecret: npc.secret },
+      attrs: { role: npc.role, gmSecret: npc.secret, ...(crStats ? { hp: crStats.hp, ac: crStats.ac, currentHp: crStats.hp } : {}) },
       visibility: "table",
       createdAt: now,
       updatedAt: now,
@@ -154,11 +199,98 @@ export default function NpcGenScreen() {
     ]);
   };
 
+  const saveLocation = (name: string) => {
+    const entityId = newId();
+    const now = new Date();
+    db.insert(schema.entities).values({ id: entityId, campaignId, kind: "location", name, attrs: null, visibility: "table", createdAt: now, updatedAt: now }).run();
+    Alert.alert("Saved", `"${name}" added as a Location.`, [
+      { text: "OK" },
+      { text: "Edit", onPress: () => router.push(`/campaign/${campaignId}/entity/${entityId}/edit` as Parameters<typeof router.push>[0]) },
+    ]);
+  };
+
+  const saveFaction = (name: string) => {
+    const entityId = newId();
+    const now = new Date();
+    db.insert(schema.entities).values({ id: entityId, campaignId, kind: "faction", name, attrs: null, visibility: "table", createdAt: now, updatedAt: now }).run();
+    Alert.alert("Saved", `"${name}" added as a Faction.`, [
+      { text: "OK" },
+      { text: "Edit", onPress: () => router.push(`/campaign/${campaignId}/entity/${entityId}/edit` as Parameters<typeof router.push>[0]) },
+    ]);
+  };
+
   return (
     <>
       <Stack.Screen options={{ title: "NPC Generator" }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         <ScrollView contentContainerStyle={{ padding: 24 }}>
+          {/* Mode picker */}
+          <View style={{ flexDirection: "row", gap: 6, marginBottom: 20 }}>
+            {(["npc", "location", "faction"] as const).map((m) => (
+              <Pressable
+                key={m}
+                onPress={() => setMode(m)}
+                style={{ flex: 1, paddingVertical: 7, borderRadius: 2, borderWidth: 1, alignItems: "center", borderColor: mode === m ? "#7A2418" : "#A07A2C30", backgroundColor: mode === m ? "#7A241810" : "transparent" }}
+              >
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: mode === m ? "#7A2418" : "#5A4D3E80", textTransform: "capitalize", letterSpacing: 0.8 }}>
+                  {m === "npc" ? "NPC" : m.charAt(0).toUpperCase() + m.slice(1)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {mode !== "npc" && (
+            <>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 2, marginBottom: 6 }}>
+                {mode === "location" ? "Location Names" : "Faction Names"}
+              </Text>
+              <GoldRule />
+              <View style={{ marginTop: 16, gap: 8 }}>
+                {(mode === "location" ? locNames : factionNames).map((n, i) => (
+                  <View key={i} style={{ flexDirection: "row", alignItems: "center", paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: "#A07A2C20", borderRadius: 2 }}>
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: "#2C2014", flex: 1 }}>{n}</Text>
+                    <Pressable
+                      onPress={() => {
+                        if (mode === "location") {
+                          const fresh = generateLocationName();
+                          setLocNames((prev) => prev.map((x, j) => j === i ? fresh : x));
+                        } else {
+                          const fresh = generateFactionName();
+                          setFactionNames((prev) => prev.map((x, j) => j === i ? fresh : x));
+                        }
+                      }}
+                      style={{ padding: 6 }}
+                    >
+                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C60" }}>⚄</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => mode === "location" ? saveLocation(n) : saveFaction(n)}
+                      style={{ marginLeft: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 2, borderWidth: 1, borderColor: "#7A241830", backgroundColor: "#7A241806" }}
+                    >
+                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#7A2418" }}>+ Use</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+              <View style={{ marginTop: 20 }}>
+                <Pressable
+                  onPress={() => {
+                    if (mode === "location") setLocNames(Array.from({ length: 6 }, generateLocationName));
+                    else setFactionNames(Array.from({ length: 6 }, generateFactionName));
+                  }}
+                  style={{ paddingVertical: 14, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, alignItems: "center" }}
+                >
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5 }}>
+                    ⚄ Generate New Set
+                  </Text>
+                </Pressable>
+              </View>
+              <View style={{ height: 40 }} />
+            </>
+          )}
+
+          {mode === "npc" && (
+          <>
           <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
             Quick NPC
           </Text>
@@ -170,13 +302,38 @@ export default function NpcGenScreen() {
               <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C60" }}>⚄</Text>
             </Pressable>
           </View>
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 24 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
             <Text style={{ fontFamily: "Inter_500Medium", fontSize: 14, color: "#5A4D3E", flex: 1 }}>
               {npc.role}
             </Text>
             <Pressable onPress={() => setNpc((n) => ({ ...n, role: pick(ROLES) }))} style={{ padding: 6 }}>
               <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C60" }}>⚄</Text>
             </Pressable>
+          </View>
+
+          {/* CR Quick Stats */}
+          <View style={{ marginBottom: 18 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 8, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>CR (optional — sets HP &amp; AC on save)</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={{ flexDirection: "row", gap: 6 }}>
+                {CR_LIST.map((cr) => {
+                  const stats = CR_STATS[cr];
+                  const active = selectedCr === cr;
+                  return (
+                    <Pressable
+                      key={cr}
+                      onPress={() => setSelectedCr(active ? null : cr)}
+                      style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 2, borderWidth: 1, borderColor: active ? "#7A2418" : "#A07A2C25", backgroundColor: active ? "#7A241812" : "transparent" }}
+                    >
+                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: active ? "#7A2418" : "#5A4D3E80" }}>CR {cr}</Text>
+                      {stats && active ? (
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#7A241890", textAlign: "center" }}>{stats.hp}HP · AC{stats.ac}</Text>
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </ScrollView>
           </View>
 
           <GoldRule />
@@ -214,6 +371,8 @@ export default function NpcGenScreen() {
           </View>
 
           <View style={{ height: 40 }} />
+          </>
+          )}
         </ScrollView>
       </ParchmentScreen>
     </>
