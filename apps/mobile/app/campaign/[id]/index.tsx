@@ -8,6 +8,7 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
@@ -24,7 +25,7 @@ import type { RichTextNode } from "@grimoire/core";
 type Campaign = typeof schema.campaigns.$inferSelect;
 type Entity = typeof schema.entities.$inferSelect;
 type Session = typeof schema.sessions.$inferSelect;
-type CampaignSettings = { notes?: string; nextSession?: string; worldNotes?: RichTextNode };
+type CampaignSettings = { notes?: string; nextSession?: string; worldNotes?: RichTextNode; coverImageUri?: string; logline?: string };
 
 const ENTITY_KINDS = ["npc", "pc", "location", "faction", "item", "quest", "custom"] as const;
 const KIND_LABELS: Record<string, string> = {
@@ -78,6 +79,7 @@ export default function CampaignDetailScreen() {
   const [inProgressSession, setInProgressSession] = useState<Session | null>(null);
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [allCampaigns, setAllCampaigns] = useState<{ id: string; name: string; status: string }[]>([]);
+  const [nextSessionAttendance, setNextSessionAttendance] = useState<{ yes: number; total: number } | null>(null);
 
   const load = useCallback(() => {
     const c = db
@@ -107,6 +109,17 @@ export default function CampaignDetailScreen() {
         (s) => s.status === "planned" || s.status === "in_progress",
       );
       setNextPlannedSessionId(nextPlanned?.id ?? null);
+      // Attendance summary for the next planned session
+      if (nextPlanned) {
+        const att = ((nextPlanned.attrs as Record<string, unknown> | null)?.attendance ?? []) as { status: string }[];
+        if (att.length > 0) {
+          setNextSessionAttendance({ yes: att.filter((a) => a.status === "yes").length, total: att.length });
+        } else {
+          setNextSessionAttendance(null);
+        }
+      } else {
+        setNextSessionAttendance(null);
+      }
       const active = allSessions.find((s) => s.status === "in_progress");
       setInProgressSession(active ?? null);
       const lastPlayed = [...allSessions].reverse().find((s) => s.status === "played");
@@ -344,6 +357,17 @@ export default function CampaignDetailScreen() {
           </View>
         ) : null}
 
+        {/* Cover image banner */}
+        {(campaign.settings as CampaignSettings)?.coverImageUri ? (
+          <Pressable onPress={() => router.push(`/campaign/${id}/settings`)} style={{ marginBottom: 16, borderRadius: 3, overflow: "hidden" }}>
+            <Image
+              source={{ uri: (campaign.settings as CampaignSettings).coverImageUri }}
+              style={{ width: "100%", height: 110, borderRadius: 3 }}
+              resizeMode="cover"
+            />
+          </Pressable>
+        ) : null}
+
         {/* Campaign name — tap to edit */}
         {editing ? (
           <View className="flex-row items-center mb-4">
@@ -369,6 +393,11 @@ export default function CampaignDetailScreen() {
             {campaign.systemTag ? (
               <Text className="text-gold-muted text-xs mt-1" style={{ fontFamily: "Inter_400Regular" }}>
                 {campaign.systemTag}
+              </Text>
+            ) : null}
+            {(campaign.settings as CampaignSettings)?.logline ? (
+              <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#5A4D3ECC", fontStyle: "italic", marginTop: 4, lineHeight: 20 }}>
+                {(campaign.settings as CampaignSettings).logline}
               </Text>
             ) : null}
           </Pressable>
@@ -425,6 +454,11 @@ export default function CampaignDetailScreen() {
                 <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: nextSessionDays <= 0 ? "#7A2418" : nextSessionDays <= 3 ? "#A07A2C" : "#5A4D3E", marginRight: 8 }}>
                   {nextSessionDays <= 0 ? "Today!" : nextSessionDays === 1 ? "Tomorrow" : `${nextSessionDays}d`}
                 </Text>
+                {nextSessionAttendance ? (
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#4A8060", marginRight: 8 }}>
+                    {nextSessionAttendance.yes}/{nextSessionAttendance.total}
+                  </Text>
+                ) : null}
                 {nextPlannedSessionId ? (
                   <Pressable
                     onPress={() => router.push(`/campaign/${id}/session/${nextPlannedSessionId}/prep` as Parameters<typeof router.push>[0])}

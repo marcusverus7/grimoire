@@ -19,6 +19,12 @@ import type { RichTextNode, EntityLinkRow } from "@grimoire/core";
 import type { EditorBridge } from "@10play/tentap-editor";
 
 type Session = typeof schema.sessions.$inferSelect;
+type Entity = typeof schema.entities.$inferSelect;
+type AttendanceStatus = "yes" | "no" | "maybe";
+type AttendeeRecord = { entityId: string; name: string; status: AttendanceStatus };
+
+const ATTEND_LABELS: Record<AttendanceStatus, string> = { yes: "✓", no: "✗", maybe: "?" };
+const ATTEND_COLORS: Record<AttendanceStatus, string> = { yes: "#4A8060", no: "#7A2418", maybe: "#A07A2C" };
 
 export default function SessionFormScreen() {
   const { id: campaignId, sessionId } = useLocalSearchParams<{
@@ -33,6 +39,9 @@ export default function SessionFormScreen() {
   const [body, setBody] = useState<RichTextNode | null>(null);
   const [status, setStatus] = useState<"planned" | "in_progress" | "played">("planned");
   const [loaded, setLoaded] = useState(false);
+  const [existingAttrs, setExistingAttrs] = useState<Record<string, unknown>>({});
+  const [pcs, setPcs] = useState<Entity[]>([]);
+  const [attendance, setAttendance] = useState<AttendeeRecord[]>([]);
   const editorRef = useRef<EditorBridge | null>(null);
 
   useEffect(() => {
@@ -51,8 +60,27 @@ export default function SessionFormScreen() {
     setPlayedOn(session.playedOn ?? "");
     setBody(session.body as RichTextNode | null);
     setStatus(session.status);
+    const attrs = (session.attrs ?? {}) as Record<string, unknown>;
+    setExistingAttrs(attrs);
     setLoaded(true);
-  }, [sessionId]);
+
+    // Load PC entities for attendance
+    const campaignPcs = db
+      .select()
+      .from(schema.entities)
+      .where(and(eq(schema.entities.campaignId, campaignId), eq(schema.entities.kind, "pc")))
+      .all();
+    setPcs(campaignPcs);
+
+    // Hydrate attendance from saved attrs
+    const saved = (attrs.attendance ?? []) as AttendeeRecord[];
+    // Merge: keep saved statuses; add PCs not yet in list as "maybe"
+    const merged: AttendeeRecord[] = campaignPcs.map((pc) => {
+      const found = saved.find((a) => a.entityId === pc.id);
+      return { entityId: pc.id, name: pc.name, status: found?.status ?? "maybe" };
+    });
+    setAttendance(merged);
+  }, [sessionId, campaignId]);
 
   const save = async () => {
     let editorBody: RichTextNode | null = null;
@@ -72,6 +100,7 @@ export default function SessionFormScreen() {
           playedOn: playedOn.trim() || null,
           body: editorBody,
           status,
+          attrs: { ...existingAttrs, attendance: attendance.length > 0 ? attendance : undefined },
         })
         .where(eq(schema.sessions.id, sessionId))
         .run();
@@ -230,6 +259,38 @@ export default function SessionFormScreen() {
             </Pressable>
           ))}
         </View>
+
+        {/* Attendance — only show when there are PC entities */}
+        {pcs.length > 0 ? (
+          <View style={{ marginBottom: 20 }}>
+            <Label text="Attendance" />
+            {attendance.map((rec) => (
+              <View key={rec.entityId} style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 1 }}>
+                  {rec.name}
+                </Text>
+                <View style={{ flexDirection: "row", gap: 6 }}>
+                  {(["yes", "no", "maybe"] as AttendanceStatus[]).map((s) => (
+                    <Pressable
+                      key={s}
+                      onPress={() => setAttendance(attendance.map((a) => a.entityId === rec.entityId ? { ...a, status: s } : a))}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center",
+                        borderWidth: 1.5,
+                        borderColor: rec.status === s ? ATTEND_COLORS[s] : "#A07A2C20",
+                        backgroundColor: rec.status === s ? ATTEND_COLORS[s] + "20" : "transparent",
+                      }}
+                    >
+                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: rec.status === s ? ATTEND_COLORS[s] : "#A07A2C50" }}>
+                        {ATTEND_LABELS[s]}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         {/* Session Notes */}
         <Label text="Session Notes" />
