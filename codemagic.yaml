@@ -45,11 +45,10 @@ workflows:
       - name: Set up code signing
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --create
-          keychain add-certificates
-          xcode-project use-profiles
+          # Write ASC private key to disk for xcodebuild -allowProvisioningUpdates
+          printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > "/tmp/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8"
+          echo "ASC_KEY_PATH=/tmp/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8" >> "$CM_ENV"
+          echo "ASC key written: $(wc -c < /tmp/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8) bytes"
 
       - name: Pre-bundle JavaScript
         script: |
@@ -88,6 +87,10 @@ workflows:
             -configuration Release \
             -archivePath "$CM_BUILD_DIR/grimoire.xcarchive" \
             -destination "generic/platform=iOS" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             NODE_BINARY="$(which node)" \
             CLI_PATH="/tmp/expo-filter.js" \
@@ -110,7 +113,11 @@ workflows:
           xcodebuild -exportArchive \
             -archivePath "$CM_BUILD_DIR/grimoire.xcarchive" \
             -exportPath "$CM_BUILD_DIR/export" \
-            -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist"
+            -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
           ls -la "$CM_BUILD_DIR/export/"
 
     artifacts:
