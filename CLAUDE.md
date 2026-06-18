@@ -212,7 +212,14 @@ read Part IV (build plan) before starting any phase.
   markdown with PCs, open quests, world notes, next session, native share sheet); session
   avg rating in stats bar. Version bumped to 1.9.0.
 
-## What to build next (phase 20)
+- Phase 20: Story Arc tracking (/campaign/[id]/arcs — CRUD screen, stored as
+  campaign.settings.arcs[{id,name}]); session edit arc picker (attrs.arcId);
+  campaign detail session list groups by arc with rule+label headers when arcs
+  are assigned; Story Arcs link added to campaign settings; collapsible
+  Sessions and Entities sections (▼/▶ toggle on each section header). Version
+  bumped to 1.9.1.
+
+## What to build next (phase 21)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).

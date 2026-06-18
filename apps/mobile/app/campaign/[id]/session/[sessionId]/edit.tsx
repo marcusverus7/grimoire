@@ -43,6 +43,8 @@ export default function SessionFormScreen() {
   const [pcs, setPcs] = useState<Entity[]>([]);
   const [attendance, setAttendance] = useState<AttendeeRecord[]>([]);
   const [rating, setRating] = useState<number>(0);
+  const [arcs, setArcs] = useState<{ id: string; name: string }[]>([]);
+  const [arcId, setArcId] = useState<string | null>(null);
   const editorRef = useRef<EditorBridge | null>(null);
 
   useEffect(() => {
@@ -64,7 +66,15 @@ export default function SessionFormScreen() {
     const attrs = (session.attrs ?? {}) as Record<string, unknown>;
     setExistingAttrs(attrs);
     setRating(typeof attrs.rating === "number" ? attrs.rating : 0);
+    setArcId(typeof attrs.arcId === "string" ? attrs.arcId : null);
     setLoaded(true);
+
+    // Load campaign arcs
+    const camp = db.select().from(schema.campaigns).where(eq(schema.campaigns.id, campaignId)).get();
+    if (camp) {
+      const campArcs = ((camp.settings as Record<string, unknown> | null)?.arcs ?? []) as { id: string; name: string }[];
+      setArcs(campArcs);
+    }
 
     // Load PC entities for attendance
     const campaignPcs = db
@@ -102,7 +112,7 @@ export default function SessionFormScreen() {
           playedOn: playedOn.trim() || null,
           body: editorBody,
           status,
-          attrs: { ...existingAttrs, attendance: attendance.length > 0 ? attendance : undefined, rating: rating > 0 ? rating : undefined },
+          attrs: { ...existingAttrs, attendance: attendance.length > 0 ? attendance : undefined, rating: rating > 0 ? rating : undefined, arcId: arcId ?? undefined },
         })
         .where(eq(schema.sessions.id, sessionId))
         .run();
@@ -261,6 +271,46 @@ export default function SessionFormScreen() {
             </Pressable>
           ))}
         </View>
+
+        {/* Arc — only shown when campaign has arcs */}
+        {arcs.length > 0 ? (
+          <View style={{ marginBottom: 20 }}>
+            <Label text="Story Arc (optional)" />
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              <Pressable
+                onPress={() => setArcId(null)}
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 2,
+                  borderWidth: 1,
+                  borderColor: arcId === null ? "#A07A2C" : "#A07A2C25",
+                  backgroundColor: arcId === null ? "#A07A2C15" : "transparent",
+                }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: arcId === null ? "#A07A2C" : "#5A4D3E" }}>None</Text>
+              </Pressable>
+              {arcs.map((arc) => (
+                <Pressable
+                  key={arc.id}
+                  onPress={() => setArcId(arcId === arc.id ? null : arc.id)}
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 2,
+                    borderWidth: 1,
+                    borderColor: arcId === arc.id ? "#A07A2C" : "#A07A2C25",
+                    backgroundColor: arcId === arc.id ? "#A07A2C15" : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: arcId === arc.id ? "#A07A2C" : "#5A4D3E" }}>
+                    {arc.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         {/* Session Rating — only for played sessions */}
         {status === "played" ? (

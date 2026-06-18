@@ -306,6 +306,22 @@ export default function CampaignSettingsScreen() {
           <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C" }}>›</Text>
         </Pressable>
 
+        {/* Story Arcs link */}
+        <Pressable
+          onPress={() => router.push(`/campaign/${id}/arcs` as Parameters<typeof router.push>[0])}
+          className="mt-4 mb-3 py-3 px-4 border border-gold/20 rounded-sm flex-row items-center justify-between"
+        >
+          <View>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#2C2014" }}>
+              Story Arcs
+            </Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80", marginTop: 2 }}>
+              Organize sessions into chapters
+            </Text>
+          </View>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C" }}>›</Text>
+        </Pressable>
+
         {/* Prep To-Do link */}
         <Pressable
           onPress={() => router.push(`/campaign/${id}/todos` as Parameters<typeof router.push>[0])}

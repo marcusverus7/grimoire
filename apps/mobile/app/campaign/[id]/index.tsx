@@ -82,6 +82,9 @@ export default function CampaignDetailScreen() {
   const [allCampaigns, setAllCampaigns] = useState<{ id: string; name: string; status: string }[]>([]);
   const [nextSessionAttendance, setNextSessionAttendance] = useState<{ yes: number; total: number } | null>(null);
   const [lastRecapText, setLastRecapText] = useState<string | null>(null);
+  const [campaignArcs, setCampaignArcs] = useState<{ id: string; name: string }[]>([]);
+  const [showSessions, setShowSessions] = useState(true);
+  const [showEntities, setShowEntities] = useState(true);
 
   const load = useCallback(() => {
     const c = db
@@ -92,6 +95,7 @@ export default function CampaignDetailScreen() {
     setCampaign(c ?? null);
     if (c) {
       setNameInput(c.name);
+      setCampaignArcs(((c.settings as Record<string, unknown> | null)?.arcs ?? []) as { id: string; name: string }[]);
       setEntities(
         db
           .select()
@@ -640,12 +644,17 @@ export default function CampaignDetailScreen() {
         {/* Sessions */}
         <View className="mt-5">
           <View className="flex-row items-center justify-between mb-3">
-            <Text
-              className="text-gold text-xs uppercase tracking-widest"
-              style={{ fontFamily: "Inter_600SemiBold" }}
-            >
-              Sessions
-            </Text>
+            <Pressable onPress={() => setShowSessions((v) => !v)} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Text
+                className="text-gold text-xs uppercase tracking-widest"
+                style={{ fontFamily: "Inter_600SemiBold" }}
+              >
+                Sessions
+              </Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C60" }}>
+                {showSessions ? "▼" : "▶"}
+              </Text>
+            </Pressable>
             <View className="flex-row items-center">
               <Pressable onPress={() => router.push(`/campaign/${id}/todos` as Parameters<typeof router.push>[0])}>
                 <Text className="text-ink-faint text-xs mr-4" style={{ fontFamily: "Inter_500Medium" }}>
@@ -664,84 +673,119 @@ export default function CampaignDetailScreen() {
               </Pressable>
             </View>
           </View>
-          {sessions.length === 0 ? (
+          {showSessions && sessions.length === 0 ? (
             <Text className="text-ink-faint text-sm mb-4" style={{ fontFamily: "Inter_400Regular" }}>
               No sessions yet
             </Text>
-          ) : (
-            sessions.map((s) => (
-              <Pressable
-                key={s.id}
-                onPress={() => router.push(`/campaign/${id}/session/${s.id}`)}
-                onLongPress={() => {
-                  if (s.status === "played") return;
-                  Alert.alert(
-                    "Mark as Played?",
-                    `Mark Session ${s.number}${s.title ? `: ${s.title}` : ""} as played?`,
-                    [
-                      { text: "Cancel", style: "cancel" },
-                      {
-                        text: "Mark Played",
-                        onPress: () => {
-                          const today = new Date().toISOString().slice(0, 10);
-                          db.update(schema.sessions)
-                            .set({ status: "played", playedOn: today })
-                            .where(eq(schema.sessions.id, s.id))
-                            .run();
-                          load();
-                        },
-                      },
-                    ],
-                  );
-                }}
-                className="py-2.5 px-2 mb-1"
-              >
-                <Text className="text-ink text-base" style={{ fontFamily: "CormorantGaramond_600SemiBold" }}>
-                  Session {s.number}
-                  {s.title ? `: ${s.title}` : ""}
-                </Text>
-                <View className="flex-row items-center mt-0.5">
-                  <Text
-                    className="text-xs uppercase tracking-wider"
-                    style={{
-                      fontFamily: "Inter_400Regular",
-                      color: s.status === "played" ? "#A07A2C" : s.status === "in_progress" ? "#7A2418" : "#5A4D3E",
+          ) : null}
+          {showSessions && sessions.length > 0 ? (() => {
+            // Group sessions by arc if any session has an arcId
+            const hasArcs = sessions.some((s) => (s.attrs as Record<string, unknown> | null)?.arcId);
+            const arcById = new Map(campaignArcs.map((a) => [a.id, a.name]));
+
+            // Build groups: { arcLabel: string | null, items: Session[] }[]
+            type Group = { arcId: string | null; items: typeof sessions };
+            const groups: Group[] = [];
+            if (hasArcs) {
+              for (const s of sessions) {
+                const aid = ((s.attrs as Record<string, unknown> | null)?.arcId as string | undefined) ?? null;
+                const last = groups[groups.length - 1];
+                if (!last || last.arcId !== aid) {
+                  groups.push({ arcId: aid, items: [s] });
+                } else {
+                  last.items.push(s);
+                }
+              }
+            } else {
+              groups.push({ arcId: null, items: sessions });
+            }
+
+            return groups.map((group, gi) => (
+              <View key={gi}>
+                {group.arcId ? (
+                  <View style={{ flexDirection: "row", alignItems: "center", marginTop: gi > 0 ? 12 : 0, marginBottom: 4 }}>
+                    <View style={{ flex: 1, height: 0.5, backgroundColor: "#A07A2C30" }} />
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1.2, marginHorizontal: 10 }}>
+                      {arcById.get(group.arcId) ?? "Arc"}
+                    </Text>
+                    <View style={{ flex: 1, height: 0.5, backgroundColor: "#A07A2C30" }} />
+                  </View>
+                ) : null}
+                {group.items.map((s) => (
+                  <Pressable
+                    key={s.id}
+                    onPress={() => router.push(`/campaign/${id}/session/${s.id}`)}
+                    onLongPress={() => {
+                      if (s.status === "played") return;
+                      Alert.alert(
+                        "Mark as Played?",
+                        `Mark Session ${s.number}${s.title ? `: ${s.title}` : ""} as played?`,
+                        [
+                          { text: "Cancel", style: "cancel" },
+                          {
+                            text: "Mark Played",
+                            onPress: () => {
+                              const today = new Date().toISOString().slice(0, 10);
+                              db.update(schema.sessions)
+                                .set({ status: "played", playedOn: today })
+                                .where(eq(schema.sessions.id, s.id))
+                                .run();
+                              load();
+                            },
+                          },
+                        ],
+                      );
                     }}
+                    className="py-2.5 px-2 mb-1"
                   >
-                    {s.status}
-                  </Text>
-                  {s.playedOn ? (
-                    <Text className="text-ink/30 text-xs ml-2" style={{ fontFamily: "Inter_400Regular" }}>
-                      {s.playedOn}
+                    <Text className="text-ink text-base" style={{ fontFamily: "CormorantGaramond_600SemiBold" }}>
+                      Session {s.number}
+                      {s.title ? `: ${s.title}` : ""}
                     </Text>
-                  ) : null}
-                  {(() => {
-                    const a = (s.attrs ?? {}) as { startedAt?: number; endedAt?: number };
-                    if (!a.startedAt || !a.endedAt) return null;
-                    return (
-                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E50", marginLeft: 6 }}>
-                        ⏱ {fmtDuration(a.endedAt - a.startedAt)}
+                    <View className="flex-row items-center mt-0.5">
+                      <Text
+                        className="text-xs uppercase tracking-wider"
+                        style={{
+                          fontFamily: "Inter_400Regular",
+                          color: s.status === "played" ? "#A07A2C" : s.status === "in_progress" ? "#7A2418" : "#5A4D3E",
+                        }}
+                      >
+                        {s.status}
                       </Text>
-                    );
-                  })()}
-                  {s.status === "played" && (() => {
-                    const r = (s.attrs as Record<string, unknown> | null)?.rating;
-                    if (typeof r !== "number" || r < 1) return null;
-                    return (
-                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", marginLeft: 6 }}>
-                        {"★".repeat(r)}
-                      </Text>
-                    );
-                  })()}
-                  {s.status !== "played" ? (
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#2C201425", marginLeft: 6 }}>
-                      long press to mark played
-                    </Text>
-                  ) : null}
-                </View>
-              </Pressable>
-            ))
-          )}
+                      {s.playedOn ? (
+                        <Text className="text-ink/30 text-xs ml-2" style={{ fontFamily: "Inter_400Regular" }}>
+                          {s.playedOn}
+                        </Text>
+                      ) : null}
+                      {(() => {
+                        const a = (s.attrs ?? {}) as { startedAt?: number; endedAt?: number };
+                        if (!a.startedAt || !a.endedAt) return null;
+                        return (
+                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E50", marginLeft: 6 }}>
+                            ⏱ {fmtDuration(a.endedAt - a.startedAt)}
+                          </Text>
+                        );
+                      })()}
+                      {s.status === "played" && (() => {
+                        const r = (s.attrs as Record<string, unknown> | null)?.rating;
+                        if (typeof r !== "number" || r < 1) return null;
+                        return (
+                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", marginLeft: 6 }}>
+                            {"★".repeat(r)}
+                          </Text>
+                        );
+                      })()}
+                      {s.status !== "played" ? (
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#2C201425", marginLeft: 6 }}>
+                          long press to mark played
+                        </Text>
+                      ) : null}
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            ));
+          })() : null}
         </View>
 
         <GoldRule className="my-3" />
@@ -749,18 +793,24 @@ export default function CampaignDetailScreen() {
         {/* Entities */}
         <View className="mt-2">
           <View className="flex-row items-center justify-between mb-3">
-            <Text
-              className="text-gold text-xs uppercase tracking-widest"
-              style={{ fontFamily: "Inter_600SemiBold" }}
-            >
-              Entities
-            </Text>
+            <Pressable onPress={() => setShowEntities((v) => !v)} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Text
+                className="text-gold text-xs uppercase tracking-widest"
+                style={{ fontFamily: "Inter_600SemiBold" }}
+              >
+                Entities
+              </Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C60" }}>
+                {showEntities ? "▼" : "▶"}
+              </Text>
+            </Pressable>
             <Pressable onPress={() => { setQuickAddName(""); setQuickAddKind("npc"); setShowQuickAdd(true); }}>
               <Text className="text-gold text-xs" style={{ fontFamily: "Inter_500Medium" }}>
                 + New
               </Text>
             </Pressable>
           </View>
+          {showEntities && <>
           {/* Kind filter pills — only when there are multiple kinds */}
           {presentKinds.length > 1 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }} contentContainerStyle={{ paddingBottom: 2 }}>
@@ -1015,6 +1065,7 @@ export default function CampaignDetailScreen() {
               </View>
             ))
           )}
+          </>}
         </View>
 
         <GoldRule className="my-4" />
