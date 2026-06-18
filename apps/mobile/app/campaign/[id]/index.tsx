@@ -424,6 +424,7 @@ export default function CampaignDetailScreen() {
               {[
                 { label: "Dash", path: `/campaign/${id}/playview` },
                 { label: "Tracker", path: `/campaign/${id}/tracker` },
+                { label: "Encounter", path: `/campaign/${id}/encounter` },
                 { label: "Cast", path: `/campaign/${id}/cast` },
                 { label: "Clocks", path: `/campaign/${id}/clocks` },
                 { label: "Tables", path: `/campaign/${id}/tables` },
@@ -1084,6 +1085,7 @@ export default function CampaignDetailScreen() {
               { label: "Notes", path: `/campaign/${id}/notes`, gold: true },
               { label: "Quests", path: `/campaign/${id}/quests`, gold: true },
               { label: "Quotes", path: `/campaign/${id}/quotes`, gold: true },
+              { label: "Encounter", path: `/campaign/${id}/encounter`, gold: true },
               { label: "Tracker", path: `/campaign/${id}/tracker`, gold: true },
               { label: "Tables", path: `/campaign/${id}/tables`, gold: true },
               { label: "Locations", path: `/campaign/${id}/locations`, gold: true },

@@ -47,7 +47,12 @@ type TrackerEntry = Entity & {
 export default function TrackerScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  type TempCombatant = { id: string; name: string; hp: number; ac: number };
+  type EncounterState = { entityIds: string[]; temps: TempCombatant[] };
+
   const [entries, setEntries] = useState<TrackerEntry[]>([]);
+  const [tempCombatants, setTempCombatants] = useState<TempCombatant[]>([]);
+  const [encounterEntityIds, setEncounterEntityIds] = useState<Set<string> | null>(null);
   const [sortByInit, setSortByInit] = useState(false);
   const [showDice, setShowDice] = useState(false);
   const [conditionTarget, setConditionTarget] = useState<TrackerEntry | null>(null);
@@ -55,22 +60,37 @@ export default function TrackerScreen() {
   const [hideDead, setHideDead] = useState(true);
 
   const load = useCallback(() => {
+    // Load encounter filter if set
+    let encounterIds: Set<string> | null = null;
+    let temps: TempCombatant[] = [];
+    const encounterRaw = getKv(`encounter_${campaignId}`);
+    if (encounterRaw) {
+      try {
+        const enc = JSON.parse(encounterRaw) as EncounterState;
+        if (enc.entityIds?.length > 0 || enc.temps?.length > 0) {
+          encounterIds = new Set(enc.entityIds ?? []);
+          temps = enc.temps ?? [];
+        }
+      } catch { /* ignore */ }
+    }
+    setEncounterEntityIds(encounterIds);
+    setTempCombatants(temps);
+
     const entities = db
       .select()
       .from(schema.entities)
       .where(
         and(
           eq(schema.entities.campaignId, campaignId),
-          // Only entities with HP defined
         ),
       )
       .all()
       .filter((e) => {
         const attrs = e.attrs as Attrs | null;
-        return (
-          (e.kind === "npc" || e.kind === "pc") &&
-          attrs?.["hp"] != null
-        );
+        if (!((e.kind === "npc" || e.kind === "pc") && attrs?.["hp"] != null)) return false;
+        // If encounter filter active, only show selected entities
+        if (encounterIds !== null) return encounterIds.has(e.id);
+        return true;
       })
       .map((e) => {
         const attrs = e.attrs as Attrs | null;
@@ -176,9 +196,17 @@ export default function TrackerScreen() {
     <>
       <Stack.Screen
         options={{
-          title: "Combat Tracker",
+          title: encounterEntityIds !== null ? "Encounter" : "Combat Tracker",
           headerRight: () => (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Pressable
+                onPress={() => router.push(`/campaign/${campaignId}/encounter` as Parameters<typeof router.push>[0])}
+                style={{ marginRight: 14 }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: encounterEntityIds !== null ? "#7A2418" : "#A07A2C80" }}>
+                  {encounterEntityIds !== null ? "⚔ Enc" : "⚔"}
+                </Text>
+              </Pressable>
               <Pressable onPress={() => setShowDice(true)} style={{ marginRight: 14 }}>
                 <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Dice</Text>
               </Pressable>
@@ -268,6 +296,24 @@ export default function TrackerScreen() {
               contentContainerStyle={{ padding: 12 }}
               renderItem={({ item }) => <CombatantRow entry={item} onAdjust={adjustHp} onSetHp={setHpDirect} onNavigate={() => router.push(`/campaign/${campaignId}/entity/${item.id}`)} onOpenConditions={() => setConditionTarget(item)} onToggleCondition={(c) => toggleCondition(item, c)} />}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+              ListFooterComponent={tempCombatants.length > 0 ? (
+                <View style={{ paddingTop: 12 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#7A2418", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8, paddingHorizontal: 4 }}>
+                    Temporary
+                  </Text>
+                  {tempCombatants.map((t) => (
+                    <TempCombatantRow
+                      key={t.id}
+                      combatant={t}
+                      onAdjust={(delta) => {
+                        setTempCombatants((prev) =>
+                          prev.map((c) => c.id === t.id ? { ...c, hp: Math.max(0, c.hp + delta) } : c)
+                        );
+                      }}
+                    />
+                  ))}
+                </View>
+              ) : null}
             />
           </>
         )}
@@ -438,6 +484,57 @@ function CombatantRow({
             {entry.conditions.length === 0 ? "+ Condition" : "+"}
           </Text>
         </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function TempCombatantRow({ combatant, onAdjust }: { combatant: { id: string; name: string; hp: number; ac: number }; onAdjust: (delta: number) => void }) {
+  const maxHp = combatant.hp;
+  const pct = maxHp > 0 ? combatant.hp / maxHp : 1;
+  const barColor = pct > 0.5 ? "#4A7A2C" : pct > 0.25 ? "#A07A2C" : "#7A2418";
+  const isDead = combatant.hp <= 0;
+
+  return (
+    <View
+      style={{
+        backgroundColor: isDead ? "#7A241808" : "#FAF5EA",
+        borderWidth: 1,
+        borderColor: "#7A241830",
+        borderRadius: 4,
+        padding: 12,
+        marginBottom: 8,
+        opacity: isDead ? 0.7 : 1,
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 17, color: isDead ? "#8A7D6D" : "#2C2014" }}>
+            {combatant.name}{isDead ? " ✝" : ""}
+          </Text>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 0.8 }}>
+            Temp{combatant.ac > 0 ? ` · AC ${combatant.ac}` : ""}
+          </Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Pressable
+            onPress={() => onAdjust(-1)}
+            onLongPress={() => onAdjust(-5)}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: "#7A241815", borderWidth: 1, borderColor: "#7A241830", alignItems: "center", justifyContent: "center" }}
+          >
+            <Text style={{ color: "#7A2418", fontSize: 20, lineHeight: 22 }}>−</Text>
+          </Pressable>
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 22, color: barColor, textAlign: "center", width: 52, marginHorizontal: 6 }}>
+            {combatant.hp}
+          </Text>
+          <Pressable
+            onPress={() => onAdjust(1)}
+            onLongPress={() => onAdjust(5)}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: "#4A7A2C15", borderWidth: 1, borderColor: "#4A7A2C30", alignItems: "center", justifyContent: "center" }}
+          >
+            <Text style={{ color: "#4A7A2C", fontSize: 20, lineHeight: 22 }}>+</Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );
