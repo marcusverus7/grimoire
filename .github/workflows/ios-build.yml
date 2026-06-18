@@ -175,6 +175,7 @@ jobs:
             -archivePath "$GITHUB_WORKSPACE/grimoire.xcarchive" \
             -destination "generic/platform=iOS" \
             CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="Grimoire_AppStore" \
             CODE_SIGN_IDENTITY="Apple Distribution: Mark Loughran (JQS67937W6)" \
             DEVELOPMENT_TEAM=JQS67937W6 \
             NODE_BINARY="$(which node)" \
