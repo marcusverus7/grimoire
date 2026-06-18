@@ -235,26 +235,35 @@ export default function SessionFormScreen() {
 
         {/* Played on */}
         <Label text="Played On (YYYY-MM-DD)" />
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
-          <TextInput
-            value={playedOn}
-            onChangeText={setPlayedOn}
-            placeholder="2025-06-10"
-            placeholderTextColor="#2C201440"
-            style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8 }}
-          />
-          <Pressable
-            onPress={() => {
-              const now = new Date();
-              const y = now.getFullYear();
-              const m = String(now.getMonth() + 1).padStart(2, "0");
-              const d = String(now.getDate()).padStart(2, "0");
-              setPlayedOn(`${y}-${m}-${d}`);
-            }}
-            style={{ marginLeft: 10, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2 }}
-          >
-            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C" }}>Today</Text>
-          </Pressable>
+        <TextInput
+          value={playedOn}
+          onChangeText={setPlayedOn}
+          placeholder="2025-06-10"
+          placeholderTextColor="#2C201440"
+          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8 }}
+        />
+        <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 10, marginBottom: 20 }}>
+          {([
+            { label: "Today", days: 0 },
+            { label: "Tomorrow", days: 1 },
+            { label: "+1 week", days: 7 },
+            { label: "+2 weeks", days: 14 },
+          ] as const).map((chip) => (
+            <Pressable
+              key={chip.label}
+              onPress={() => {
+                const d = new Date();
+                d.setDate(d.getDate() + chip.days);
+                const y = d.getFullYear();
+                const mo = String(d.getMonth() + 1).padStart(2, "0");
+                const da = String(d.getDate()).padStart(2, "0");
+                setPlayedOn(`${y}-${mo}-${da}`);
+              }}
+              style={{ marginRight: 8, marginBottom: 8, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2 }}
+            >
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C" }}>{chip.label}</Text>
+            </Pressable>
+          ))}
         </View>
 
         {/* Status */}

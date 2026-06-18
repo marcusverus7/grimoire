@@ -6,3 +6,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# TestFlight feedback pulls (contains tester PII + screenshots)
+testflight-feedback/

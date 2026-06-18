@@ -46,10 +46,54 @@ export default function HomePage() {
       >
         THE GRIMOIRE ARCHIVE
       </h1>
-      <p style={{ color: "#ECE3CF", opacity: 0.7, maxWidth: 400 }}>
+      <p style={{ color: "#ECE3CF", opacity: 0.7, maxWidth: 400, marginBottom: "2rem" }}>
         Campaign recaps — relive every session. Share links will appear here
         at <code>/r/[slug]</code>.
       </p>
+
+      <div style={{ maxWidth: 500, marginBottom: "2rem" }}>
+        <p style={{ color: "#ECE3CF", marginBottom: "1.5rem", fontSize: "0.95rem" }}>
+          To get started:
+        </p>
+        <ol
+          style={{
+            color: "#ECE3CF",
+            opacity: 0.8,
+            textAlign: "left",
+            display: "inline-block",
+            fontSize: "0.9rem",
+            lineHeight: "1.8",
+          }}
+        >
+          <li style={{ marginBottom: "0.5rem" }}>Create a campaign in Grimoire mobile app</li>
+          <li style={{ marginBottom: "0.5rem" }}>Run sessions and capture notes</li>
+          <li style={{ marginBottom: "0.5rem" }}>Generate a recap and share the link</li>
+          <li>View your recap here</li>
+        </ol>
+      </div>
+
+      <a
+        href="/r/demo"
+        style={{
+          display: "inline-block",
+          padding: "0.75rem 1.5rem",
+          backgroundColor: "#A07A2C",
+          color: "#2C2014",
+          textDecoration: "none",
+          borderRadius: "2px",
+          fontWeight: "600",
+          fontSize: "0.95rem",
+          transition: "background-color 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          (e.target as HTMLElement).style.backgroundColor = "#C9A24A";
+        }}
+        onMouseLeave={(e) => {
+          (e.target as HTMLElement).style.backgroundColor = "#A07A2C";
+        }}
+      >
+        View Demo Recap →
+      </a>
     </main>
   );
 }
