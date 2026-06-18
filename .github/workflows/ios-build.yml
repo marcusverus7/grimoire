@@ -37,6 +37,14 @@ jobs:
       - name: Enable pnpm via corepack
         run: corepack enable
 
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -85,6 +93,14 @@ jobs:
       - name: Run expo prebuild
         working-directory: apps/mobile
         run: npx expo prebuild --platform ios --clean --non-interactive --no-install
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: apps/mobile/ios/Pods
+          key: pods-${{ runner.os }}-${{ hashFiles('apps/mobile/ios/Podfile.lock') }}
+          restore-keys: |
+            pods-${{ runner.os }}-
 
       - name: Install CocoaPods
         working-directory: apps/mobile/ios
