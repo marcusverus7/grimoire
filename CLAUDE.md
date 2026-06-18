@@ -225,7 +225,17 @@ read Part IV (build plan) before starting any phase.
   shown in Play View Dash with mini progress bars and link to full screen).
   Version bumped to 1.9.2.
 
-## What to build next (phase 22)
+- Phase 22: Entity pronouns (attrs.pronouns on NPC/PC, shown in entity detail +
+  cast screen + edit screen); NPC archetype strip on new-entity edit (Villain/
+  Merchant/Guard/Informant/Innkeeper/Sage pre-fill role+HP+AC+summary); Character
+  Goals on passport detail (attrs.goals[], inline add/delete, green diamonds);
+  Tracker dead-entity filter (hideDead=true by default, toggle shows count);
+  Encounter Builder (/campaign/[id]/encounter — pick alive NPCs from campaign,
+  add temp combatants with name/HP/AC, start encounter saves to app_kv, tracker
+  reads filter and shows ⚔ badge when encounter active; added to In-Play bar
+  and action grid). Version bumped to 1.9.3.
+
+## What to build next
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
