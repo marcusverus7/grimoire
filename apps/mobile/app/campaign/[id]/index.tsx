@@ -629,6 +629,15 @@ export default function CampaignDetailScreen() {
                       </Text>
                     );
                   })()}
+                  {s.status === "played" && (() => {
+                    const r = (s.attrs as Record<string, unknown> | null)?.rating;
+                    if (typeof r !== "number" || r < 1) return null;
+                    return (
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", marginLeft: 6 }}>
+                        {"★".repeat(r)}
+                      </Text>
+                    );
+                  })()}
                   {s.status !== "played" ? (
                     <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#2C201425", marginLeft: 6 }}>
                       long press to mark played
@@ -836,6 +845,12 @@ export default function CampaignDetailScreen() {
                       className="py-2 px-2 mb-0.5"
                     >
                       <View className="flex-row items-center">
+                        {(entity.attrs as Record<string, unknown> | null)?.["imageUri"] ? (
+                          <Image
+                            source={{ uri: String((entity.attrs as Record<string, unknown>)["imageUri"]) }}
+                            style={{ width: 28, height: 28, borderRadius: 14, marginRight: 8, borderWidth: 1, borderColor: "#A07A2C30" }}
+                          />
+                        ) : null}
                         {isPinned && (
                           <Text style={{ fontSize: 10, color: "#A07A2C80", marginRight: 4 }}>★</Text>
                         )}

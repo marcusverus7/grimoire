@@ -42,6 +42,7 @@ export default function SessionFormScreen() {
   const [existingAttrs, setExistingAttrs] = useState<Record<string, unknown>>({});
   const [pcs, setPcs] = useState<Entity[]>([]);
   const [attendance, setAttendance] = useState<AttendeeRecord[]>([]);
+  const [rating, setRating] = useState<number>(0);
   const editorRef = useRef<EditorBridge | null>(null);
 
   useEffect(() => {
@@ -62,6 +63,7 @@ export default function SessionFormScreen() {
     setStatus(session.status);
     const attrs = (session.attrs ?? {}) as Record<string, unknown>;
     setExistingAttrs(attrs);
+    setRating(typeof attrs.rating === "number" ? attrs.rating : 0);
     setLoaded(true);
 
     // Load PC entities for attendance
@@ -100,7 +102,7 @@ export default function SessionFormScreen() {
           playedOn: playedOn.trim() || null,
           body: editorBody,
           status,
-          attrs: { ...existingAttrs, attendance: attendance.length > 0 ? attendance : undefined },
+          attrs: { ...existingAttrs, attendance: attendance.length > 0 ? attendance : undefined, rating: rating > 0 ? rating : undefined },
         })
         .where(eq(schema.sessions.id, sessionId))
         .run();
@@ -259,6 +261,20 @@ export default function SessionFormScreen() {
             </Pressable>
           ))}
         </View>
+
+        {/* Session Rating — only for played sessions */}
+        {status === "played" ? (
+          <View style={{ marginBottom: 20 }}>
+            <Label text="Session Rating (optional)" />
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Pressable key={star} onPress={() => setRating(rating === star ? 0 : star)}>
+                  <Text style={{ fontSize: 24, color: star <= rating ? "#A07A2C" : "#A07A2C30" }}>★</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         {/* Attendance — only show when there are PC entities */}
         {pcs.length > 0 ? (
