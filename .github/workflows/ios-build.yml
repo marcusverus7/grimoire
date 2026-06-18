@@ -73,7 +73,21 @@ jobs:
         run: |
           PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
           mkdir -p "$PROFILES_DIR"
-          cp "$HOME/grimoire-creds/Grimoire_AppStore.mobileprovision" "$PROFILES_DIR/"
+          PROFILE="$HOME/grimoire-creds/Grimoire_AppStore.mobileprovision"
+          # Extract the profile's REAL internal Name + UUID. The filename
+          # ("Grimoire_AppStore") is NOT what Xcode matches against — for
+          # Apple-managed profiles the Name is an auto-generated string.
+          # Hardcoding "Grimoire_AppStore" is what made every prior build fail
+          # with "No profile matching Grimoire_AppStore".
+          security cms -D -i "$PROFILE" > /tmp/profile.plist
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' /tmp/profile.plist)
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' /tmp/profile.plist)
+          echo "Profile Name: $PROFILE_NAME"
+          echo "Profile UUID: $PROFILE_UUID"
+          # Xcode looks profiles up by <UUID>.mobileprovision — install under that name.
+          cp "$PROFILE" "$PROFILES_DIR/$PROFILE_UUID.mobileprovision"
+          echo "PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
+          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
 
       - name: Import cert into keychain
         env:
@@ -110,7 +124,10 @@ jobs:
 
       - name: Write ExportOptions.plist
         run: |
-          cat > "$GITHUB_WORKSPACE/ExportOptions.plist" << 'PLIST'
+          # Unquoted heredoc so $PROFILE_UUID (from the install step) expands.
+          # Manual signing requires an explicit bundleID -> profile mapping or
+          # -exportArchive fails after the archive succeeds.
+          cat > "$GITHUB_WORKSPACE/ExportOptions.plist" << PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -121,11 +138,18 @@ jobs:
             <string>JQS67937W6</string>
             <key>signingStyle</key>
             <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.grimoirettrpg.app</key>
+              <string>${PROFILE_UUID}</string>
+            </dict>
             <key>stripSwiftSymbols</key>
             <true/>
           </dict>
           </plist>
           PLIST
+          echo "--- ExportOptions.plist ---"
+          cat "$GITHUB_WORKSPACE/ExportOptions.plist"
 
       - name: Pre-bundle JS and create expo-filter CLI wrapper
         working-directory: apps/mobile
@@ -175,7 +199,7 @@ jobs:
             -archivePath "$GITHUB_WORKSPACE/grimoire.xcarchive" \
             -destination "generic/platform=iOS" \
             CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER="Grimoire_AppStore" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
             CODE_SIGN_IDENTITY="Apple Distribution: Mark Loughran (JQS67937W6)" \
             DEVELOPMENT_TEAM=JQS67937W6 \
             NODE_BINARY="$(which node)" \
