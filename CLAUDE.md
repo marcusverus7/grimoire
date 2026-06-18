@@ -219,7 +219,13 @@ read Part IV (build plan) before starting any phase.
   Sessions and Entities sections (▼/▶ toggle on each section header). Version
   bumped to 1.9.1.
 
-## What to build next (phase 21)
+- Phase 21: Campaign Clocks (/campaign/[id]/clocks — countdown timers for
+  in-world pressures; segment display + tick/reset controls; stored in
+  app_kv; accessible from In-Play bar and action grid; incomplete clocks
+  shown in Play View Dash with mini progress bars and link to full screen).
+  Version bumped to 1.9.2.
+
+## What to build next (phase 22)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).

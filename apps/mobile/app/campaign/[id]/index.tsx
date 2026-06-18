@@ -425,6 +425,7 @@ export default function CampaignDetailScreen() {
                 { label: "Dash", path: `/campaign/${id}/playview` },
                 { label: "Tracker", path: `/campaign/${id}/tracker` },
                 { label: "Cast", path: `/campaign/${id}/cast` },
+                { label: "Clocks", path: `/campaign/${id}/clocks` },
                 { label: "Tables", path: `/campaign/${id}/tables` },
                 { label: "Party", path: `/campaign/${id}/party` },
                 { label: "Notes", path: `/campaign/${id}/session/${inProgressSession.id}/notes` },
@@ -1075,6 +1076,7 @@ export default function CampaignDetailScreen() {
           {(
             [
               { label: "Cast", path: `/campaign/${id}/cast`, gold: true },
+              { label: "Clocks", path: `/campaign/${id}/clocks`, gold: true },
               { label: "Party", path: `/campaign/${id}/party`, gold: true },
               { label: "Brief", action: shareBriefing, gold: true },
               { label: "NPC Gen", path: `/campaign/${id}/npcgen`, gold: true },

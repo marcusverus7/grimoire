@@ -23,6 +23,7 @@ type PCState = {
 
 type DeadMissing = { id: string; name: string; kind: string; status: string };
 type Quest = { id: string; name: string; questStatus: string };
+type Clock = { id: string; name: string; current: number; max: number; unit?: string };
 
 export default function PlayViewScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
@@ -36,6 +37,7 @@ export default function PlayViewScreen() {
   const [party, setParty] = useState<PCState[]>([]);
   const [deadMissing, setDeadMissing] = useState<DeadMissing[]>([]);
   const [quests, setQuests] = useState<Quest[]>([]);
+  const [clocks, setClocks] = useState<Clock[]>([]);
 
   const load = useCallback(() => {
     const inProgress = db.select().from(schema.sessions)
@@ -106,6 +108,15 @@ export default function PlayViewScreen() {
         questStatus: String((e.attrs as Record<string, unknown> | null)?.["questStatus"] ?? "open"),
       }));
     setQuests(activeQuests);
+
+    // Load clocks
+    const rawClocks = getKv(`clocks_${campaignId}`);
+    if (rawClocks) {
+      try {
+        const all = JSON.parse(rawClocks) as Clock[];
+        setClocks(all.filter((c) => c.current < c.max));
+      } catch { setClocks([]); }
+    } else { setClocks([]); }
   }, [campaignId]);
 
   useFocusEffect(load);
@@ -304,6 +315,49 @@ export default function PlayViewScreen() {
                     <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E60", textTransform: "uppercase", letterSpacing: 0.5 }}>{e.kind}</Text>
                   </Pressable>
                 ))}
+              </View>
+            </>
+          ) : null}
+
+          {clocks.length > 0 ? (
+            <>
+              <GoldRule />
+              <View style={{ marginTop: 16, marginBottom: 4 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+                    Clocks
+                  </Text>
+                  <Pressable onPress={() => router.push(`/campaign/${campaignId}/clocks` as Parameters<typeof router.push>[0])}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C80" }}>All ›</Text>
+                  </Pressable>
+                </View>
+                {clocks.map((c) => {
+                  const pct = c.max > 0 ? c.current / c.max : 0;
+                  return (
+                    <View key={c.id} style={{ marginBottom: 10 }}>
+                      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                        <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", flex: 1 }}>{c.name}</Text>
+                        <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#7A2418" }}>{c.current}/{c.max}</Text>
+                      </View>
+                      <View style={{ flexDirection: "row", gap: 3 }}>
+                        {Array.from({ length: c.max }).map((_, i) => (
+                          <View
+                            key={i}
+                            style={{
+                              flex: 1,
+                              height: 6,
+                              borderRadius: 2,
+                              backgroundColor: i < c.current ? "#7A2418" : "#A07A2C20",
+                            }}
+                          />
+                        ))}
+                      </View>
+                      {c.unit ? (
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E50", marginTop: 2 }}>{c.unit}</Text>
+                      ) : null}
+                    </View>
+                  );
+                })}
               </View>
             </>
           ) : null}
