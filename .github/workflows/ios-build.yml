@@ -103,6 +103,12 @@ jobs:
             -T /usr/bin/security
           security set-key-partition-list -S apple-tool:,apple: -s -k "temppass" build.keychain
           security find-identity -v -p codesigning build.keychain
+          # Derive CODE_SIGN_IDENTITY from the cert actually present (e.g.
+          # "iPhone Distribution: ..."), instead of hardcoding "Apple Distribution"
+          # which never matched this account's cert.
+          SIGN_ID=$(security find-identity -v -p codesigning build.keychain | grep -oE '"[^"]+"' | head -1 | tr -d '"')
+          echo "Using signing identity: $SIGN_ID"
+          echo "SIGN_IDENTITY=$SIGN_ID" >> "$GITHUB_ENV"
 
       - name: Run expo prebuild
         working-directory: apps/mobile
@@ -200,7 +206,7 @@ jobs:
             -destination "generic/platform=iOS" \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
-            CODE_SIGN_IDENTITY="Apple Distribution: Mark Loughran (JQS67937W6)" \
+            CODE_SIGN_IDENTITY="$SIGN_IDENTITY" \
             DEVELOPMENT_TEAM=JQS67937W6 \
             NODE_BINARY="$(which node)" \
             CLI_PATH="/tmp/expo-filter.js" \
