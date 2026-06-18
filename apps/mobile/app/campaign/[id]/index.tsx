@@ -1116,6 +1116,7 @@ export default function CampaignDetailScreen() {
               { label: "Reputation", path: `/campaign/${id}/reputation`, gold: true },
               { label: "Room Gen", path: `/campaign/${id}/room-gen`, gold: true },
               { label: "Spells", path: `/campaign/${id}/spell-slots`, gold: true },
+              { label: "Injuries", path: `/campaign/${id}/injury-tracker`, gold: true },
               { label: "Search", path: `/campaign/${id}/search`, gold: true },
               { label: "Notes", path: `/campaign/${id}/notes`, gold: true },
               { label: "Quests", path: `/campaign/${id}/quests`, gold: true },
