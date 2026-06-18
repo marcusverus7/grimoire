@@ -183,7 +183,8 @@ read Part IV (build plan) before starting any phase.
   empty state adds "Add Notes" + "Session Prep" CTA prompts when body is null; export success card
   now shows entity/session/quote counts alongside file count; entity detail backlinks panel moved
   above GM Secret, split into "Appears in Sessions" (gold, tappable) and "Linked Entities" sections
-  for clearer connection surfacing. Version bumped to 1.6.0.
+  for clearer connection surfacing; campaign switcher sheet (⇄ in header) lets GM jump between
+  campaigns without returning to the list. Version bumped to 1.6.0.
 
 ## What to build next (phase 17)
 

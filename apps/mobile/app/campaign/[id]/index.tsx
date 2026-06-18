@@ -76,6 +76,8 @@ export default function CampaignDetailScreen() {
   const [showGmOnly, setShowGmOnly] = useState(false);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [inProgressSession, setInProgressSession] = useState<Session | null>(null);
+  const [showSwitcher, setShowSwitcher] = useState(false);
+  const [allCampaigns, setAllCampaigns] = useState<{ id: string; name: string; status: string }[]>([]);
 
   const load = useCallback(() => {
     const c = db
@@ -284,6 +286,21 @@ export default function CampaignDetailScreen() {
               >
                 ‹ Campaigns
               </Text>
+            </Pressable>
+          ),
+          headerRight: () => (
+            <Pressable
+              onPress={() => {
+                const rows = db.select({ id: schema.campaigns.id, name: schema.campaigns.name, status: schema.campaigns.status })
+                  .from(schema.campaigns)
+                  .all()
+                  .sort((a, b) => a.name.localeCompare(b.name));
+                setAllCampaigns(rows);
+                setShowSwitcher(true);
+              }}
+              style={{ paddingHorizontal: 12, paddingVertical: 6 }}
+            >
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 18, color: "#A07A2C" }}>⇄</Text>
             </Pressable>
           ),
         }}
@@ -987,6 +1004,66 @@ export default function CampaignDetailScreen() {
             </Pressable>
           </Pressable>
         </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Campaign switcher modal */}
+      <Modal
+        visible={showSwitcher}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowSwitcher(false)}
+      >
+        <Pressable
+          onPress={() => setShowSwitcher(false)}
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" }}
+        >
+          <Pressable onPress={() => {}} style={{ backgroundColor: "#FAF5EA", borderTopLeftRadius: 8, borderTopRightRadius: 8, borderTopWidth: 1, borderColor: "#A07A2C30", paddingBottom: 32 }}>
+            <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C20", flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: "#2C2014", flex: 1 }}>Switch Campaign</Text>
+              <Pressable onPress={() => setShowSwitcher(false)}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 18, color: "#A07A2C" }}>✕</Text>
+              </Pressable>
+            </View>
+            {allCampaigns.map((c) => {
+              const isCurrent = c.id === id;
+              return (
+                <Pressable
+                  key={c.id}
+                  onPress={() => {
+                    setShowSwitcher(false);
+                    if (!isCurrent) {
+                      router.replace(`/campaign/${c.id}` as Parameters<typeof router.replace>[0]);
+                    }
+                  }}
+                  style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C12", backgroundColor: isCurrent ? "#A07A2C08" : "transparent" }}
+                >
+                  {isCurrent && (
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C", marginRight: 8 }}>●</Text>
+                  )}
+                  <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 17, color: isCurrent ? "#A07A2C" : "#2C2014", flex: 1 }}>
+                    {c.name}
+                  </Text>
+                  {c.status === "archived" && (
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D80", textTransform: "uppercase", letterSpacing: 1 }}>Archived</Text>
+                  )}
+                </Pressable>
+              );
+            })}
+            <Pressable
+              onPress={() => {
+                setShowSwitcher(false);
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/(tabs)" as Parameters<typeof router.replace>[0]);
+                }
+              }}
+              style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 14, marginTop: 4 }}
+            >
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>← All Campaigns</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
       </Modal>
     </>
   );
