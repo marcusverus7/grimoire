@@ -204,7 +204,15 @@ read Part IV (build plan) before starting any phase.
   attrs.attendance, X/N badge on Next Session card); session rating 1–5 stars (in edit
   when status=played, attrs.rating, stars shown in session list). Version bumped to 1.8.0.
 
-## What to build next (phase 19)
+- Phase 19: GM utility features — Prep To-Do List (/campaign/[id]/todos, stored in
+  app_kv, add/toggle/delete, done-items collapsible with clear-completed); Cast of
+  Characters (/campaign/[id]/cast, all PCs/NPCs with portraits, HP, status, conditions,
+  "last seen in Session X" via entity_links, filter by All/PCs/NPCs/Alive, initial letter
+  fallback avatar); Campaign Briefing quick-share (Brief button in action grid, generates
+  markdown with PCs, open quests, world notes, next session, native share sheet); session
+  avg rating in stats bar. Version bumped to 1.9.0.
+
+## What to build next (phase 20)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).

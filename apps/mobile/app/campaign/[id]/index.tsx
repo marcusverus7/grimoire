@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
+  Share,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
@@ -63,7 +64,7 @@ export default function CampaignDetailScreen() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [nextPlannedSessionId, setNextPlannedSessionId] = useState<string | null>(null);
   const [lastPlayedSession, setLastPlayedSession] = useState<Session | null>(null);
-  const [stats, setStats] = useState({ sessionsPlayed: 0, sessionsTotal: 0, entityCount: 0, quoteCount: 0, totalPlayMs: 0 });
+  const [stats, setStats] = useState({ sessionsPlayed: 0, sessionsTotal: 0, entityCount: 0, quoteCount: 0, totalPlayMs: 0, avgRating: 0 });
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [search, setSearch] = useState("");
@@ -152,12 +153,20 @@ export default function CampaignDetailScreen() {
         const a = (s.attrs ?? {}) as { startedAt?: number; endedAt?: number };
         return a.startedAt && a.endedAt ? acc + (a.endedAt - a.startedAt) : acc;
       }, 0);
+      const ratedSessions = allSessions.filter((s) => {
+        const r = (s.attrs as Record<string, unknown> | null)?.rating;
+        return typeof r === "number" && r >= 1 && r <= 5;
+      });
+      const avgRating = ratedSessions.length > 0
+        ? ratedSessions.reduce((sum, s) => sum + ((s.attrs as Record<string, unknown>).rating as number), 0) / ratedSessions.length
+        : 0;
       setStats({
         sessionsPlayed: allSessions.filter((s) => s.status === "played").length,
         sessionsTotal: allSessions.length,
         entityCount: allEntities.length,
         quoteCount: allQuotes.length,
         totalPlayMs,
+        avgRating,
       });
 
       // Load recently revealed entities (table-wide, last 5)
@@ -296,6 +305,56 @@ export default function CampaignDetailScreen() {
     return diff;
   })();
 
+  const shareBriefing = async () => {
+    const s = (campaign.settings ?? {}) as CampaignSettings;
+    const lines: string[] = [];
+    lines.push(`# ${campaign.name}`);
+    if (s.logline) lines.push(`*${s.logline}*`);
+    if (campaign.systemTag) lines.push(`**System:** ${campaign.systemTag}`);
+    if (s.nextSession) {
+      const diff = Math.ceil((new Date(s.nextSession).getTime() - Date.now()) / 86400000);
+      const when = diff <= 0 ? "Today!" : diff === 1 ? "Tomorrow" : `in ${diff} days`;
+      lines.push(`**Next Session:** ${s.nextSession} (${when})`);
+    }
+
+    const pcs = entities.filter((e) => e.kind === "pc");
+    if (pcs.length > 0) {
+      lines.push("\n---\n## Player Characters");
+      for (const pc of pcs) {
+        const a = (pc.attrs ?? {}) as Record<string, unknown>;
+        const parts: string[] = [];
+        if (a.level) parts.push(`Lv ${a.level}`);
+        if (a.class) parts.push(String(a.class));
+        if (a.raceOrSpecies) parts.push(String(a.raceOrSpecies));
+        const sub = parts.join(" ");
+        lines.push(`- **${pc.name}**${sub ? ` (${sub})` : ""}${pc.summary ? ` — ${pc.summary}` : ""}`);
+      }
+    }
+
+    const openQuests = entities.filter((e) => {
+      if (e.kind !== "quest") return false;
+      const st = (e.attrs as Record<string, unknown> | null)?.questStatus;
+      return st !== "completed" && st !== "failed";
+    });
+    if (openQuests.length > 0) {
+      lines.push("\n---\n## Open Quests");
+      for (const q of openQuests) {
+        lines.push(`- **${q.name}**${q.summary ? ` — ${q.summary}` : ""}`);
+      }
+    }
+
+    if (s.worldNotes) {
+      const wn = nodeText(s.worldNotes).trim().slice(0, 400);
+      if (wn) {
+        lines.push("\n---\n## The World So Far");
+        lines.push(wn + (wn.length === 400 ? "…" : ""));
+      }
+    }
+
+    lines.push("\n---\n*Shared from Grimoire*");
+    await Share.share({ message: lines.join("\n"), title: `${campaign.name} — Briefing` });
+  };
+
   return (
     <>
       <Stack.Screen
@@ -361,6 +420,7 @@ export default function CampaignDetailScreen() {
               {[
                 { label: "Dash", path: `/campaign/${id}/playview` },
                 { label: "Tracker", path: `/campaign/${id}/tracker` },
+                { label: "Cast", path: `/campaign/${id}/cast` },
                 { label: "Tables", path: `/campaign/${id}/tables` },
                 { label: "Party", path: `/campaign/${id}/party` },
                 { label: "Notes", path: `/campaign/${id}/session/${inProgressSession.id}/notes` },
@@ -446,6 +506,9 @@ export default function CampaignDetailScreen() {
             )}
             {stats.quoteCount > 0 && (
               <StatPill label="Quotes" value={String(stats.quoteCount)} />
+            )}
+            {stats.avgRating > 0 && (
+              <StatPill label="Avg Rating" value={`★ ${stats.avgRating.toFixed(1)}`} />
             )}
           </View>
         ) : null}
@@ -958,24 +1021,28 @@ export default function CampaignDetailScreen() {
 
         {/* Actions */}
         <View className="flex-row flex-wrap">
-          {[
-            { label: "Party", path: `/campaign/${id}/party`, gold: true },
-            { label: "NPC Gen", path: `/campaign/${id}/npcgen`, gold: true },
-            { label: "Search", path: `/campaign/${id}/search`, gold: true },
-            { label: "Notes", path: `/campaign/${id}/notes`, gold: true },
-            { label: "Quests", path: `/campaign/${id}/quests`, gold: true },
-            { label: "Quotes", path: `/campaign/${id}/quotes`, gold: true },
-            { label: "Tracker", path: `/campaign/${id}/tracker`, gold: true },
-            { label: "Tables", path: `/campaign/${id}/tables`, gold: true },
-            { label: "Locations", path: `/campaign/${id}/locations`, gold: true },
-            { label: "Map", path: `/campaign/${id}/graph`, gold: true },
-            { label: "Recaps", path: `/campaign/${id}/recaps`, gold: true },
-            { label: "Export", path: `/campaign/${id}/export`, gold: true },
-            { label: "Settings", path: `/campaign/${id}/settings`, gold: false },
-          ].map((btn) => (
+          {(
+            [
+              { label: "Cast", path: `/campaign/${id}/cast`, gold: true },
+              { label: "Party", path: `/campaign/${id}/party`, gold: true },
+              { label: "Brief", action: shareBriefing, gold: true },
+              { label: "NPC Gen", path: `/campaign/${id}/npcgen`, gold: true },
+              { label: "Search", path: `/campaign/${id}/search`, gold: true },
+              { label: "Notes", path: `/campaign/${id}/notes`, gold: true },
+              { label: "Quests", path: `/campaign/${id}/quests`, gold: true },
+              { label: "Quotes", path: `/campaign/${id}/quotes`, gold: true },
+              { label: "Tracker", path: `/campaign/${id}/tracker`, gold: true },
+              { label: "Tables", path: `/campaign/${id}/tables`, gold: true },
+              { label: "Locations", path: `/campaign/${id}/locations`, gold: true },
+              { label: "Map", path: `/campaign/${id}/graph`, gold: true },
+              { label: "Recaps", path: `/campaign/${id}/recaps`, gold: true },
+              { label: "Export", path: `/campaign/${id}/export`, gold: true },
+              { label: "Settings", path: `/campaign/${id}/settings`, gold: false },
+            ] as Array<{ label: string; path?: string; action?: () => void; gold: boolean }>
+          ).map((btn) => (
             <Pressable
               key={btn.label}
-              onPress={() => router.push(btn.path as Parameters<typeof router.push>[0])}
+              onPress={() => btn.action ? btn.action() : router.push(btn.path as Parameters<typeof router.push>[0])}
               className="mb-2 mr-2 px-4 py-2.5 border rounded-sm items-center"
               style={{
                 borderColor: btn.gold ? "#A07A2C40" : "#8A7D6D30",
