@@ -80,6 +80,7 @@ export default function CampaignDetailScreen() {
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [allCampaigns, setAllCampaigns] = useState<{ id: string; name: string; status: string }[]>([]);
   const [nextSessionAttendance, setNextSessionAttendance] = useState<{ yes: number; total: number } | null>(null);
+  const [lastRecapText, setLastRecapText] = useState<string | null>(null);
 
   const load = useCallback(() => {
     const c = db
@@ -124,6 +125,27 @@ export default function CampaignDetailScreen() {
       setInProgressSession(active ?? null);
       const lastPlayed = [...allSessions].reverse().find((s) => s.status === "played");
       setLastPlayedSession(lastPlayed ?? null);
+      // Load the most recent recap for the last played session (for "Previously on…" card)
+      if (lastPlayed) {
+        const latestRecap = db
+          .select()
+          .from(schema.recaps)
+          .where(eq(schema.recaps.sessionId, lastPlayed.id))
+          .all()
+          .sort((a, b) => {
+            const ta = a.publishedAt instanceof Date ? a.publishedAt.getTime() : (a.publishedAt ?? 0);
+            const tb = b.publishedAt instanceof Date ? b.publishedAt.getTime() : (b.publishedAt ?? 0);
+            return tb - ta;
+          })[0] ?? null;
+        if (latestRecap?.body) {
+          const bodyText = nodeText(latestRecap.body as RichTextNode).trim().slice(0, 250);
+          setLastRecapText(bodyText || null);
+        } else {
+          setLastRecapText(null);
+        }
+      } else {
+        setLastRecapText(null);
+      }
       const allEntities = db.select().from(schema.entities).where(eq(schema.entities.campaignId, id)).all();
       const allQuotes = db.select().from(schema.quotes).where(eq(schema.quotes.campaignId, id)).all();
       const totalPlayMs = allSessions.reduce((acc, s) => {
@@ -495,8 +517,8 @@ export default function CampaignDetailScreen() {
           </View>
         ) : null}
 
-        {/* Last Played Session preview */}
-        {lastPlayedSession && !nextPlannedSessionId ? (
+        {/* Previously on… — always shown when a played session exists */}
+        {lastPlayedSession ? (
           <Pressable
             onPress={() => router.push(`/campaign/${id}/session/${lastPlayedSession.id}` as Parameters<typeof router.push>[0])}
             style={{
@@ -508,18 +530,23 @@ export default function CampaignDetailScreen() {
               backgroundColor: "#A07A2C06",
             }}
           >
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
-              Previously on…
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+                Previously on…
+              </Text>
+              {lastRecapText ? (
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#A07A2C60" }}>✦ AI recap</Text>
+              ) : null}
+            </View>
             <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", marginBottom: 4 }}>
               Session {lastPlayedSession.number}{lastPlayedSession.title ? `: ${lastPlayedSession.title}` : ""}
             </Text>
-            {lastPlayedSession.body ? (
+            {(lastRecapText ?? (lastPlayedSession.body ? nodeText(lastPlayedSession.body as RichTextNode).slice(0, 200) : null)) ? (
               <Text
                 numberOfLines={3}
                 style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 14, color: "#5A4D3E", lineHeight: 20, fontStyle: "italic" }}
               >
-                {nodeText(lastPlayedSession.body as RichTextNode).slice(0, 200)}
+                {lastRecapText ?? nodeText(lastPlayedSession.body as RichTextNode).slice(0, 200)}
               </Text>
             ) : null}
           </Pressable>

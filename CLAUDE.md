@@ -190,11 +190,21 @@ read Part IV (build plan) before starting any phase.
   calls `https://grimoire-recap-web.vercel.app/api/generate-recap` → Claude Haiku
   via buildAiRecapPrompt; editable TextInput before save; fallback to manual recap
   when API unavailable); entity portrait images (expo-image-picker, 1:1 crop, stored
-  as attrs.imageUri, circular avatar on detail screen + edit screen picker); recap-web
-  `/api/generate-recap` POST route (ANTHROPIC_API_KEY env var required on Vercel).
-  Version bumped to 1.7.0.
+  as attrs.imageUri, circular avatar on detail screen + edit screen picker); campaign
+  cover images (3:2 crop, stored in settings.coverImageUri, shown in campaign list
+  and detail); recap-web `/api/generate-recap` POST route (ANTHROPIC_API_KEY env var
+  required on Vercel). Version bumped to 1.7.0.
+  CI cert fix: Python script `.github/scripts/revoke_certs.py` revokes existing
+  Distribution certs via direct ASC API (JWT+ES256) before fetch-signing-files --create.
 
-## What to build next (phase 18)
+- Phase 18: Campaign detail polish — cover image banner + logline display on detail
+  screen; "Previously on…" card always shown (not gated on no-next-session), shows AI
+  recap text with "✦ AI recap" badge when available; entity portraits (28px circle) in
+  entity list; session attendance tracking (per-PC yes/no/maybe chips in session edit,
+  attrs.attendance, X/N badge on Next Session card); session rating 1–5 stars (in edit
+  when status=played, attrs.rating, stars shown in session list). Version bumped to 1.8.0.
+
+## What to build next (phase 19)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
