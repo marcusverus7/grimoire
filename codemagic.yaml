@@ -93,7 +93,8 @@ workflows:
             -destination "generic/platform=iOS" \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             NODE_BINARY="$(which node)" \
-            CLI_PATH="/tmp/expo-filter.js"
+            CLI_PATH="/tmp/expo-filter.js" \
+            BUNDLE_COMMAND="export:embed"
 
       - name: Export IPA
         script: |
