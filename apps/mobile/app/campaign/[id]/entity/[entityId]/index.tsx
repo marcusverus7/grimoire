@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Share, TextInput, Alert, Modal, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, Pressable, ScrollView, Share, TextInput, Alert, Modal, KeyboardAvoidingView, Platform, Image } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
 import { eq, and } from "drizzle-orm";
@@ -300,6 +300,14 @@ export default function EntityDetailScreen() {
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView className="flex-1 bg-parchment-deep" contentContainerStyle={{ padding: 20 }}>
         {/* Header */}
+        {typeof attrs?.["imageUri"] === "string" && (
+          <View style={{ alignItems: "center", marginBottom: 16 }}>
+            <Image
+              source={{ uri: attrs["imageUri"] as string }}
+              style={{ width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: "#A07A2C40" }}
+            />
+          </View>
+        )}
         <Text
           className="text-ink text-2xl mb-1"
           style={{ fontFamily: "CormorantGaramond_700Bold" }}

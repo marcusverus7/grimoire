@@ -186,12 +186,22 @@ read Part IV (build plan) before starting any phase.
   for clearer connection surfacing; campaign switcher sheet (⇄ in header) lets GM jump between
   campaigns without returning to the list. Version bumped to 1.6.0.
 
-## What to build next (phase 17)
+- Phase 17: AI 'Previously on…' recaps (✦ Generate with AI button on recap screen
+  calls `https://grimoire-recap-web.vercel.app/api/generate-recap` → Claude Haiku
+  via buildAiRecapPrompt; editable TextInput before save; fallback to manual recap
+  when API unavailable); entity portrait images (expo-image-picker, 1:1 crop, stored
+  as attrs.imageUri, circular avatar on detail screen + edit screen picker); recap-web
+  `/api/generate-recap` POST route (ANTHROPIC_API_KEY env var required on Vercel).
+  Version bumped to 1.7.0.
+
+## What to build next (phase 18)
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
 2. Backup to Supabase (cloud snapshot push — needs auth).
 3. Player invites & roles (needs auth).
+4. Voice quick-capture (speech-to-text → transcribed note, @-linked — deferred
+   until expo-speech-recognition confirms Expo 54 / SDK 54 compatibility).
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
 ms integers (`timestamp_ms` mode in Drizzle).

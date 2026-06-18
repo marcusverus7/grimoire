@@ -2,7 +2,7 @@
   "expo": {
     "name": "Grimoire",
     "slug": "grimoire",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "grimoire",
@@ -13,7 +13,9 @@
       "bundleIdentifier": "com.grimoirettrpg.app",
       "appleTeamId": "JQS67937W6",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Grimoire uses your photo library to add images to entities and campaigns.",
+        "NSCameraUsageDescription": "Grimoire uses your camera to capture entity and campaign images."
       }
     },
     "android": {
@@ -39,7 +41,14 @@
           "backgroundColor": "#F2E8D5"
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Grimoire uses your photo library to add images to entities and campaigns.",
+          "cameraPermission": "Grimoire uses your camera to capture entity and campaign images."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

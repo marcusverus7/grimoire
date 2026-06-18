@@ -5,7 +5,9 @@ import {
   Pressable,
   ScrollView,
   Alert,
+  Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useEffect, useState, useRef } from "react";
 import { eq, and } from "drizzle-orm";
@@ -78,6 +80,7 @@ export default function EntityFormScreen() {
   const [ac, setAc] = useState("");
   const [initiative, setInitiative] = useState("");
   const [gmSecret, setGmSecret] = useState("");
+  const [imageUri, setImageUri] = useState<string | null>(null);
   const [existingAttrs, setExistingAttrs] = useState<Record<string, unknown>>({});
   const [characterProfileId, setCharacterProfileId] = useState<string | null>(null);
   const [characterProfiles, setCharacterProfiles] = useState<{ id: string; name: string }[]>([]);
@@ -120,6 +123,7 @@ export default function EntityFormScreen() {
       if (typeof attrs?.["locationId"] === "string") setLocationId(attrs["locationId"]);
       if (Array.isArray(attrs?.["customAttrs"])) setCustomAttrs(attrs["customAttrs"] as { key: string; value: string }[]);
       if (Array.isArray(attrs?.["tags"])) setTags(attrs["tags"] as string[]);
+      if (typeof attrs?.["imageUri"] === "string") setImageUri(attrs["imageUri"]);
       if (entity.characterProfileId) setCharacterProfileId(entity.characterProfileId);
     }
     // Load campaign location entities for parent picker
@@ -246,6 +250,7 @@ export default function EntityFormScreen() {
       if (validCustom.length > 0) attrs["customAttrs"] = validCustom; else delete attrs["customAttrs"];
       const validTags = tags.map((t) => t.trim()).filter(Boolean);
       if (validTags.length > 0) attrs["tags"] = validTags; else delete attrs["tags"];
+      if (imageUri) attrs["imageUri"] = imageUri; else delete attrs["imageUri"];
 
       let savedId = entityId;
       if (isNew) {
@@ -348,6 +353,23 @@ export default function EntityFormScreen() {
     ]);
   };
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow photo library access to add entity images.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
   if (!loaded) return null;
 
   return (
@@ -362,6 +384,30 @@ export default function EntityFormScreen() {
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
       >
+        {/* Image */}
+        <View style={{ alignItems: "center", marginBottom: 20 }}>
+          <Pressable onPress={pickImage} style={{ position: "relative" }}>
+            {imageUri ? (
+              <Image
+                source={{ uri: imageUri }}
+                style={{ width: 88, height: 88, borderRadius: 44, borderWidth: 2, borderColor: "#A07A2C40" }}
+              />
+            ) : (
+              <View style={{ width: 88, height: 88, borderRadius: 44, borderWidth: 1, borderColor: "#A07A2C40", backgroundColor: "#ECE3CF60", alignItems: "center", justifyContent: "center" }}>
+                <Text style={{ fontSize: 28, color: "#A07A2C40" }}>⊕</Text>
+              </View>
+            )}
+            <View style={{ position: "absolute", bottom: 0, right: 0, backgroundColor: "#7A2418", borderRadius: 10, width: 20, height: 20, alignItems: "center", justifyContent: "center" }}>
+              <Text style={{ color: "#FAF5EA", fontSize: 12, fontFamily: "Inter_600SemiBold" }}>✎</Text>
+            </View>
+          </Pressable>
+          {imageUri && (
+            <Pressable onPress={() => setImageUri(null)} style={{ marginTop: 6 }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D" }}>Remove image</Text>
+            </Pressable>
+          )}
+        </View>
+
         {/* Name */}
         <Label text="Name" />
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>

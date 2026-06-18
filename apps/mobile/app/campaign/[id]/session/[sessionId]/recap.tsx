@@ -3,11 +3,13 @@ import {
   Text,
   Pressable,
   ScrollView,
+  TextInput,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useEffect, useState } from "react";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
@@ -17,9 +19,13 @@ import {
   schema,
   nodeText,
   buildManualRecapDoc,
+  buildAiRecapPrompt,
+  richTextToMarkdown,
   generateShareSlug,
 } from "@grimoire/core";
-import type { RichTextNode, RecapTone, Beat } from "@grimoire/core";
+import type { RichTextNode, RichTextDoc, RecapTone, Beat, AiRecapInput } from "@grimoire/core";
+
+const RECAP_API = "https://grimoire-recap-web.vercel.app/api/generate-recap";
 
 type Session = typeof schema.sessions.$inferSelect;
 
@@ -44,6 +50,9 @@ export default function RecapScreen() {
   const [preview, setPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [existingRecap, setExistingRecap] = useState<{ id: string; shareSlug: string } | null>(null);
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiText, setAiText] = useState<string | null>(null);
+  const [editedAiText, setEditedAiText] = useState("");
 
   useEffect(() => {
     const s = db
@@ -78,18 +87,20 @@ export default function RecapScreen() {
     .filter((b) => b.selected)
     .map((b) => ({ blockRef: null, text: b.text }));
 
-  const recapDoc = buildManualRecapDoc({
+  const manualRecapDoc = buildManualRecapDoc({
     campaignName,
     sessionNumber: session?.number ?? 0,
     sessionTitle: session?.title,
     beats: selectedBeats,
   });
 
-  const recapText = (recapDoc.content ?? [])
+  const manualRecapText = (manualRecapDoc.content ?? [])
     .slice(1)
     .map((n) => nodeText(n))
     .filter(Boolean)
     .join("\n\n");
+
+  const recapText = aiText !== null ? editedAiText : manualRecapText;
 
   const toggleBlock = (index: number) => {
     setBlocks((prev) =>
@@ -97,8 +108,79 @@ export default function RecapScreen() {
     );
   };
 
+  const generateAiRecap = async () => {
+    if (!session?.body) return;
+    setAiGenerating(true);
+    setAiText(null);
+    try {
+      const notesMarkdown = richTextToMarkdown(session.body as RichTextNode);
+
+      const pcEntities = db
+        .select({ name: schema.entities.name })
+        .from(schema.entities)
+        .where(and(eq(schema.entities.campaignId, campaignId), eq(schema.entities.kind, "pc")))
+        .all();
+
+      const input: AiRecapInput = {
+        campaignName,
+        sessionNumber: session.number,
+        sessionTitle: session.title,
+        tone,
+        sessionNotesMarkdown: notesMarkdown,
+        beats: selectedBeats.length > 0 ? selectedBeats : undefined,
+        characterNames: pcEntities.map((e) => e.name),
+      };
+
+      const res = await fetch(RECAP_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(err.error ?? `HTTP ${res.status}`);
+      }
+
+      const data = (await res.json()) as { recapText?: string; error?: string };
+      if (!data.recapText) throw new Error(data.error ?? "No recap text returned");
+
+      setAiText(data.recapText);
+      setEditedAiText(data.recapText);
+      setPreview(true);
+    } catch (e) {
+      Alert.alert(
+        "AI Generation Failed",
+        e instanceof Error ? e.message : "Could not reach the AI service. Check your connection.",
+      );
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
+  const buildSaveDoc = (): RichTextDoc => {
+    if (aiText !== null) {
+      const paragraphs = editedAiText.split(/\n\n+/).filter(Boolean);
+      return {
+        type: "doc",
+        content: [
+          {
+            type: "heading",
+            attrs: { level: 1 },
+            content: [{ type: "text", text: `Previously on ${campaignName} — Session ${session?.number ?? 0}${session?.title ? `: ${session.title}` : ""}` }],
+          },
+          ...paragraphs.map((p) => ({
+            type: "paragraph",
+            content: [{ type: "text", text: p }],
+          })),
+        ],
+      };
+    }
+    return manualRecapDoc;
+  };
+
   const saveRecap = async () => {
-    if (selectedBeats.length === 0) {
+    if (aiText === null && selectedBeats.length === 0) {
       Alert.alert("No beats selected", "Select at least one paragraph for the recap.");
       return;
     }
@@ -106,15 +188,11 @@ export default function RecapScreen() {
     setSaving(true);
     try {
       const now = Date.now();
-      const slug = generateShareSlug();
+      const saveDoc = buildSaveDoc();
 
       if (existingRecap) {
         db.update(schema.recaps)
-          .set({
-            body: recapDoc,
-            tone,
-            publishedAt: new Date(now),
-          })
+          .set({ body: saveDoc, tone, publishedAt: new Date(now) })
           .where(eq(schema.recaps.id, existingRecap.id))
           .run();
 
@@ -125,15 +203,9 @@ export default function RecapScreen() {
         );
       } else {
         const recapId = newId();
+        const slug = generateShareSlug();
         db.insert(schema.recaps)
-          .values({
-            id: recapId,
-            sessionId,
-            body: recapDoc,
-            tone,
-            shareSlug: slug,
-            publishedAt: new Date(now),
-          })
+          .values({ id: recapId, sessionId, body: saveDoc, tone, shareSlug: slug, publishedAt: new Date(now) })
           .run();
 
         setExistingRecap({ id: recapId, shareSlug: slug });
@@ -309,11 +381,48 @@ export default function RecapScreen() {
 
             <GoldRule />
 
-            {/* Preview button */}
+            {/* AI Generate button */}
+            <Pressable
+              onPress={generateAiRecap}
+              disabled={aiGenerating || blocks.length === 0}
+              className={`mt-5 py-3 rounded-sm border items-center flex-row justify-center ${
+                aiGenerating || blocks.length === 0
+                  ? "border-ink/10 bg-parchment/5"
+                  : "border-gold/40 bg-gold/8"
+              }`}
+            >
+              {aiGenerating ? (
+                <>
+                  <ActivityIndicator size="small" color="#A07A2C" />
+                  <Text
+                    style={{
+                      fontFamily: "Inter_500Medium",
+                      fontSize: 13,
+                      color: "#A07A2C",
+                      marginLeft: 8,
+                    }}
+                  >
+                    Generating…
+                  </Text>
+                </>
+              ) : (
+                <Text
+                  style={{
+                    fontFamily: "Inter_500Medium",
+                    fontSize: 13,
+                    color: blocks.length === 0 ? "#8A7D6D" : "#A07A2C",
+                  }}
+                >
+                  ✦ Generate with AI
+                </Text>
+              )}
+            </Pressable>
+
+            {/* Manual preview button */}
             <Pressable
               onPress={() => setPreview(true)}
               disabled={selectedBeats.length === 0}
-              className={`mt-5 py-3 rounded-sm border items-center ${
+              className={`mt-3 py-3 rounded-sm border items-center ${
                 selectedBeats.length === 0
                   ? "border-ink/10 bg-parchment/5"
                   : "border-gold/30 bg-oxblood"
@@ -339,26 +448,48 @@ export default function RecapScreen() {
               className="text-gold/70 text-xs uppercase tracking-wider mt-5 mb-3"
               style={{ fontFamily: "Inter_600SemiBold" }}
             >
-              Preview
+              {aiText !== null ? "AI Recap — Edit before saving" : "Preview"}
             </Text>
 
-            <View className="p-4 bg-parchment/5 rounded-sm border border-gold/10 mb-4">
-              <Text
-                className="text-ink text-base mb-3"
+            {aiText !== null ? (
+              <TextInput
+                value={editedAiText}
+                onChangeText={setEditedAiText}
+                multiline
                 style={{
-                  fontFamily: "CormorantGaramond_700Bold",
-                  fontSize: 18,
+                  fontFamily: "CormorantGaramond_400Regular",
+                  fontSize: 16,
+                  lineHeight: 26,
+                  color: "#2C2014",
+                  backgroundColor: "rgba(236, 227, 207, 0.3)",
+                  borderWidth: 1,
+                  borderColor: "rgba(160, 122, 44, 0.2)",
+                  borderRadius: 2,
+                  padding: 12,
+                  marginBottom: 16,
+                  minHeight: 200,
+                  textAlignVertical: "top",
                 }}
-              >
-                Previously on {campaignName}
-              </Text>
-              <Text
-                className="text-ink/80 text-base leading-7"
-                style={{ fontFamily: "CormorantGaramond_400Regular" }}
-              >
-                {recapText}
-              </Text>
-            </View>
+              />
+            ) : (
+              <View className="p-4 bg-parchment/5 rounded-sm border border-gold/10 mb-4">
+                <Text
+                  className="text-ink text-base mb-3"
+                  style={{
+                    fontFamily: "CormorantGaramond_700Bold",
+                    fontSize: 18,
+                  }}
+                >
+                  Previously on {campaignName}
+                </Text>
+                <Text
+                  className="text-ink/80 text-base leading-7"
+                  style={{ fontFamily: "CormorantGaramond_400Regular" }}
+                >
+                  {recapText}
+                </Text>
+              </View>
+            )}
 
             <View className="mb-3 p-2 bg-parchment/5 rounded-sm border border-gold/10">
               <Text
@@ -366,6 +497,7 @@ export default function RecapScreen() {
                 style={{ fontFamily: "Inter_400Regular" }}
               >
                 Tone: {TONES.find((t) => t.value === tone)?.label ?? tone}
+                {aiText !== null ? " · AI-generated" : ""}
               </Text>
             </View>
 
@@ -374,7 +506,13 @@ export default function RecapScreen() {
             {/* Back / Save buttons */}
             <View className="flex-row mt-5">
               <Pressable
-                onPress={() => setPreview(false)}
+                onPress={() => {
+                  setPreview(false);
+                  if (aiText !== null) {
+                    setAiText(null);
+                    setEditedAiText("");
+                  }
+                }}
                 className="flex-1 mr-2 py-3 rounded-sm border border-ink/20 items-center"
               >
                 <Text
