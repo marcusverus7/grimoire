@@ -33,6 +33,25 @@ const CONDITION_COLORS: Record<string, string> = {
   Prone: "#8A7D6D",
 };
 
+const CONDITION_DESC: Record<string, string> = {
+  Blinded: "Auto-fail sight checks. Attack rolls have disadvantage; attacks against have advantage.",
+  Charmed: "Can't attack the charmer. Charmer has advantage on social checks against target.",
+  Concentration: "Maintaining a spell. Taking damage requires a Con save (DC 10 or half damage) to keep.",
+  Deafened: "Auto-fail hearing checks. Can't cast spells with verbal components.",
+  Exhausted: "Stacks 1–6: 1=disadv checks, 2=halved speed, 3=disadv attacks & saves, 4=halved HP max, 5=speed 0, 6=death.",
+  Frightened: "Disadvantage on checks/attacks while source is in sight. Can't move closer to source.",
+  Grappled: "Speed becomes 0. Ends if grappler is incapacitated or moved out of reach.",
+  Incapacitated: "Can't take actions or reactions.",
+  Invisible: "Impossible to see without magic. Attack rolls have advantage; attacks against have disadvantage.",
+  Paralyzed: "Incapacitated + can't move or speak. Auto-fail Str/Dex saves. Attacks within 5ft auto-crit.",
+  Petrified: "Turned to stone. Incapacitated, weight×10, immune to poison+disease. Resist all damage.",
+  Poisoned: "Disadvantage on attack rolls and ability checks.",
+  Prone: "Melee attacks against have advantage. Ranged attacks have disadvantage. Move costs doubled.",
+  Restrained: "Speed 0. Attack rolls have disadvantage. Attacks against have advantage. Dex saves: disadvantage.",
+  Stunned: "Incapacitated. Auto-fail Str/Dex saves. Attacks against have advantage.",
+  Unconscious: "Incapacitated + prone. Auto-fail Str/Dex saves. Attacks within 5ft auto-crit.",
+};
+
 type Entity = typeof schema.entities.$inferSelect;
 type Attrs = Record<string, unknown>;
 
@@ -56,6 +75,7 @@ export default function TrackerScreen() {
   const [sortByInit, setSortByInit] = useState(false);
   const [showDice, setShowDice] = useState(false);
   const [conditionTarget, setConditionTarget] = useState<TrackerEntry | null>(null);
+  const [descCondition, setDescCondition] = useState<string | null>(null);
   const [round, setRound] = useState(1);
   const [hideDead, setHideDead] = useState(true);
   const [activeTurnIndex, setActiveTurnIndex] = useState<number | null>(null);
@@ -411,7 +431,7 @@ export default function TrackerScreen() {
             <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>
               Conditions — tap to toggle
             </Text>
-            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 280 }}>
+            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 240 }}>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                 {CONDITIONS.map((c) => {
                   const active = conditionTarget?.conditions.includes(c) ?? false;
@@ -420,6 +440,7 @@ export default function TrackerScreen() {
                     <Pressable
                       key={c}
                       onPress={() => conditionTarget && toggleCondition(conditionTarget, c)}
+                      onLongPress={() => setDescCondition(descCondition === c ? null : c)}
                       style={{
                         paddingHorizontal: 12,
                         paddingVertical: 6,
@@ -437,7 +458,15 @@ export default function TrackerScreen() {
                 })}
               </View>
             </ScrollView>
-            <Pressable onPress={() => setConditionTarget(null)} style={{ marginTop: 16, paddingVertical: 10, alignItems: "center" }}>
+            {descCondition && CONDITION_DESC[descCondition] ? (
+              <View style={{ marginTop: 12, padding: 10, backgroundColor: "#A07A2C08", borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C20" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{descCondition}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#2C2014", lineHeight: 18 }}>{CONDITION_DESC[descCondition]}</Text>
+              </View>
+            ) : (
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D60", textAlign: "center", marginTop: 8 }}>Long press a condition for details</Text>
+            )}
+            <Pressable onPress={() => { setConditionTarget(null); setDescCondition(null); }} style={{ marginTop: 12, paddingVertical: 10, alignItems: "center" }}>
               <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>Done</Text>
             </Pressable>
           </Pressable>

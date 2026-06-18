@@ -12,6 +12,11 @@ import type { RichTextNode } from "@grimoire/core";
 type Session = typeof schema.sessions.$inferSelect;
 type Entity = typeof schema.entities.$inferSelect;
 
+const WEATHER_CONDITIONS = ["Clear skies", "Partly cloudy", "Overcast", "Light rain", "Heavy rain", "Thunderstorm", "Dense fog", "Light snow", "Heavy snow", "Sleet", "Scorching sun", "Oppressive humidity"];
+const WEATHER_TEMPS = ["Bitter cold", "Cold", "Cool", "Mild", "Warm", "Hot", "Sweltering"];
+const WEATHER_WINDS = ["Calm", "Gentle", "Brisk", "Strong", "Howling gale"];
+const WEATHER_MOODS = ["The air feels electric with tension", "An eerie stillness hangs over everything", "The world feels tired and grey", "Spirits are high despite the elements", "Something feels wrong about the sky", "Nature seems indifferent to mortal concerns", "A strange smell drifts on the wind", "The weather mirrors the party's mood"];
+
 const STATUS_COLORS: Record<string, string> = {
   active: "#A07A2C",
   rumoured: "#5A4D3E",
@@ -32,6 +37,7 @@ export default function SessionPrepScreen() {
   const [keyEntities, setKeyEntities] = useState<Entity[]>([]);
   const [flaggedEntities, setFlaggedEntities] = useState<Entity[]>([]);
   const [prepGoals, setPrepGoals] = useState("");
+  const [weather, setWeather] = useState("");
   const [partyStatus, setPartyStatus] = useState<{ id: string; name: string; hp: number | null; currentHp: number | null; conditions: string[]; resources: { name: string; max: number; current: number }[] }[]>([]);
 
   const load = useCallback(() => {
@@ -43,6 +49,7 @@ export default function SessionPrepScreen() {
     if (!s) { setSession(null); return; }
     setSession(s);
     setPrepGoals(((s.attrs ?? {}) as { prepGoals?: string }).prepGoals ?? "");
+    setWeather(((s.attrs ?? {}) as { weather?: string }).weather ?? "");
 
     // Previous played session
     const prev = db
@@ -154,6 +161,18 @@ export default function SessionPrepScreen() {
         },
       ],
     );
+  };
+
+  const rollWeather = () => {
+    if (!session) return;
+    const cond = WEATHER_CONDITIONS[Math.floor(Math.random() * WEATHER_CONDITIONS.length)]!;
+    const temp = WEATHER_TEMPS[Math.floor(Math.random() * WEATHER_TEMPS.length)]!;
+    const wind = WEATHER_WINDS[Math.floor(Math.random() * WEATHER_WINDS.length)]!;
+    const mood = WEATHER_MOODS[Math.floor(Math.random() * WEATHER_MOODS.length)]!;
+    const result = `${temp}, ${cond}. ${wind} winds. ${mood}.`;
+    setWeather(result);
+    const current = (session.attrs ?? {}) as Record<string, unknown>;
+    db.update(schema.sessions).set({ attrs: { ...current, weather: result } }).where(eq(schema.sessions.id, sessionId)).run();
   };
 
   if (!session) {
@@ -421,6 +440,31 @@ export default function SessionPrepScreen() {
                 lineHeight: 20,
               }}
             />
+          </Section>
+
+          <View style={{ marginVertical: 16 }}><GoldRule /></View>
+
+          {/* Weather / Atmosphere */}
+          <Section label="Atmosphere">
+            <View style={{ gap: 10 }}>
+              {weather ? (
+                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: "#2C2014", lineHeight: 24 }}>
+                  {weather}
+                </Text>
+              ) : (
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", fontStyle: "italic" }}>
+                  No weather set. Roll to generate session atmosphere.
+                </Text>
+              )}
+              <Pressable
+                onPress={rollWeather}
+                style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: "#A07A2C30", borderRadius: 2, alignSelf: "flex-start" }}
+              >
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+                  ⚄ {weather ? "Re-roll" : "Roll Weather"}
+                </Text>
+              </Pressable>
+            </View>
           </Section>
 
           <View style={{ height: 40 }} />

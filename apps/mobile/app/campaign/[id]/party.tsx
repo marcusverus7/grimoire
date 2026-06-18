@@ -1,9 +1,10 @@
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView, TextInput, Modal, Alert } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
 import { eq, and } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
-import { db } from "@/lib/db";
+import { db, getKv, setKv } from "@/lib/db";
+import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
@@ -26,10 +27,22 @@ type PCEntry = Entity & {
   npcStatus: string | null;
 };
 
+type Bond = { id: string; from: string; to: string; note: string };
+
+function bondsKey(campaignId: string) { return `bonds_${campaignId}`; }
+function loadBonds(campaignId: string): Bond[] {
+  try { return JSON.parse(getKv(bondsKey(campaignId)) ?? "[]") as Bond[]; } catch { return []; }
+}
+
 export default function PartyScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [party, setParty] = useState<PCEntry[]>([]);
+  const [bonds, setBonds] = useState<Bond[]>([]);
+  const [showBondModal, setShowBondModal] = useState(false);
+  const [bondFrom, setBondFrom] = useState("");
+  const [bondTo, setBondTo] = useState("");
+  const [bondNote, setBondNote] = useState("");
 
   const load = useCallback(() => {
     const pcs = db.select().from(schema.entities)
@@ -70,9 +83,33 @@ export default function PartyScreen() {
       };
     });
     setParty(enriched);
+    setBonds(loadBonds(campaignId));
   }, [campaignId]);
 
   useFocusEffect(load);
+
+  const addBond = () => {
+    const note = bondNote.trim();
+    const from = bondFrom.trim();
+    const to = bondTo.trim();
+    if (!note || !from || !to) return;
+    const next = [...bonds, { id: newId(), from, to, note }];
+    setBonds(next);
+    setKv(bondsKey(campaignId), JSON.stringify(next));
+    setBondFrom(""); setBondTo(""); setBondNote("");
+    setShowBondModal(false);
+  };
+
+  const deleteBond = (id: string) => {
+    Alert.alert("Delete Bond?", undefined, [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: () => {
+        const next = bonds.filter((b) => b.id !== id);
+        setBonds(next);
+        setKv(bondsKey(campaignId), JSON.stringify(next));
+      }},
+    ]);
+  };
 
   return (
     <>
@@ -236,8 +273,79 @@ export default function PartyScreen() {
             })
           )}
 
+          {/* Party Bonds */}
+          {party.length >= 2 && (
+            <>
+              <GoldRule className="my-4" />
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+                  Party Bonds
+                </Text>
+                <Pressable onPress={() => setShowBondModal(true)}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C" }}>+ Add</Text>
+                </Pressable>
+              </View>
+              {bonds.length === 0 ? (
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D80", fontStyle: "italic" }}>
+                  Record inter-party relationships and history here.
+                </Text>
+              ) : (
+                bonds.map((b) => (
+                  <Pressable key={b.id} onLongPress={() => deleteBond(b.id)} style={{ paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C12" }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>
+                      {b.from} → {b.to}
+                    </Text>
+                    <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 15, color: "#2C2014CC", lineHeight: 22 }}>{b.note}</Text>
+                  </Pressable>
+                ))
+              )}
+            </>
+          )}
+
           <View style={{ height: 40 }} />
         </ScrollView>
+
+        {/* Add Bond Modal */}
+        <Modal visible={showBondModal} transparent animationType="fade" onRequestClose={() => setShowBondModal(false)}>
+          <Pressable style={{ flex: 1, backgroundColor: "#00000060", justifyContent: "center", alignItems: "center" }} onPress={() => setShowBondModal(false)}>
+            <Pressable style={{ width: "88%", backgroundColor: "#FAF5EA", borderRadius: 4, padding: 20, borderWidth: 1, borderColor: "#C9A24A30" }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014", marginBottom: 14 }}>Add Party Bond</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>From</Text>
+              <TextInput
+                value={bondFrom}
+                onChangeText={setBondFrom}
+                placeholder={party[0]?.name ?? "PC name…"}
+                placeholderTextColor="#8A7D6D60"
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 6, marginBottom: 12 }}
+              />
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>To</Text>
+              <TextInput
+                value={bondTo}
+                onChangeText={setBondTo}
+                placeholder={party[1]?.name ?? "PC name…"}
+                placeholderTextColor="#8A7D6D60"
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 6, marginBottom: 12 }}
+              />
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Relationship Note</Text>
+              <TextInput
+                value={bondNote}
+                onChangeText={setBondNote}
+                placeholder="They grew up in the same village…"
+                placeholderTextColor="#8A7D6D60"
+                multiline
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderWidth: 1, borderColor: "#A07A2C20", borderRadius: 2, padding: 10, minHeight: 60, textAlignVertical: "top", marginBottom: 16 }}
+              />
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <Pressable onPress={() => setShowBondModal(false)} style={{ flex: 1, paddingVertical: 10, borderWidth: 1, borderColor: "#A07A2C20", borderRadius: 2, alignItems: "center" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#8A7D6D" }}>Cancel</Text>
+                </Pressable>
+                <Pressable onPress={addBond} style={{ flex: 1, paddingVertical: 10, backgroundColor: "#7A2418", borderRadius: 2, alignItems: "center" }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#FAF5EA" }}>Save Bond</Text>
+                </Pressable>
+              </View>
+            </Pressable>
+          </Pressable>
+        </Modal>
       </ParchmentScreen>
     </>
   );

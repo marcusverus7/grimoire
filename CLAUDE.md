@@ -250,6 +250,59 @@ read Part IV (build plan) before starting any phase.
   edit (after Status, before Arc); colored badge displayed in session list rows
   on campaign detail. Version bumped to 1.9.4.
 
+- Phase 26: Session Summary — summary field (short one-liner) in session edit
+  (after Title); displayed as subtitle in campaign detail session list.
+
+- Phase 27: Initiative Roller — per-combatant inline initiative edit in tracker
+  (tap Init — label → TextInput inline); "⚄ Roll All" button rolls d20 for all
+  combatants and auto-enables sort by initiative.
+
+- Phase 28: Award XP — "◆ Award XP to Attendees" button on session detail
+  (played sessions only); distributes entered XP to attending PCs (or all
+  campaign PCs if no attendance set); confirmation alert shows count.
+
+- Phase 29: Prep Todo Templates — 4 built-in templates (Standard Prep, Arc
+  Climax, Combat Session, Roleplay Session) via Templates header button; opens
+  bottom sheet, tapping a template prepends its tasks to the list.
+
+- Phase 30: Enhanced NPC Generator — Appearance + Mannerism fields (20 entries
+  each); per-field ⚄ re-roll buttons on name, role, appearance, mannerism,
+  hook, and secret.
+
+- Phase 31: Fix cast screen HP display — attrs.maxHp was never written; fixed
+  to read maxHp from attrs.hp and currentHp from attrs.currentHp (tracker
+  value). Added mini HP bar below number. Build 6a3368a6 (v1.9.4) triggered.
+
+- Phase 32: Plot Hook Generator (/campaign/[id]/hookgen) — Situation/Setting/
+  Twist/Reward tables (20/16/15/10 entries); per-field ⚄ re-roll; "Save to
+  Campaign Notes" appends formatted hook to campaign.settings.notes. "Hook Gen"
+  added to campaign action grid.
+
+- Phase 33: PC Personality (traits/ideal/bond/flaw) — four pcTrait/pcIdeal/
+  pcBond/pcFlaw fields on PC entity edit (Personality section after Level/XP);
+  Personality section on entity detail shows non-empty fields in italic Cormorant.
+
+- Phase 34: Condition Reference — long-press a condition chip in the tracker
+  condition modal shows a description panel (CONDITION_DESC, 16 conditions).
+  Normal press still toggles. "Long press for details" hint shown when no
+  condition is selected.
+
+- Phase 35: Clue Tracker (/campaign/[id]/clues) — add/toggle-connected/delete
+  clues with optional "where found" note; stored in app_kv clues_${campaignId};
+  Unresolved/Connected sections; "Clues" added to campaign action grid.
+
+- Phase 36: Weather/Atmosphere Generator — "⚄ Roll Weather" button on session
+  prep screen generates a one-line atmosphere string (condition + temperature +
+  wind + mood); persists to session.attrs.weather; re-rolls preserve existing.
+
+- Phase 37: Encounter XP Thresholds — party XP budget panel (Easy/Medium/Hard/
+  Deadly) shown at top of Encounter Builder, derived from PC levels using 5e
+  XP threshold table. Updates on load.
+
+- Phase 38: Party Bonds — inter-party relationship notes in Party Overview;
+  stored in app_kv bonds_${campaignId}; modal picker for from/to/note; long-
+  press to delete. Only shown when party has ≥2 PCs. Version bumped to 1.9.5.
+
 ## What to build next
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred

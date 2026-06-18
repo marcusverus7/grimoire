@@ -20,6 +20,31 @@ type Attrs = Record<string, unknown>;
 
 type TempCombatant = { id: string; name: string; hp: number; ac: number };
 
+// D&D 5e XP thresholds by character level [easy, medium, hard, deadly]
+const XP_THRESHOLDS: [number, number, number, number][] = [
+  [0, 0, 0, 0],           // placeholder for index 0
+  [25, 50, 75, 100],      // level 1
+  [50, 100, 150, 200],    // level 2
+  [75, 150, 225, 400],    // level 3
+  [125, 250, 375, 500],   // level 4
+  [250, 500, 750, 1100],  // level 5
+  [300, 600, 900, 1400],  // level 6
+  [350, 750, 1100, 1700], // level 7
+  [450, 900, 1400, 2100], // level 8
+  [550, 1100, 1600, 2400],// level 9
+  [600, 1200, 1900, 2800],// level 10
+  [800, 1600, 2400, 3600],// level 11
+  [1000, 2000, 3000, 4500],// level 12
+  [1100, 2200, 3400, 5100],// level 13
+  [1250, 2500, 3800, 5700],// level 14
+  [1400, 2800, 4300, 6400],// level 15
+  [1600, 3200, 4800, 7200],// level 16
+  [2000, 3900, 5900, 8800],// level 17
+  [2100, 4200, 6300, 9500],// level 18
+  [2400, 4900, 7300, 10900],// level 19
+  [2800, 5700, 8500, 12700],// level 20
+];
+
 export default function EncounterBuilderScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -35,6 +60,7 @@ export default function EncounterBuilderScreen() {
   };
 
   const [npcs, setNpcs] = useState<NpcEntry[]>([]);
+  const [partyThresholds, setPartyThresholds] = useState<[number, number, number, number] | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [temps, setTemps] = useState<TempCombatant[]>([]);
   const [showAdd, setShowAdd] = useState(false);
@@ -71,6 +97,20 @@ export default function EncounterBuilderScreen() {
         return a.name.localeCompare(b.name);
       });
     setNpcs(entities);
+
+    // Party XP thresholds
+    const pcs = db.select().from(schema.entities)
+      .where(and(eq(schema.entities.campaignId, campaignId), eq(schema.entities.kind, "pc")))
+      .all();
+    if (pcs.length > 0) {
+      const totals: [number, number, number, number] = [0, 0, 0, 0];
+      for (const pc of pcs) {
+        const lvl = Math.min(20, Math.max(1, Number((pc.attrs as Attrs | null)?.["level"] ?? 1)));
+        const row = XP_THRESHOLDS[lvl];
+        if (row) { totals[0] += row[0]; totals[1] += row[1]; totals[2] += row[2]; totals[3] += row[3]; }
+      }
+      setPartyThresholds(totals);
+    }
 
     // Restore previous selection
     const saved = getKv(`encounter_${campaignId}`);
@@ -148,6 +188,27 @@ export default function EncounterBuilderScreen() {
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         <View style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
+            {/* XP Thresholds */}
+            {partyThresholds && (
+              <View style={{ marginBottom: 16, padding: 12, borderWidth: 1, borderColor: "#A07A2C20", borderRadius: 3, backgroundColor: "#A07A2C06" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
+                  Party XP Budget
+                </Text>
+                <View style={{ flexDirection: "row", gap: 6 }}>
+                  {(["Easy", "Medium", "Hard", "Deadly"] as const).map((label, i) => {
+                    const colors = ["#4A8060", "#A07A2C", "#7A5020", "#7A2418"];
+                    const color = colors[i] ?? "#5A4D3E";
+                    return (
+                      <View key={label} style={{ flex: 1, alignItems: "center", padding: 6, borderRadius: 2, borderWidth: 1, borderColor: `${color}25`, backgroundColor: `${color}08` }}>
+                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 8, color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>{label}</Text>
+                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color }}>{(partyThresholds[i] ?? 0).toLocaleString()}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+
             {/* NPC list */}
             <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
               Campaign Combatants
