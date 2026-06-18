@@ -744,6 +744,15 @@ export default function CampaignDetailScreen() {
                       Session {s.number}
                       {s.title ? `: ${s.title}` : ""}
                     </Text>
+                    {(() => {
+                      const summ = (s.attrs as Record<string, unknown> | null)?.summary as string | undefined;
+                      if (!summ) return null;
+                      return (
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E80", marginTop: 1 }} numberOfLines={1}>
+                          {summ}
+                        </Text>
+                      );
+                    })()}
                     <View className="flex-row items-center mt-0.5">
                       <Text
                         className="text-xs uppercase tracking-wider"

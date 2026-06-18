@@ -46,6 +46,7 @@ export default function SessionFormScreen() {
   const [arcs, setArcs] = useState<{ id: string; name: string }[]>([]);
   const [arcId, setArcId] = useState<string | null>(null);
   const [sessionType, setSessionType] = useState<string>("");
+  const [summary, setSummary] = useState<string>("");
   const editorRef = useRef<EditorBridge | null>(null);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export default function SessionFormScreen() {
     setRating(typeof attrs.rating === "number" ? attrs.rating : 0);
     setArcId(typeof attrs.arcId === "string" ? attrs.arcId : null);
     setSessionType(typeof attrs.sessionType === "string" ? attrs.sessionType : "");
+    setSummary(typeof attrs.summary === "string" ? attrs.summary : "");
     setLoaded(true);
 
     // Load campaign arcs
@@ -114,7 +116,7 @@ export default function SessionFormScreen() {
           playedOn: playedOn.trim() || null,
           body: editorBody,
           status,
-          attrs: { ...existingAttrs, attendance: attendance.length > 0 ? attendance : undefined, rating: rating > 0 ? rating : undefined, arcId: arcId ?? undefined, sessionType: sessionType || undefined },
+          attrs: { ...existingAttrs, attendance: attendance.length > 0 ? attendance : undefined, rating: rating > 0 ? rating : undefined, arcId: arcId ?? undefined, sessionType: sessionType || undefined, summary: summary.trim() || undefined },
         })
         .where(eq(schema.sessions.id, sessionId))
         .run();
@@ -217,6 +219,18 @@ export default function SessionFormScreen() {
           placeholderTextColor="#2C201440"
           className="border-b border-gold/20 pb-2 mb-5 text-lg"
           style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#2C2014" }}
+        />
+
+        {/* Summary */}
+        <Label text="Summary (optional)" />
+        <TextInput
+          value={summary}
+          onChangeText={setSummary}
+          placeholder="One-line summary of what happened..."
+          placeholderTextColor="#2C201440"
+          multiline
+          numberOfLines={2}
+          style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20, textAlignVertical: "top" }}
         />
 
         {/* Played on */}

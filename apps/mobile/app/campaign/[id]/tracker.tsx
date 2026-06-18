@@ -181,6 +181,25 @@ export default function TrackerScreen() {
     ]);
   };
 
+  const setInitiative = (entity: TrackerEntry, value: number | null) => {
+    const attrs: Attrs = { ...(entity.attrs as Attrs | null ?? {}) };
+    if (value != null) attrs["initiative"] = value; else delete attrs["initiative"];
+    db.update(schema.entities).set({ attrs }).where(eq(schema.entities.id, entity.id)).run();
+    setEntries((prev) => prev.map((e) => e.id === entity.id ? { ...e, initiative: value } : e));
+  };
+
+  const rollAllInitiative = () => {
+    const updMap = new Map<string, number>();
+    entries.forEach((e) => {
+      const roll = Math.floor(Math.random() * 20) + 1;
+      updMap.set(e.id, roll);
+      const attrs: Attrs = { ...(e.attrs as Attrs | null ?? {}), initiative: roll };
+      db.update(schema.entities).set({ attrs }).where(eq(schema.entities.id, e.id)).run();
+    });
+    setEntries((prev) => prev.map((e) => ({ ...e, initiative: updMap.get(e.id) ?? e.initiative })));
+    setSortByInit(true);
+  };
+
   const visible = hideDead
     ? entries.filter((e) => {
         const st = (e.attrs as Attrs | null)?.["npcStatus"];
@@ -313,6 +332,19 @@ export default function TrackerScreen() {
                   </Pressable>
                 )}
                 <Pressable
+                  onPress={rollAllInitiative}
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderWidth: 1,
+                    borderColor: "#5A3A7A40",
+                    borderRadius: 10,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#5A3A7A" }}>⚄ Roll All</Text>
+                </Pressable>
+                <Pressable
                   onPress={() => setSortByInit((v) => !v)}
                   style={{
                     paddingHorizontal: 10,
@@ -334,7 +366,7 @@ export default function TrackerScreen() {
               data={sorted}
               keyExtractor={(item) => item.id}
               contentContainerStyle={{ padding: 12 }}
-              renderItem={({ item, index }) => <CombatantRow entry={item} isActive={activeTurnIndex === index} onAdjust={adjustHp} onSetHp={setHpDirect} onNavigate={() => router.push(`/campaign/${campaignId}/entity/${item.id}`)} onOpenConditions={() => setConditionTarget(item)} onToggleCondition={(c) => toggleCondition(item, c)} />}
+              renderItem={({ item, index }) => <CombatantRow entry={item} isActive={activeTurnIndex === index} onAdjust={adjustHp} onSetHp={setHpDirect} onSetInitiative={(v) => setInitiative(item, v)} onNavigate={() => router.push(`/campaign/${campaignId}/entity/${item.id}`)} onOpenConditions={() => setConditionTarget(item)} onToggleCondition={(c) => toggleCondition(item, c)} />}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
               ListFooterComponent={tempCombatants.length > 0 ? (
                 <View style={{ paddingTop: 12 }}>
@@ -420,6 +452,7 @@ function CombatantRow({
   isActive,
   onAdjust,
   onSetHp,
+  onSetInitiative,
   onNavigate,
   onOpenConditions,
   onToggleCondition,
@@ -428,13 +461,22 @@ function CombatantRow({
   isActive: boolean;
   onAdjust: (e: TrackerEntry, delta: number) => void;
   onSetHp: (e: TrackerEntry, v: string) => void;
+  onSetInitiative: (v: number | null) => void;
   onNavigate: () => void;
   onOpenConditions: () => void;
   onToggleCondition: (condition: string) => void;
 }) {
+  const [editingInit, setEditingInit] = useState(false);
+  const [initInput, setInitInput] = useState("");
   const pct = entry.maxHp > 0 ? entry.currentHp / entry.maxHp : 1;
   const barColor = pct > 0.5 ? "#4A7A2C" : pct > 0.25 ? "#A07A2C" : "#7A2418";
   const isDead = entry.currentHp === 0;
+
+  const confirmInit = () => {
+    const v = parseInt(initInput, 10);
+    onSetInitiative(isNaN(v) ? null : v);
+    setEditingInit(false);
+  };
 
   return (
     <View
@@ -454,11 +496,29 @@ function CombatantRow({
             {isActive ? "▶ " : ""}{entry.name}
             {isDead ? " ✝" : ""}
           </Text>
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 0.8 }}>
-            {entry.kind}
-            {entry.ac > 0 ? ` · AC ${entry.ac}` : ""}
-            {entry.initiative != null ? ` · Init ${entry.initiative}` : ""}
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 0.8 }}>
+              {entry.kind}{entry.ac > 0 ? ` · AC ${entry.ac}` : ""}{" · "}
+            </Text>
+            {editingInit ? (
+              <TextInput
+                value={initInput}
+                onChangeText={setInitInput}
+                onBlur={confirmInit}
+                onSubmitEditing={confirmInit}
+                keyboardType="number-pad"
+                selectTextOnFocus
+                autoFocus
+                style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#A07A2C", width: 36, padding: 0 }}
+              />
+            ) : (
+              <Pressable onPress={() => { setInitInput(entry.initiative != null ? String(entry.initiative) : ""); setEditingInit(true); }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: entry.initiative != null ? "#A07A2C" : "#8A7D6D50", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                  {entry.initiative != null ? `Init ${entry.initiative}` : "Init —"}
+                </Text>
+              </Pressable>
+            )}
+          </View>
         </Pressable>
 
         {/* HP controls */}
