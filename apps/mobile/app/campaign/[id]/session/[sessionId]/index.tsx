@@ -1,7 +1,7 @@
-import { View, Text, Pressable, ScrollView, Alert, Share } from "react-native";
+import { View, Text, Pressable, ScrollView, Alert, Share, TextInput } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
@@ -29,6 +29,8 @@ export default function SessionDetailScreen() {
   }>();
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
+  const [showXpAward, setShowXpAward] = useState(false);
+  const [xpInput, setXpInput] = useState("");
   const [prevSession, setPrevSession] = useState<{ id: string; number: number } | null>(null);
   const [nextSession, setNextSession] = useState<{ id: string; number: number } | null>(null);
   const [linkedEntities, setLinkedEntities] = useState<
@@ -107,6 +109,40 @@ export default function SessionDetailScreen() {
       .where(eq(schema.sessions.id, sessionId))
       .run();
     setSession((prev) => prev ? { ...prev, attrs: next } : prev);
+  };
+
+  const awardXp = () => {
+    const amount = parseInt(xpInput, 10);
+    if (isNaN(amount) || amount <= 0) {
+      Alert.alert("Invalid XP", "Enter a positive number.");
+      return;
+    }
+    const attendance = ((session?.attrs as Record<string, unknown> | null)?.attendance ?? []) as { entityId: string; status: string }[];
+    let pcIds: string[] = [];
+    if (attendance.length > 0) {
+      pcIds = attendance.filter((a) => a.status === "yes" || a.status === "maybe").map((a) => a.entityId);
+    } else {
+      const allPcs = db.select({ id: schema.entities.id }).from(schema.entities)
+        .where(and(eq(schema.entities.campaignId, campaignId), eq(schema.entities.kind, "pc"))).all();
+      pcIds = allPcs.map((p) => p.id);
+    }
+    if (pcIds.length === 0) {
+      Alert.alert("No PCs", "No PCs found for this session.");
+      return;
+    }
+    let count = 0;
+    for (const pcId of pcIds) {
+      const pc = db.select().from(schema.entities).where(eq(schema.entities.id, pcId)).get();
+      if (!pc) continue;
+      const attrs = { ...(pc.attrs as Record<string, unknown> | null ?? {}) };
+      const current = parseInt(String(attrs["xp"] ?? "0"), 10) || 0;
+      attrs["xp"] = String(current + amount);
+      db.update(schema.entities).set({ attrs }).where(eq(schema.entities.id, pcId)).run();
+      count++;
+    }
+    Alert.alert("XP Awarded", `+${amount} XP awarded to ${count} PC${count !== 1 ? "s" : ""}.`);
+    setXpInput("");
+    setShowXpAward(false);
   };
 
   if (!session) {
@@ -426,6 +462,40 @@ export default function SessionDetailScreen() {
                 </Text>
               </Pressable>
             ) : null}
+          </View>
+        ) : null}
+
+        {/* Award XP (played sessions only) */}
+        {session.status === "played" ? (
+          <View style={{ marginBottom: 12 }}>
+            {showXpAward ? (
+              <View style={{ borderWidth: 1, borderColor: "#3A6830", borderRadius: 2, padding: 12, backgroundColor: "#3A683008" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#3A6830", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>Award XP to Attendees</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <TextInput
+                    value={xpInput}
+                    onChangeText={setXpInput}
+                    placeholder="XP amount"
+                    placeholderTextColor="#2C201440"
+                    keyboardType="number-pad"
+                    style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#3A683040", paddingBottom: 4 }}
+                  />
+                  <Pressable onPress={awardXp} style={{ paddingHorizontal: 16, paddingVertical: 8, backgroundColor: "#3A6830", borderRadius: 2 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#FAF5EA" }}>Award</Text>
+                  </Pressable>
+                  <Pressable onPress={() => { setShowXpAward(false); setXpInput(""); }} style={{ paddingHorizontal: 10, paddingVertical: 8 }}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D" }}>✕</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : (
+              <Pressable
+                onPress={() => setShowXpAward(true)}
+                style={{ paddingVertical: 8, borderWidth: 1, borderColor: "#3A683040", borderRadius: 2, alignItems: "center", backgroundColor: "#3A683008" }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#3A6830", textTransform: "uppercase", letterSpacing: 1 }}>◆ Award XP to Attendees</Text>
+              </Pressable>
+            )}
           </View>
         ) : null}
 

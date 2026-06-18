@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, Modal } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
@@ -8,6 +8,25 @@ import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 
 type TodoItem = { id: string; text: string; done: boolean; ts: number };
+
+const PREP_TEMPLATES: { label: string; tasks: string[] }[] = [
+  {
+    label: "Standard Prep",
+    tasks: ["Review last session notes", "Check open quests", "Plan 3 scene hooks", "Stat up new NPCs", "Prepare opening scene"],
+  },
+  {
+    label: "Arc Climax Prep",
+    tasks: ["Review arc goals + progress", "Set up climax encounter", "Plan fallout of major decision", "Update faction states", "Prepare dramatic NPC reveal"],
+  },
+  {
+    label: "Combat Session",
+    tasks: ["Balance encounter CR", "Prepare battle map description", "Set up initiative tracker", "Plan monster tactics", "Prepare loot + XP reward"],
+  },
+  {
+    label: "Roleplay Session",
+    tasks: ["Write NPC motivations + hooks", "Prepare 2 rumours to drop", "Plan a moral dilemma scene", "Update faction relationships", "Identify PC spotlight moment"],
+  },
+];
 
 function kvKey(campaignId: string) { return `todos_${campaignId}`; }
 
@@ -26,6 +45,7 @@ export default function TodosScreen() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [input, setInput] = useState("");
   const [showDone, setShowDone] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -54,6 +74,14 @@ export default function TodosScreen() {
     saveTodos(campaignId, next);
   };
 
+  const applyTemplate = (tasks: string[]) => {
+    const newItems: TodoItem[] = tasks.map((text, i) => ({ id: newId(), text, done: false, ts: Date.now() + i }));
+    const next = [...newItems, ...todos];
+    setTodos(next);
+    saveTodos(campaignId, next);
+    setShowTemplates(false);
+  };
+
   const deleteTodo = (id: string) => {
     const next = todos.filter((t) => t.id !== id);
     setTodos(next);
@@ -65,7 +93,11 @@ export default function TodosScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Prep To-Do" }} />
+      <Stack.Screen options={{ title: "Prep To-Do", headerRight: () => (
+        <Pressable onPress={() => setShowTemplates(true)} style={{ marginRight: 8 }}>
+          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Templates</Text>
+        </Pressable>
+      ) }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         <ScrollView contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
 
@@ -177,6 +209,27 @@ export default function TodosScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
       </ParchmentScreen>
+
+      {/* Templates modal */}
+      <Modal visible={showTemplates} transparent animationType="slide" onRequestClose={() => setShowTemplates(false)}>
+        <Pressable style={{ flex: 1, backgroundColor: "#00000040", justifyContent: "flex-end" }} onPress={() => setShowTemplates(false)}>
+          <Pressable style={{ backgroundColor: "#FAF5EA", borderTopLeftRadius: 12, borderTopRightRadius: 12, padding: 20, paddingBottom: 36 }} onPress={() => {}}>
+            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014", marginBottom: 16 }}>Prep Templates</Text>
+            {PREP_TEMPLATES.map((t) => (
+              <Pressable
+                key={t.label}
+                onPress={() => applyTemplate(t.tasks)}
+                style={{ paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C20" }}
+              >
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#2C2014", marginBottom: 4 }}>{t.label}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D" }} numberOfLines={2}>
+                  {t.tasks.join(" · ")}
+                </Text>
+              </Pressable>
+            ))}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </>
   );
 }
