@@ -49,10 +49,7 @@ workflows:
             --type IOS_APP_STORE \
             --create
           keychain add-certificates
-          cd apps/mobile/ios
-          WORKSPACE=$(ls -d *.xcworkspace 2>/dev/null | head -1)
-          if [ -z "$WORKSPACE" ]; then echo "ERROR: no .xcworkspace found"; exit 1; fi
-          xcode-project use-profiles --workspace "$WORKSPACE"
+          xcode-project use-profiles
 
       - name: Pre-bundle JavaScript
         script: |
@@ -98,6 +95,18 @@ workflows:
 
       - name: Export IPA
         script: |
+          cat > "$CM_BUILD_DIR/ExportOptions.plist" << 'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>JQS67937W6</string>
+          </dict>
+          </plist>
+          PLIST
           xcodebuild -exportArchive \
             -archivePath "$CM_BUILD_DIR/grimoire.xcarchive" \
             -exportPath "$CM_BUILD_DIR/export" \
