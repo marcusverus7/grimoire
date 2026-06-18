@@ -716,6 +716,68 @@ export default function EntityDetailScreen() {
           </View>
         ) : null}
 
+        {/* Connections — sessions and entities that mention this one */}
+        {backlinks.length > 0 && (() => {
+          const sessionBls = backlinks.filter((bl) => bl.fromType === "session");
+          const entityBls = backlinks.filter((bl) => bl.fromType === "entity");
+          return (
+            <>
+              <GoldRule />
+              <View style={{ marginTop: 16, marginBottom: 4 }}>
+                {sessionBls.length > 0 && (
+                  <View style={{ marginBottom: 12 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
+                      Appears in Sessions
+                    </Text>
+                    {sessionBls.map((bl, i) => (
+                      <Pressable
+                        key={`s-${bl.fromId}-${i}`}
+                        onPress={() => router.push(`/campaign/${campaignId}/session/${bl.fromId}` as Parameters<typeof router.push>[0])}
+                        style={{ flexDirection: "row", alignItems: "center", paddingVertical: 7, paddingHorizontal: 4, marginBottom: 2, borderRadius: 2, backgroundColor: "#A07A2C06" }}
+                      >
+                        <View style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C40", backgroundColor: "#A07A2C10", marginRight: 10 }}>
+                          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+                            Session
+                          </Text>
+                        </View>
+                        <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", flex: 1 }}>
+                          {bl.name}
+                        </Text>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C" }}>›</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+                {entityBls.length > 0 && (
+                  <View style={{ marginBottom: 4 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#5A4D3E", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
+                      Linked Entities
+                    </Text>
+                    {entityBls.map((bl, i) => (
+                      <Pressable
+                        key={`e-${bl.fromId}-${i}`}
+                        onPress={() => router.push(`/campaign/${campaignId}/entity/${bl.fromId}` as Parameters<typeof router.push>[0])}
+                        style={{ flexDirection: "row", alignItems: "center", paddingVertical: 7, paddingHorizontal: 4, marginBottom: 2 }}
+                      >
+                        <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: "#4A3F3260", marginRight: 10 }} />
+                        <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", flex: 1 }}>
+                          {bl.name}
+                        </Text>
+                        {bl.snippet ? (
+                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", maxWidth: 120 }} numberOfLines={1}>
+                            {bl.snippet}
+                          </Text>
+                        ) : null}
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C", marginLeft: 4 }}>›</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </>
+          );
+        })()}
+
         {/* GM Secret panel */}
         {attrs?.["gmSecret"] ? (
           <>
@@ -774,64 +836,6 @@ export default function EntityDetailScreen() {
           </>
         ) : null}
 
-        {/* Backlinks */}
-        {backlinks.length > 0 && (
-          <>
-            <GoldRule />
-            <View className="mt-4">
-              <Text
-                className="text-ink-soft text-xs uppercase tracking-wider mb-3"
-                style={{ fontFamily: "Inter_600SemiBold" }}
-              >
-                Mentioned In
-              </Text>
-              {backlinks.map((bl, i) => (
-                <Pressable
-                  key={`${bl.fromType}-${bl.fromId}-${i}`}
-                  onPress={() => {
-                    if (bl.fromType === "entity") {
-                      router.push(
-                        `/campaign/${campaignId}/entity/${bl.fromId}`,
-                      );
-                    } else {
-                      router.push(
-                        `/campaign/${campaignId}/session/${bl.fromId}`,
-                      );
-                    }
-                  }}
-                  className="py-2 px-2 mb-1"
-                >
-                  <View className="flex-row items-center">
-                    <Text
-                      className="text-xs uppercase tracking-wider mr-2"
-                      style={{
-                        fontFamily: "Inter_500Medium",
-                        color: bl.fromType === "session" ? "#A07A2C" : "#4A3F32",
-                      }}
-                    >
-                      {bl.fromType === "session" ? "Session" : "Entity"}
-                    </Text>
-                    <Text
-                      className="text-ink text-base flex-1"
-                      style={{ fontFamily: "CormorantGaramond_600SemiBold" }}
-                    >
-                      {bl.name}
-                    </Text>
-                  </View>
-                  {bl.snippet && (
-                    <Text
-                      className="text-ink-soft/60 text-sm mt-0.5"
-                      style={{ fontFamily: "Inter_400Regular" }}
-                      numberOfLines={2}
-                    >
-                      {bl.snippet}
-                    </Text>
-                  )}
-                </Pressable>
-              ))}
-            </View>
-          </>
-        )}
 
         {/* PC/NPC inventory / faction members */}
         {inventory.length > 0 ? (

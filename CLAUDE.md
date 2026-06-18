@@ -181,7 +181,9 @@ read Part IV (build plan) before starting any phase.
   router.back() / router.replace instead of push("/") which was stacking screens); relationship map
   nodes made tappable via G wrapper (circle + label both trigger entity navigate); session detail
   empty state adds "Add Notes" + "Session Prep" CTA prompts when body is null; export success card
-  now shows entity/session/quote counts alongside file count. Version bumped to 1.6.0.
+  now shows entity/session/quote counts alongside file count; entity detail backlinks panel moved
+  above GM Secret, split into "Appears in Sessions" (gold, tappable) and "Linked Entities" sections
+  for clearer connection surfacing. Version bumped to 1.6.0.
 
 ## What to build next (phase 17)
 
