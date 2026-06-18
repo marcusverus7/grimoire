@@ -1109,6 +1109,8 @@ export default function CampaignDetailScreen() {
               { label: "Rumours", path: `/campaign/${id}/rumours`, gold: true },
               { label: "Reference", path: `/campaign/${id}/reference`, gold: true },
               { label: "Tavern", path: `/campaign/${id}/tavern`, gold: true },
+              { label: "Rand Enc", path: `/campaign/${id}/random-encounter`, gold: true },
+              { label: "Calendar", path: `/campaign/${id}/calendar`, gold: true },
               { label: "Search", path: `/campaign/${id}/search`, gold: true },
               { label: "Notes", path: `/campaign/${id}/notes`, gold: true },
               { label: "Quests", path: `/campaign/${id}/quests`, gold: true },
