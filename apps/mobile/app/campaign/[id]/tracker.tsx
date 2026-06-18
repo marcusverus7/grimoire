@@ -79,6 +79,8 @@ export default function TrackerScreen() {
   const [round, setRound] = useState(1);
   const [hideDead, setHideDead] = useState(true);
   const [activeTurnIndex, setActiveTurnIndex] = useState<number | null>(null);
+  const [combatLog, setCombatLog] = useState<string[]>([]);
+  const [showLog, setShowLog] = useState(false);
 
   const load = useCallback(() => {
     // Load encounter filter if set
@@ -139,6 +141,14 @@ export default function TrackerScreen() {
     setEntries((prev) =>
       prev.map((e) => (e.id === entity.id ? { ...e, currentHp: newHp } : e)),
     );
+    setRound((r) => {
+      const sign = delta > 0 ? "+" : "";
+      const entry = newHp === 0
+        ? `R${r}: ${entity.name} ☠ fell (${sign}${delta})`
+        : `R${r}: ${entity.name} ${sign}${delta} HP → ${newHp}/${entity.maxHp}`;
+      setCombatLog((log) => [entry, ...log].slice(0, 40));
+      return r;
+    });
   };
 
   const setHpDirect = (entity: TrackerEntry, value: string) => {
@@ -195,6 +205,7 @@ export default function TrackerScreen() {
           setEntries((prev) => prev.map((e) => ({ ...e, currentHp: e.maxHp })));
           setRound(1);
           setActiveTurnIndex(null);
+          setCombatLog([]);
           setKv(`tracker_round_${campaignId}`, "1");
         },
       },
@@ -266,6 +277,9 @@ export default function TrackerScreen() {
               </Pressable>
               <Pressable onPress={() => setShowDice(true)} style={{ marginRight: 14 }}>
                 <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Dice</Text>
+              </Pressable>
+              <Pressable onPress={() => router.push(`/campaign/${campaignId}/reference` as Parameters<typeof router.push>[0])} style={{ marginRight: 14 }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Ref</Text>
               </Pressable>
               <Pressable onPress={resetAll} style={{ marginRight: 8 }}>
                 <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Reset</Text>
@@ -388,24 +402,58 @@ export default function TrackerScreen() {
               contentContainerStyle={{ padding: 12 }}
               renderItem={({ item, index }) => <CombatantRow entry={item} isActive={activeTurnIndex === index} onAdjust={adjustHp} onSetHp={setHpDirect} onSetInitiative={(v) => setInitiative(item, v)} onNavigate={() => router.push(`/campaign/${campaignId}/entity/${item.id}`)} onOpenConditions={() => setConditionTarget(item)} onToggleCondition={(c) => toggleCondition(item, c)} />}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              ListFooterComponent={tempCombatants.length > 0 ? (
-                <View style={{ paddingTop: 12 }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#7A2418", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8, paddingHorizontal: 4 }}>
-                    Temporary
-                  </Text>
-                  {tempCombatants.map((t) => (
-                    <TempCombatantRow
-                      key={t.id}
-                      combatant={t}
-                      onAdjust={(delta) => {
-                        setTempCombatants((prev) =>
-                          prev.map((c) => c.id === t.id ? { ...c, hp: Math.max(0, c.hp + delta) } : c)
-                        );
-                      }}
-                    />
-                  ))}
-                </View>
-              ) : null}
+              ListFooterComponent={(
+                <>
+                  {tempCombatants.length > 0 && (
+                    <View style={{ paddingTop: 12 }}>
+                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#7A2418", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8, paddingHorizontal: 4 }}>
+                        Temporary
+                      </Text>
+                      {tempCombatants.map((t) => (
+                        <TempCombatantRow
+                          key={t.id}
+                          combatant={t}
+                          onAdjust={(delta) => {
+                            const newHp = Math.max(0, t.hp + delta);
+                            const sign = delta > 0 ? "+" : "";
+                            const logEntry = newHp === 0
+                              ? `R${round}: ${t.name} ☠ fell (${sign}${delta})`
+                              : `R${round}: ${t.name} ${sign}${delta} HP → ${newHp}`;
+                            setCombatLog((log) => [logEntry, ...log].slice(0, 40));
+                            setTempCombatants((prev) =>
+                              prev.map((c) => c.id === t.id ? { ...c, hp: newHp } : c)
+                            );
+                          }}
+                        />
+                      ))}
+                    </View>
+                  )}
+
+                  {/* Combat Log */}
+                  {combatLog.length > 0 && (
+                    <View style={{ paddingTop: 16, paddingHorizontal: 4 }}>
+                      <Pressable
+                        onPress={() => setShowLog((v) => !v)}
+                        style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}
+                      >
+                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#5A4D3E80", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+                          {showLog ? "▼" : "▶"} Combat Log ({combatLog.length})
+                        </Text>
+                        {showLog && (
+                          <Pressable onPress={() => setCombatLog([])}>
+                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#7A241870" }}>Clear</Text>
+                          </Pressable>
+                        )}
+                      </Pressable>
+                      {showLog && combatLog.map((entry, i) => (
+                        <Text key={i} style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: entry.includes("☠") ? "#7A2418" : "#5A4D3E", lineHeight: 18, paddingVertical: 2, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C08" }}>
+                          {entry}
+                        </Text>
+                      ))}
+                    </View>
+                  )}
+                </>
+              )}
             />
           </>
         )}

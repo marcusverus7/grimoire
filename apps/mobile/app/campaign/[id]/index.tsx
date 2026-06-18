@@ -1106,6 +1106,7 @@ export default function CampaignDetailScreen() {
               { label: "Hook Gen", path: `/campaign/${id}/hookgen`, gold: true },
               { label: "Clues", path: `/campaign/${id}/clues`, gold: true },
               { label: "Rumours", path: `/campaign/${id}/rumours`, gold: true },
+              { label: "Reference", path: `/campaign/${id}/reference`, gold: true },
               { label: "Search", path: `/campaign/${id}/search`, gold: true },
               { label: "Notes", path: `/campaign/${id}/notes`, gold: true },
               { label: "Quests", path: `/campaign/${id}/quests`, gold: true },

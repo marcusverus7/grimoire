@@ -321,6 +321,18 @@ read Part IV (build plan) before starting any phase.
   tapping CR shows HP/AC stats; selected CR auto-fills hp/ac/currentHp attrs
   when saving NPC to campaign. Version bumped to 1.9.6.
 
+- Phase 43: Combat Log — append-only per-encounter log of HP changes and
+  deaths in the tracker (adjustHp logs to combatLog state; reset clears it);
+  collapsible section in FlatList footer; temp combatant adjustments also logged.
+
+- Phase 44: Custom Timeline Events — "World Events" section on the timeline
+  screen; stored in app_kv timeline_events_${campaignId}; add/delete events
+  with optional "after session N" context; long-press to delete.
+
+- Phase 45: Quick Reference screen (/campaign/[id]/reference) — Combat Actions
+  / Conditions / DC reference cards in tabbed layout; accessible from campaign
+  action grid + tracker header "Ref" button. Version bumped to 1.9.7.
+
 ## What to build next
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
