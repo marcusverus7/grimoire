@@ -5,7 +5,9 @@ import {
   Pressable,
   ScrollView,
   Alert,
+  Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { eq } from "drizzle-orm";
@@ -16,7 +18,7 @@ import { schema } from "@grimoire/core";
 
 type Campaign = typeof schema.campaigns.$inferSelect;
 type Status = "active" | "archived" | "ended";
-type CampaignSettings = { notes?: string; nextSession?: string; logline?: string };
+type CampaignSettings = { notes?: string; nextSession?: string; logline?: string; coverImageUri?: string };
 
 const STATUSES: Status[] = ["active", "archived", "ended"];
 
@@ -30,6 +32,7 @@ export default function CampaignSettingsScreen() {
   const [notes, setNotes] = useState("");
   const [nextSession, setNextSession] = useState("");
   const [logline, setLogline] = useState("");
+  const [coverImageUri, setCoverImageUri] = useState<string | null>(null);
 
   useEffect(() => {
     const c = db
@@ -46,6 +49,7 @@ export default function CampaignSettingsScreen() {
       setNotes(s.notes ?? "");
       setNextSession(s.nextSession ?? "");
       setLogline(s.logline ?? "");
+      setCoverImageUri(s.coverImageUri ?? null);
     }
   }, [id]);
 
@@ -67,6 +71,7 @@ export default function CampaignSettingsScreen() {
             logline: logline.trim() || undefined,
             notes: notes.trim() || undefined,
             nextSession: nextSession.trim() || undefined,
+            coverImageUri: coverImageUri ?? undefined,
           },
         })
         .where(eq(schema.campaigns.id, id))
@@ -117,6 +122,23 @@ export default function CampaignSettingsScreen() {
     );
   };
 
+  const pickCoverImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow photo library access to set a campaign cover.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [3, 2],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setCoverImageUri(result.assets[0].uri);
+    }
+  };
+
   if (!campaign) return null;
 
   return (
@@ -129,6 +151,31 @@ export default function CampaignSettingsScreen() {
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
       >
+        {/* Cover Image */}
+        <Pressable onPress={pickCoverImage} style={{ marginBottom: 20, borderRadius: 4, overflow: "hidden" }}>
+          {coverImageUri ? (
+            <View>
+              <Image
+                source={{ uri: coverImageUri }}
+                style={{ width: "100%", height: 120, borderRadius: 4 }}
+                resizeMode="cover"
+              />
+              <View style={{ position: "absolute", bottom: 8, right: 8, backgroundColor: "rgba(26,20,16,0.7)", borderRadius: 3, paddingHorizontal: 8, paddingVertical: 4 }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#FAF5EA" }}>Change cover</Text>
+              </View>
+            </View>
+          ) : (
+            <View style={{ height: 80, borderWidth: 1, borderStyle: "dashed", borderColor: "#A07A2C40", borderRadius: 4, alignItems: "center", justifyContent: "center", backgroundColor: "#ECE3CF30" }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C80" }}>+ Add campaign cover image</Text>
+            </View>
+          )}
+        </Pressable>
+        {coverImageUri && (
+          <Pressable onPress={() => setCoverImageUri(null)} style={{ marginTop: -14, marginBottom: 16, alignItems: "flex-end" }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D" }}>Remove cover</Text>
+          </Pressable>
+        )}
+
         {/* Name */}
         <Label text="Campaign Name" />
         <TextInput

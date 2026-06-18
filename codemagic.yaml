@@ -46,6 +46,26 @@ workflows:
         script: |
           keychain initialize
           CERT_KEY=$(openssl genrsa 2048 2>/dev/null)
+          # Revoke any existing Distribution certs so we stay within Apple's 2-cert limit.
+          # fetch-signing-files --create needs to create a new cert paired with our generated key.
+          EXISTING_CERTS=$(app-store-connect certificates list --type DISTRIBUTION --json 2>/dev/null || echo "[]")
+          echo "Existing certs JSON: $EXISTING_CERTS" | head -c 500
+          echo "$EXISTING_CERTS" | python3 -c "
+import sys, json
+raw = sys.stdin.read()
+try:
+    data = json.loads(raw)
+    items = data if isinstance(data, list) else data.get('data', [])
+    for item in items:
+        cid = item.get('id','')
+        if cid:
+            print(cid)
+except Exception as e:
+    import sys as _sys
+    print(f'parse error: {e}', file=_sys.stderr)
+" 2>/dev/null | while IFS= read -r cid; do
+            [ -n "$cid" ] && echo "Revoking cert $cid" && app-store-connect certificates revoke "$cid" 2>/dev/null || true
+          done
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create \

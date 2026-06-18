@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
   ScrollView,
+  Image,
 } from "react-native";
 import { useState, useCallback, useEffect } from "react";
 import { eq, sql } from "drizzle-orm";
@@ -28,6 +29,7 @@ type CampaignRow = typeof schema.campaigns.$inferSelect & {
   sessionCount: number;
   quoteCount: number;
   logline?: string;
+  coverImageUri?: string;
 };
 
 function remapMentionIds(node: unknown, idMap: Map<string, string>): unknown {
@@ -86,8 +88,10 @@ export default function CampaignsScreen() {
         .from(schema.quotes)
         .where(eq(schema.quotes.campaignId, c.id))
         .get()?.count ?? 0;
-      const logline = (c.settings as { logline?: string } | null)?.logline;
-      return { ...c, entityCount, sessionCount, quoteCount, logline };
+      const settings = c.settings as { logline?: string; coverImageUri?: string } | null;
+      const logline = settings?.logline;
+      const coverImageUri = settings?.coverImageUri;
+      return { ...c, entityCount, sessionCount, quoteCount, logline, coverImageUri };
     });
     setCampaigns(enriched);
   }, []);
@@ -374,6 +378,13 @@ export default function CampaignsScreen() {
               }}
               className="py-3 px-2"
             >
+              {item.coverImageUri ? (
+                <Image
+                  source={{ uri: item.coverImageUri }}
+                  style={{ width: "100%", height: 80, borderRadius: 3, marginBottom: 10 }}
+                  resizeMode="cover"
+                />
+              ) : null}
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text className="font-cormorant-semibold text-ink text-lg" style={{ flex: 1 }}>
                   {item.name}
