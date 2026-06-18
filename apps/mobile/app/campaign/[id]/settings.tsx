@@ -289,7 +289,7 @@ export default function CampaignSettingsScreen() {
         {/* Session Zero link */}
         <Pressable
           onPress={() => router.push(`/campaign/${id}/session-zero`)}
-          className="mt-4 mb-6 py-3 px-4 border border-gold/20 rounded-sm flex-row items-center justify-between"
+          className="mt-4 mb-3 py-3 px-4 border border-gold/20 rounded-sm flex-row items-center justify-between"
         >
           <View>
             <Text
@@ -301,6 +301,26 @@ export default function CampaignSettingsScreen() {
               style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80", marginTop: 2 }}
             >
               X-Card, Lines & Veils, tone
+            </Text>
+          </View>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C" }}>›</Text>
+        </Pressable>
+
+        {/* Prep To-Do link */}
+        <Pressable
+          onPress={() => router.push(`/campaign/${id}/todos` as Parameters<typeof router.push>[0])}
+          className="mb-6 py-3 px-4 border border-gold/20 rounded-sm flex-row items-center justify-between"
+        >
+          <View>
+            <Text
+              style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#2C2014" }}
+            >
+              Prep To-Do List
+            </Text>
+            <Text
+              style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80", marginTop: 2 }}
+            >
+              Tasks to do before next session
             </Text>
           </View>
           <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C" }}>›</Text>

@@ -584,6 +584,11 @@ export default function CampaignDetailScreen() {
               Sessions
             </Text>
             <View className="flex-row items-center">
+              <Pressable onPress={() => router.push(`/campaign/${id}/todos` as Parameters<typeof router.push>[0])}>
+                <Text className="text-ink-faint text-xs mr-4" style={{ fontFamily: "Inter_500Medium" }}>
+                  To-Do
+                </Text>
+              </Pressable>
               <Pressable onPress={() => router.push(`/campaign/${id}/timeline`)}>
                 <Text className="text-ink-faint text-xs mr-4" style={{ fontFamily: "Inter_500Medium" }}>
                   Timeline
