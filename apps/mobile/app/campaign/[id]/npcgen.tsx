@@ -66,6 +66,52 @@ const SECRETS = [
   "Is playing multiple factions against each other for profit",
 ];
 
+const APPEARANCES = [
+  "Weathered face with deep-set eyes, grey at the temples",
+  "Unnervingly still; rarely blinks",
+  "Expressive hands — always gesturing when they speak",
+  "Crooked nose, clearly broken more than once",
+  "Unusually tall, always ducking through doorways",
+  "Fine clothes that no longer fit properly",
+  "A prominent scar running jaw to ear",
+  "Calloused hands that contradict their gentle manner",
+  "Ink-stained fingers and permanently squinting eyes",
+  "Moves with a slight but deliberate limp",
+  "Immaculately groomed despite clearly hard circumstances",
+  "Missing two fingers on the left hand",
+  "Bright, mismatched eyes — one brown, one pale grey",
+  "Hair prematurely white, cut close to the skull",
+  "A tattoo partially visible at the collar, origin unclear",
+  "Teeth filed to points — claims it's cultural",
+  "Wears gloves at all times and never explains why",
+  "Faint burn scarring on neck and lower jaw",
+  "Deceptively youthful face for someone their apparent age",
+  "Extremely short, but takes up a lot of space",
+];
+
+const MANNERISMS = [
+  "Repeats the last few words of whatever you say before responding",
+  "Constantly checking over their shoulder",
+  "Laughs at inappropriate moments, then looks embarrassed",
+  "Speaks in careful, measured sentences — never wastes a word",
+  "Uses elaborate metaphors that usually don't quite land",
+  "Keeps changing the subject whenever the conversation gets personal",
+  "Addresses everyone as a rank or title, never by name",
+  "Picks up small objects and fidgets with them while talking",
+  "Never makes eye contact — stares just past your shoulder",
+  "Writes down things people say to them in a small notebook",
+  "Answers questions with questions",
+  "Constantly cleaning or adjusting something nearby",
+  "Speaks very quietly — forces people to lean in",
+  "Pauses for long uncomfortable silences before replying",
+  "Smells everything before eating or drinking it",
+  "Offers food or drink to everyone, regardless of context",
+  "Hums softly when thinking, stops abruptly when they realise",
+  "Always sitting with their back to a wall",
+  "Quotes proverbs that don't quite apply to the situation",
+  "Excessively apologetic about the smallest inconveniences",
+];
+
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)] ?? arr[0]!;
 }
@@ -76,6 +122,8 @@ function generateNpc() {
     role: pick(ROLES),
     hook: pick(HOOKS),
     secret: pick(SECRETS),
+    appearance: pick(APPEARANCES),
+    mannerism: pick(MANNERISMS),
   };
 }
 
@@ -114,19 +162,33 @@ export default function NpcGenScreen() {
           <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
             Quick NPC
           </Text>
-          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 30, color: "#2C2014", marginBottom: 4 }}>
-            {npc.name}
-          </Text>
-          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 14, color: "#5A4D3E", marginBottom: 24 }}>
-            {npc.role}
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 30, color: "#2C2014", flex: 1 }}>
+              {npc.name}
+            </Text>
+            <Pressable onPress={() => setNpc((n) => ({ ...n, name: `${pick(GIVEN)} ${pick(FAMILY)}` }))} style={{ padding: 6 }}>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C60" }}>⚄</Text>
+            </Pressable>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 24 }}>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 14, color: "#5A4D3E", flex: 1 }}>
+              {npc.role}
+            </Text>
+            <Pressable onPress={() => setNpc((n) => ({ ...n, role: pick(ROLES) }))} style={{ padding: 6 }}>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C60" }}>⚄</Text>
+            </Pressable>
+          </View>
 
           <GoldRule />
 
           <View style={{ marginTop: 20, marginBottom: 20 }}>
-            <FieldRow label="Personality Hook" value={npc.hook} />
+            <FieldRow label="Appearance" value={npc.appearance} onReroll={() => setNpc((n) => ({ ...n, appearance: pick(APPEARANCES) }))} />
             <View style={{ height: 12 }} />
-            <FieldRow label="⚿ GM Secret" value={npc.secret} oxblood />
+            <FieldRow label="Mannerism" value={npc.mannerism} onReroll={() => setNpc((n) => ({ ...n, mannerism: pick(MANNERISMS) }))} />
+            <View style={{ height: 12 }} />
+            <FieldRow label="Personality Hook" value={npc.hook} onReroll={() => setNpc((n) => ({ ...n, hook: pick(HOOKS) }))} />
+            <View style={{ height: 12 }} />
+            <FieldRow label="⚿ GM Secret" value={npc.secret} oxblood onReroll={() => setNpc((n) => ({ ...n, secret: pick(SECRETS) }))} />
           </View>
 
           <GoldRule />
@@ -158,12 +220,19 @@ export default function NpcGenScreen() {
   );
 }
 
-function FieldRow({ label, value, oxblood = false }: { label: string; value: string; oxblood?: boolean }) {
+function FieldRow({ label, value, oxblood = false, onReroll }: { label: string; value: string; oxblood?: boolean; onReroll?: () => void }) {
   return (
     <View style={{ padding: 12, backgroundColor: oxblood ? "#7A241808" : "#A07A2C06", borderWidth: 1, borderColor: oxblood ? "#7A241825" : "#A07A2C20", borderRadius: 2 }}>
-      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: oxblood ? "#7A2418" : "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6 }}>
-        {label}
-      </Text>
+      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: oxblood ? "#7A2418" : "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+          {label}
+        </Text>
+        {onReroll ? (
+          <Pressable onPress={onReroll}>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: oxblood ? "#7A241860" : "#A07A2C60" }}>⚄</Text>
+          </Pressable>
+        ) : null}
+      </View>
       <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: "#2C2014", lineHeight: 24 }}>
         {value}
       </Text>
