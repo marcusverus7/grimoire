@@ -777,6 +777,19 @@ export default function CampaignDetailScreen() {
                           </Text>
                         );
                       })()}
+                      {(() => {
+                        const st = (s.attrs as Record<string, unknown> | null)?.sessionType as string | undefined;
+                        if (!st) return null;
+                        const typeColors: Record<string, string> = {
+                          combat: "#8B2020", roleplay: "#1E6B6B", exploration: "#3A6830", downtime: "#5A3A7A", travel: "#2A4080",
+                        };
+                        const color = typeColors[st] ?? "#5A4D3E";
+                        return (
+                          <View style={{ marginLeft: 6, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 2, borderWidth: 0.5, borderColor: `${color}60`, backgroundColor: `${color}12` }}>
+                            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color, textTransform: "capitalize" }}>{st}</Text>
+                          </View>
+                        );
+                      })()}
                       {s.status !== "played" ? (
                         <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#2C201425", marginLeft: 6 }}>
                           long press to mark played

@@ -45,6 +45,7 @@ export default function SessionFormScreen() {
   const [rating, setRating] = useState<number>(0);
   const [arcs, setArcs] = useState<{ id: string; name: string }[]>([]);
   const [arcId, setArcId] = useState<string | null>(null);
+  const [sessionType, setSessionType] = useState<string>("");
   const editorRef = useRef<EditorBridge | null>(null);
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function SessionFormScreen() {
     setExistingAttrs(attrs);
     setRating(typeof attrs.rating === "number" ? attrs.rating : 0);
     setArcId(typeof attrs.arcId === "string" ? attrs.arcId : null);
+    setSessionType(typeof attrs.sessionType === "string" ? attrs.sessionType : "");
     setLoaded(true);
 
     // Load campaign arcs
@@ -112,7 +114,7 @@ export default function SessionFormScreen() {
           playedOn: playedOn.trim() || null,
           body: editorBody,
           status,
-          attrs: { ...existingAttrs, attendance: attendance.length > 0 ? attendance : undefined, rating: rating > 0 ? rating : undefined, arcId: arcId ?? undefined },
+          attrs: { ...existingAttrs, attendance: attendance.length > 0 ? attendance : undefined, rating: rating > 0 ? rating : undefined, arcId: arcId ?? undefined, sessionType: sessionType || undefined },
         })
         .where(eq(schema.sessions.id, sessionId))
         .run();
@@ -270,6 +272,40 @@ export default function SessionFormScreen() {
               </Text>
             </Pressable>
           ))}
+        </View>
+
+        {/* Session Type */}
+        <View style={{ marginBottom: 20 }}>
+          <Label text="Session Type (optional)" />
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {[
+              { key: "combat", label: "⚔ Combat", color: "#8B2020" },
+              { key: "roleplay", label: "💬 Roleplay", color: "#1E6B6B" },
+              { key: "exploration", label: "🗺 Exploration", color: "#3A6830" },
+              { key: "downtime", label: "🏠 Downtime", color: "#5A3A7A" },
+              { key: "travel", label: "🚶 Travel", color: "#2A4080" },
+            ].map((t) => {
+              const active = sessionType === t.key;
+              return (
+                <Pressable
+                  key={t.key}
+                  onPress={() => setSessionType(active ? "" : t.key)}
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 2,
+                    borderWidth: 1,
+                    borderColor: active ? t.color : "#A07A2C25",
+                    backgroundColor: active ? `${t.color}15` : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: active ? t.color : "#5A4D3E" }}>
+                    {t.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
 
         {/* Arc — only shown when campaign has arcs */}

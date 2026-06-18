@@ -235,6 +235,21 @@ read Part IV (build plan) before starting any phase.
   reads filter and shows ⚔ badge when encounter active; added to In-Play bar
   and action grid). Version bumped to 1.9.3.
 
+- Phase 23: Campaign Stats screen (/campaign/[id]/stats — overview tiles, rating
+  distribution bar chart, entity breakdown, quest outcomes, top 5 most-mentioned
+  characters, sessions by arc breakdown; added to action grid). Version bumped
+  to 1.9.3.
+
+- Phase 24: Turn Order Tracker — activeTurnIndex state in tracker; advanceTurn()
+  cycling through sorted combatants; turn order bar (pressable row showing active
+  combatant name between round counter and sort row); active combatant row has
+  oxblood border + bg + ▶ prefix; resets on resetAll(). Version bumped to 1.9.3.
+
+- Phase 25: Session Type Tags — sessionType field (combat/roleplay/exploration/
+  downtime/travel) stored in session.attrs.sessionType; chip picker in session
+  edit (after Status, before Arc); colored badge displayed in session list rows
+  on campaign detail. Version bumped to 1.9.4.
+
 ## What to build next
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
