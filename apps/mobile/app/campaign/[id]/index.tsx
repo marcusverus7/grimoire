@@ -1103,6 +1103,7 @@ export default function CampaignDetailScreen() {
               { label: "Party", path: `/campaign/${id}/party`, gold: true },
               { label: "Brief", action: shareBriefing, gold: true },
               { label: "NPC Gen", path: `/campaign/${id}/npcgen`, gold: true },
+              { label: "Hook Gen", path: `/campaign/${id}/hookgen`, gold: true },
               { label: "Search", path: `/campaign/${id}/search`, gold: true },
               { label: "Notes", path: `/campaign/${id}/notes`, gold: true },
               { label: "Quests", path: `/campaign/${id}/quests`, gold: true },
