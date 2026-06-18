@@ -81,6 +81,10 @@ export default function EntityFormScreen() {
   const [level, setLevel] = useState("");
   const [xp, setXp] = useState("");
   const [maxXp, setMaxXp] = useState("");
+  const [pcTrait, setPcTrait] = useState("");
+  const [pcIdeal, setPcIdeal] = useState("");
+  const [pcBond, setPcBond] = useState("");
+  const [pcFlaw, setPcFlaw] = useState("");
   const [parentId, setParentId] = useState<string | null>(null);
   const [locationId, setLocationId] = useState<string | null>(null);
   const [campaignLocations, setCampaignLocations] = useState<{ id: string; name: string }[]>([]);
@@ -127,6 +131,10 @@ export default function EntityFormScreen() {
       if (attrs?.["level"]) setLevel(String(attrs["level"]));
       if (attrs?.["xp"]) setXp(String(attrs["xp"]));
       if (attrs?.["maxXp"]) setMaxXp(String(attrs["maxXp"]));
+      if (typeof attrs?.["pcTrait"] === "string") setPcTrait(attrs["pcTrait"]);
+      if (typeof attrs?.["pcIdeal"] === "string") setPcIdeal(attrs["pcIdeal"]);
+      if (typeof attrs?.["pcBond"] === "string") setPcBond(attrs["pcBond"]);
+      if (typeof attrs?.["pcFlaw"] === "string") setPcFlaw(attrs["pcFlaw"]);
       if (attrs?.["hp"]) setHp(String(attrs["hp"]));
       if (attrs?.["ac"]) setAc(String(attrs["ac"]));
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
@@ -247,10 +255,18 @@ export default function EntityFormScreen() {
         if (level.trim()) attrs["level"] = level.trim(); else delete attrs["level"];
         if (xp.trim()) attrs["xp"] = xp.trim(); else delete attrs["xp"];
         if (maxXp.trim()) attrs["maxXp"] = maxXp.trim(); else delete attrs["maxXp"];
+        if (pcTrait.trim()) attrs["pcTrait"] = pcTrait.trim(); else delete attrs["pcTrait"];
+        if (pcIdeal.trim()) attrs["pcIdeal"] = pcIdeal.trim(); else delete attrs["pcIdeal"];
+        if (pcBond.trim()) attrs["pcBond"] = pcBond.trim(); else delete attrs["pcBond"];
+        if (pcFlaw.trim()) attrs["pcFlaw"] = pcFlaw.trim(); else delete attrs["pcFlaw"];
       } else {
         delete attrs["level"];
         delete attrs["xp"];
         delete attrs["maxXp"];
+        delete attrs["pcTrait"];
+        delete attrs["pcIdeal"];
+        delete attrs["pcBond"];
+        delete attrs["pcFlaw"];
       }
       if (gmSecret.trim()) attrs["gmSecret"] = gmSecret.trim(); else delete attrs["gmSecret"];
       if (kind === "location") {
@@ -779,6 +795,31 @@ export default function EntityFormScreen() {
               </View>
             </View>
           </>
+        )}
+
+        {/* PC Personality Traits */}
+        {kind === "pc" && (
+          <View style={{ marginBottom: 4 }}>
+            <Label text="Personality (optional)" />
+            {[
+              { label: "Trait", value: pcTrait, set: setPcTrait, placeholder: "e.g. Always speaks in metaphors..." },
+              { label: "Ideal", value: pcIdeal, set: setPcIdeal, placeholder: "e.g. Justice must be served..." },
+              { label: "Bond", value: pcBond, set: setPcBond, placeholder: "e.g. I would die for my village..." },
+              { label: "Flaw", value: pcFlaw, set: setPcFlaw, placeholder: "e.g. I trust no one..." },
+            ].map((f) => (
+              <View key={f.label} style={{ marginBottom: 14 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#C9A24A80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>{f.label}</Text>
+                <TextInput
+                  value={f.value}
+                  onChangeText={f.set}
+                  placeholder={f.placeholder}
+                  placeholderTextColor="#2C201440"
+                  multiline
+                  style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#C9A24A20", paddingBottom: 6, textAlignVertical: "top" }}
+                />
+              </View>
+            ))}
+          </View>
         )}
 
         {/* Character Passport link (PC only) */}

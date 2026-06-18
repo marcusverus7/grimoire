@@ -832,6 +832,31 @@ export default function EntityDetailScreen() {
           </>
         ) : null}
 
+        {/* PC Personality Traits */}
+        {entity.kind === "pc" && attrs != null && (attrs["pcTrait"] || attrs["pcIdeal"] || attrs["pcBond"] || attrs["pcFlaw"]) ? (
+          <>
+            <GoldRule />
+            <View style={{ marginTop: 14, marginBottom: 8 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#C9A24A", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
+                Personality
+              </Text>
+              {([
+                { key: "pcTrait", label: "Trait" },
+                { key: "pcIdeal", label: "Ideal" },
+                { key: "pcBond", label: "Bond" },
+                { key: "pcFlaw", label: "Flaw" },
+              ] as { key: string; label: string }[]).filter((f) => attrs[f.key]).map((f) => (
+                <View key={f.key} style={{ paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: "#C9A24A12" }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#C9A24A80", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>{f.label}</Text>
+                  <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 15, color: "#2C2014CC", fontStyle: "italic", lineHeight: 22 }}>
+                    {String(attrs[f.key])}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </>
+        ) : null}
+
         {/* Custom attributes */}
         {Array.isArray(attrs?.["customAttrs"]) && (attrs["customAttrs"] as { key: string; value: string }[]).length > 0 ? (
           <>
