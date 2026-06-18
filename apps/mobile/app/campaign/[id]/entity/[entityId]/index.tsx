@@ -326,6 +326,11 @@ export default function EntityDetailScreen() {
               · {String(attrs["role"])}
             </Text>
           ) : null}
+          {(entity.kind === "npc" || entity.kind === "pc") && typeof attrs?.["pronouns"] === "string" && attrs["pronouns"] ? (
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginLeft: 8, fontStyle: "italic" }}>
+              {String(attrs["pronouns"])}
+            </Text>
+          ) : null}
           {attrs?.["factionId"] ? (() => {
             const fn = db.select({ name: schema.entities.name }).from(schema.entities).where(eq(schema.entities.id, String(attrs["factionId"]))).get();
             return fn ? (

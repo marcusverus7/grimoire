@@ -66,6 +66,7 @@ export default function EntityFormScreen() {
   const [heldBy, setHeldBy] = useState<string | null>(null);
   const [campaignPCs, setCampaignPCs] = useState<{ id: string; name: string }[]>([]);
   const [role, setRole] = useState("");
+  const [pronouns, setPronouns] = useState("");
   const [factionId, setFactionId] = useState<string | null>(null);
   const [level, setLevel] = useState("");
   const [xp, setXp] = useState("");
@@ -111,6 +112,7 @@ export default function EntityFormScreen() {
       if (Array.isArray(attrs?.["relationships"])) setFactionRelationships(attrs["relationships"] as { factionId: string; type: string }[]);
       if (typeof attrs?.["heldBy"] === "string") setHeldBy(attrs["heldBy"]);
       if (typeof attrs?.["role"] === "string") setRole(attrs["role"]);
+      if (typeof attrs?.["pronouns"] === "string") setPronouns(attrs["pronouns"]);
       if (typeof attrs?.["factionId"] === "string") setFactionId(attrs["factionId"]);
       if (attrs?.["level"]) setLevel(String(attrs["level"]));
       if (attrs?.["xp"]) setXp(String(attrs["xp"]));
@@ -211,6 +213,11 @@ export default function EntityFormScreen() {
         attrs["role"] = role.trim();
       } else {
         delete attrs["role"];
+      }
+      if ((kind === "npc" || kind === "pc") && pronouns.trim()) {
+        attrs["pronouns"] = pronouns.trim();
+      } else {
+        delete attrs["pronouns"];
       }
       if ((kind === "npc" || kind === "pc") && factionId) {
         attrs["factionId"] = factionId;
@@ -436,6 +443,20 @@ export default function EntityFormScreen() {
               value={role}
               onChangeText={setRole}
               placeholder="e.g. Village Blacksmith, Queen's Hand, Guild Master"
+              placeholderTextColor="#2C201440"
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20 }}
+            />
+          </>
+        )}
+
+        {/* Pronouns — shown for NPC/PC only */}
+        {(kind === "npc" || kind === "pc") && (
+          <>
+            <Label text="Pronouns (optional)" />
+            <TextInput
+              value={pronouns}
+              onChangeText={setPronouns}
+              placeholder="e.g. she/her, they/them, he/him"
               placeholderTextColor="#2C201440"
               style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20 }}
             />

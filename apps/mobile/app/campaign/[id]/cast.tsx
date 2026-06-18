@@ -218,6 +218,7 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
   const imageUri = attrs.imageUri as string | undefined;
   const npcStatus = attrs.npcStatus as string | undefined;
   const role = attrs.role as string | undefined;
+  const pronouns = attrs.pronouns as string | undefined;
   const level = attrs.level as number | undefined;
   const hp = attrs.hp as number | undefined;
   const maxHp = attrs.maxHp as number | undefined;
@@ -307,6 +308,11 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
           ) : entity.summary ? (
             <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E70" }} numberOfLines={1}>
               {entity.summary}
+            </Text>
+          ) : null}
+          {pronouns ? (
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D80", fontStyle: "italic" }}>
+              {pronouns}
             </Text>
           ) : null}
         </View>
