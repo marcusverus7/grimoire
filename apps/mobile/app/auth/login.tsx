@@ -62,8 +62,14 @@ export default function LoginScreen() {
           placeholderTextColor="#8A7D6D80"
           secureTextEntry
           editable={!loading}
-          style={{ borderWidth: 1, borderColor: '#C4B49A', borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#2C2014', marginBottom: 24 }}
+          style={{ borderWidth: 1, borderColor: '#C4B49A', borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#2C2014', marginBottom: 12 }}
         />
+
+        <Pressable onPress={() => Alert.alert('Forgot Password', 'Password reset via email is coming soon. For now, please contact support.')} disabled={loading} style={{ alignSelf: 'flex-end', marginBottom: 24 }}>
+          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, color: '#A07A2C' }}>
+            Forgot password?
+          </Text>
+        </Pressable>
 
         <Pressable
           onPress={handleSignIn}
