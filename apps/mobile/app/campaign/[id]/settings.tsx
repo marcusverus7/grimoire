@@ -342,6 +342,28 @@ export default function CampaignSettingsScreen() {
           <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C" }}>›</Text>
         </Pressable>
 
+        {/* Cloud Backup */}
+        <Pressable
+          onPress={() => router.push(`/campaign/${id}/backup`)}
+          className="flex-row items-center justify-between border-b border-gold/20 py-4 mb-6"
+        >
+          <View>
+            <Text
+              className="text-ink text-sm mb-1"
+              style={{ fontFamily: "Inter_500Medium" }}
+            >
+              Cloud Backup
+            </Text>
+            <Text
+              className="text-ink-faint text-xs"
+              style={{ fontFamily: "Inter_400Regular" }}
+            >
+              Save campaign to cloud (requires authentication)
+            </Text>
+          </View>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C" }}>›</Text>
+        </Pressable>
+
         {/* Danger Zone */}
         <View className="mt-4 p-4 border border-oxblood/30 rounded-sm">
           <Text

@@ -333,6 +333,13 @@ read Part IV (build plan) before starting any phase.
   / Conditions / DC reference cards in tabbed layout; accessible from campaign
   action grid + tracker header "Ref" button. Version bumped to 1.9.7.
 
+- Phase 46: Supabase Authentication — Email/password auth with login and signup
+  screens; session cached to SQLite via getKv/setKv; auth state listened for
+  automatic UI updates; root layout routes to auth screens when not authenticated,
+  (tabs) when authenticated; demo mode fallback allows testing auth flow without
+  real Supabase credentials; @supabase/supabase-js installed. Version bumped to
+  1.10.0.
+
 ## What to build next
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
