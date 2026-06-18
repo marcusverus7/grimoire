@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Alert } from "react-native";
+import { View, Text, Pressable, ScrollView, Alert, TextInput } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useCallback, useState } from "react";
 import { eq, desc } from "drizzle-orm";
@@ -34,6 +34,7 @@ export default function CharacterDetailScreen() {
   const [profile, setProfile] = useState<CharacterProfile | null>(null);
   const [journals, setJournals] = useState<Journal[]>([]);
   const [linkedCampaigns, setLinkedCampaigns] = useState<{ id: string; name: string }[]>([]);
+  const [goalInput, setGoalInput] = useState("");
 
   const load = useCallback(() => {
     const p = db
@@ -78,8 +79,29 @@ export default function CharacterDetailScreen() {
     );
   }
 
-  const attrs = (profile.attrs as Record<string, string> | null) ?? {};
-  const classParts = [attrs["race"], attrs["class"], attrs["level"] ? `Level ${attrs["level"]}` : ""]
+  const attrs = (profile.attrs as Record<string, unknown> | null) ?? {};
+  const goals = Array.isArray(attrs["goals"]) ? (attrs["goals"] as string[]) : [];
+
+  const saveGoals = (updated: string[]) => {
+    const next = { ...attrs, goals: updated };
+    db.update(schema.characterProfiles).set({ attrs: next }).where(eq(schema.characterProfiles.id, profileId)).run();
+    setProfile((prev) => prev ? { ...prev, attrs: next } : prev);
+  };
+
+  const addGoal = () => {
+    const trimmed = goalInput.trim();
+    if (!trimmed) return;
+    saveGoals([...goals, trimmed]);
+    setGoalInput("");
+  };
+
+  const deleteGoal = (idx: number) => {
+    Alert.alert("Remove Goal", "Delete this goal?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Remove", style: "destructive", onPress: () => saveGoals(goals.filter((_, i) => i !== idx)) },
+    ]);
+  };
+  const classParts = [attrs["race"] as string | undefined, attrs["class"] as string | undefined, attrs["level"] ? `Level ${String(attrs["level"])}` : ""]
     .filter(Boolean)
     .join(" · ");
 
@@ -148,6 +170,41 @@ export default function CharacterDetailScreen() {
               </View>
             </View>
           ) : null}
+
+          {/* Goals */}
+          <View style={{ marginTop: 16, marginBottom: 16 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#4A8060", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
+              Character Goals
+            </Text>
+            {goals.map((g, i) => (
+              <Pressable
+                key={i}
+                onLongPress={() => deleteGoal(i)}
+                style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C10" }}
+              >
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#4A8060", marginRight: 8, marginTop: 1 }}>◇</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 1, lineHeight: 20 }}>{g}</Text>
+              </Pressable>
+            ))}
+            <View style={{ flexDirection: "row", alignItems: "center", marginTop: goals.length > 0 ? 10 : 0 }}>
+              <TextInput
+                value={goalInput}
+                onChangeText={setGoalInput}
+                placeholder="Add a goal…"
+                placeholderTextColor="#2C201440"
+                onSubmitEditing={addGoal}
+                returnKeyType="done"
+                blurOnSubmit={false}
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#4A806030", paddingBottom: 4 }}
+              />
+              <Pressable onPress={addGoal} style={{ marginLeft: 8, paddingHorizontal: 12, paddingVertical: 4, borderWidth: 1, borderColor: "#4A806040", borderRadius: 2 }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#4A8060" }}>Add</Text>
+              </Pressable>
+            </View>
+            {goals.length > 0 && (
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D50", marginTop: 6 }}>Long press a goal to remove it</Text>
+            )}
+          </View>
 
           <GoldRule />
 

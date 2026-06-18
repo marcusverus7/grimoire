@@ -45,6 +45,16 @@ function randomName(): string {
   return `${g} ${f}`;
 }
 
+type NpcArchetype = { label: string; role: string; hp: string; ac: string; summary: string };
+const NPC_ARCHETYPES: NpcArchetype[] = [
+  { label: "Villain", role: "Antagonist", hp: "80", ac: "16", summary: "A powerful enemy with hidden motives." },
+  { label: "Merchant", role: "Merchant", hp: "12", ac: "10", summary: "A trader dealing in goods and information." },
+  { label: "Guard", role: "City Guard", hp: "16", ac: "14", summary: "A soldier keeping the peace." },
+  { label: "Informant", role: "Informant", hp: "8", ac: "11", summary: "Knows things they shouldn't." },
+  { label: "Innkeeper", role: "Innkeeper", hp: "14", ac: "10", summary: "Welcoming host, keeper of local gossip." },
+  { label: "Sage", role: "Scholar", hp: "10", ac: "10", summary: "A learned advisor with specialized knowledge." },
+];
+
 export default function EntityFormScreen() {
   const { id: campaignId, entityId } = useLocalSearchParams<{
     id: string;
@@ -414,6 +424,38 @@ export default function EntityFormScreen() {
             </Pressable>
           )}
         </View>
+
+        {/* NPC Archetype strip — new NPC only */}
+        {isNew && kind === "npc" && (
+          <>
+            <Label text="Start from archetype (optional)" />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }} contentContainerStyle={{ paddingBottom: 2 }}>
+              {NPC_ARCHETYPES.map((a) => (
+                <Pressable
+                  key={a.label}
+                  onPress={() => {
+                    setRole(a.role);
+                    setHp(a.hp);
+                    setAc(a.ac);
+                    if (!summary) setSummary(a.summary);
+                    if (!name) setName(randomName());
+                  }}
+                  style={{
+                    marginRight: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 7,
+                    borderRadius: 2,
+                    borderWidth: 1,
+                    borderColor: role === a.role ? "#7A2418" : "#A07A2C40",
+                    backgroundColor: role === a.role ? "#7A241810" : "transparent",
+                  }}
+                >
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: role === a.role ? "#7A2418" : "#5A4D3E" }}>{a.label}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </>
+        )}
 
         {/* Name */}
         <Label text="Name" />
