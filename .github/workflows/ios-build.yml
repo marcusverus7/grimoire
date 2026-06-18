@@ -119,13 +119,10 @@ jobs:
             <string>app-store</string>
             <key>teamID</key>
             <string>JQS67937W6</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>com.grimoirettrpg.app</key>
-              <string>marcusverus7grimoire 3b9e7e3dd9f7e6e34e1157ae9ba3e2fb ios_app_store 1781753015</string>
-            </dict>
             <key>signingStyle</key>
             <string>manual</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
           </dict>
           </plist>
           PLIST
@@ -178,8 +175,7 @@ jobs:
             -archivePath "$GITHUB_WORKSPACE/grimoire.xcarchive" \
             -destination "generic/platform=iOS" \
             CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER="marcusverus7grimoire 3b9e7e3dd9f7e6e34e1157ae9ba3e2fb ios_app_store 1781753015" \
-            CODE_SIGN_IDENTITY="iPhone Distribution" \
+            CODE_SIGN_IDENTITY="Apple Distribution: Mark Loughran (JQS67937W6)" \
             DEVELOPMENT_TEAM=JQS67937W6 \
             NODE_BINARY="$(which node)" \
             CLI_PATH="/tmp/expo-filter.js" \
