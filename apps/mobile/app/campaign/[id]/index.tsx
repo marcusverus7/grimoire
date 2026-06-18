@@ -1113,6 +1113,8 @@ export default function CampaignDetailScreen() {
               { label: "Calendar", path: `/campaign/${id}/calendar`, gold: true },
               { label: "Items", path: `/campaign/${id}/magic-items`, gold: true },
               { label: "Downtime", path: `/campaign/${id}/downtime`, gold: true },
+              { label: "Reputation", path: `/campaign/${id}/reputation`, gold: true },
+              { label: "Room Gen", path: `/campaign/${id}/room-gen`, gold: true },
               { label: "Search", path: `/campaign/${id}/search`, gold: true },
               { label: "Notes", path: `/campaign/${id}/notes`, gold: true },
               { label: "Quests", path: `/campaign/${id}/quests`, gold: true },
