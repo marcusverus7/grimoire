@@ -52,6 +52,7 @@ export default function TrackerScreen() {
   const [showDice, setShowDice] = useState(false);
   const [conditionTarget, setConditionTarget] = useState<TrackerEntry | null>(null);
   const [round, setRound] = useState(1);
+  const [hideDead, setHideDead] = useState(true);
 
   const load = useCallback(() => {
     const entities = db
@@ -158,9 +159,18 @@ export default function TrackerScreen() {
     ]);
   };
 
-  const sorted = sortByInit
-    ? [...entries].sort((a, b) => (b.initiative ?? -1) - (a.initiative ?? -1))
+  const visible = hideDead
+    ? entries.filter((e) => {
+        const st = (e.attrs as Attrs | null)?.["npcStatus"];
+        return st !== "dead";
+      })
     : entries;
+
+  const sorted = sortByInit
+    ? [...visible].sort((a, b) => (b.initiative ?? -1) - (a.initiative ?? -1))
+    : visible;
+
+  const deadCount = entries.length - visible.length;
 
   return (
     <>
@@ -215,10 +225,25 @@ export default function TrackerScreen() {
                 </Pressable>
               </View>
               {/* Sort + count row */}
-              <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, gap: 8 }}>
                 <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D", flex: 1 }}>
-                  {entries.length} combatant{entries.length !== 1 ? "s" : ""}
+                  {sorted.length} combatant{sorted.length !== 1 ? "s" : ""}{deadCount > 0 ? ` · ${deadCount} dead` : ""}
                 </Text>
+                {deadCount > 0 && (
+                  <Pressable
+                    onPress={() => setHideDead((v) => !v)}
+                    style={{
+                      paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1,
+                      borderColor: hideDead ? "#7A2418" : "#7A241840",
+                      borderRadius: 10,
+                      backgroundColor: hideDead ? "#7A241812" : "transparent",
+                    }}
+                  >
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#7A2418" }}>
+                      {hideDead ? "☠ Hidden" : "Show Dead"}
+                    </Text>
+                  </Pressable>
+                )}
                 <Pressable
                   onPress={() => setSortByInit((v) => !v)}
                   style={{
@@ -231,7 +256,7 @@ export default function TrackerScreen() {
                   }}
                 >
                   <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C" }}>
-                    {sortByInit ? "Initiative Order" : "Sort by Initiative"}
+                    {sortByInit ? "Initiative Order" : "Sort by Init"}
                   </Text>
                 </Pressable>
               </View>
