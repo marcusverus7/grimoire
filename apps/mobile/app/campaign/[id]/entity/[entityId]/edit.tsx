@@ -69,6 +69,8 @@ export default function EntityFormScreen() {
   const [body, setBody] = useState<RichTextNode | null>(null);
   const [visibility, setVisibility] = useState<"table" | "gm_only">("table");
   const [questStatus, setQuestStatus] = useState<string>("rumoured");
+  const [questReward, setQuestReward] = useState("");
+  const [questGiver, setQuestGiver] = useState("");
   const [interestedEntityIds, setInterestedEntityIds] = useState<string[]>([]);
   const [campaignCharacters, setCampaignCharacters] = useState<{ id: string; name: string; kind: string }[]>([]);
   const [factionRelationships, setFactionRelationships] = useState<{ factionId: string; type: string }[]>([]);
@@ -86,6 +88,8 @@ export default function EntityFormScreen() {
   const [pcBond, setPcBond] = useState("");
   const [pcFlaw, setPcFlaw] = useState("");
   const [parentId, setParentId] = useState<string | null>(null);
+  const [region, setRegion] = useState("");
+  const [population, setPopulation] = useState("");
   const [locationId, setLocationId] = useState<string | null>(null);
   const [campaignLocations, setCampaignLocations] = useState<{ id: string; name: string }[]>([]);
   const [customAttrs, setCustomAttrs] = useState<{ key: string; value: string }[]>([]);
@@ -122,6 +126,8 @@ export default function EntityFormScreen() {
       const attrs = entity.attrs as Record<string, unknown> | null;
       setExistingAttrs(attrs ?? {});
       if (attrs?.["questStatus"]) setQuestStatus(String(attrs["questStatus"]));
+      if (typeof attrs?.["questReward"] === "string") setQuestReward(attrs["questReward"]);
+      if (typeof attrs?.["questGiver"] === "string") setQuestGiver(attrs["questGiver"]);
       if (Array.isArray(attrs?.["interestedEntityIds"])) setInterestedEntityIds(attrs["interestedEntityIds"] as string[]);
       if (Array.isArray(attrs?.["relationships"])) setFactionRelationships(attrs["relationships"] as { factionId: string; type: string }[]);
       if (typeof attrs?.["heldBy"] === "string") setHeldBy(attrs["heldBy"]);
@@ -140,6 +146,8 @@ export default function EntityFormScreen() {
       if (attrs?.["initiative"]) setInitiative(String(attrs["initiative"]));
       if (attrs?.["gmSecret"]) setGmSecret(String(attrs["gmSecret"]));
       if (typeof attrs?.["parentId"] === "string") setParentId(attrs["parentId"]);
+      if (typeof attrs?.["region"] === "string") setRegion(attrs["region"]);
+      if (typeof attrs?.["population"] === "string") setPopulation(attrs["population"]);
       if (typeof attrs?.["locationId"] === "string") setLocationId(attrs["locationId"]);
       if (Array.isArray(attrs?.["customAttrs"])) setCustomAttrs(attrs["customAttrs"] as { key: string; value: string }[]);
       if (Array.isArray(attrs?.["tags"])) setTags(attrs["tags"] as string[]);
@@ -209,10 +217,14 @@ export default function EntityFormScreen() {
       const attrs: Record<string, unknown> = { ...existingAttrs };
       if (kind === "quest") {
         attrs["questStatus"] = questStatus;
+        if (questReward.trim()) attrs["questReward"] = questReward.trim(); else delete attrs["questReward"];
+        if (questGiver.trim()) attrs["questGiver"] = questGiver.trim(); else delete attrs["questGiver"];
         if (interestedEntityIds.length > 0) attrs["interestedEntityIds"] = interestedEntityIds;
         else delete attrs["interestedEntityIds"];
       } else {
         delete attrs["questStatus"];
+        delete attrs["questReward"];
+        delete attrs["questGiver"];
         delete attrs["interestedEntityIds"];
       }
       if (kind === "faction") {
@@ -271,8 +283,12 @@ export default function EntityFormScreen() {
       if (gmSecret.trim()) attrs["gmSecret"] = gmSecret.trim(); else delete attrs["gmSecret"];
       if (kind === "location") {
         if (parentId) attrs["parentId"] = parentId; else delete attrs["parentId"];
+        if (region.trim()) attrs["region"] = region.trim(); else delete attrs["region"];
+        if (population.trim()) attrs["population"] = population.trim(); else delete attrs["population"];
       } else {
         delete attrs["parentId"];
+        delete attrs["region"];
+        delete attrs["population"];
       }
       if ((kind === "npc" || kind === "pc" || kind === "item") && locationId) {
         attrs["locationId"] = locationId;
@@ -605,6 +621,24 @@ export default function EntityFormScreen() {
                 </Pressable>
               ))}
             </View>
+
+            {/* Quest Giver + Reward */}
+            <Label text="Quest Giver (optional)" />
+            <TextInput
+              value={questGiver}
+              onChangeText={setQuestGiver}
+              placeholder="Who assigned this quest?"
+              placeholderTextColor="#2C201440"
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20 }}
+            />
+            <Label text="Reward (optional)" />
+            <TextInput
+              value={questReward}
+              onChangeText={setQuestReward}
+              placeholder="500gp, magic item, information..."
+              placeholderTextColor="#2C201440"
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20 }}
+            />
 
             {/* Interested Characters */}
             {campaignCharacters.length > 0 && (
@@ -965,6 +999,32 @@ export default function EntityFormScreen() {
               ))}
             </ScrollView>
           </>
+        )}
+
+        {/* Location: Region + Population */}
+        {kind === "location" && (
+          <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
+            <View style={{ flex: 1 }}>
+              <Label text="Region (optional)" />
+              <TextInput
+                value={region}
+                onChangeText={setRegion}
+                placeholder="Northern Wastes"
+                placeholderTextColor="#2C201440"
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8 }}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Label text="Population (optional)" />
+              <TextInput
+                value={population}
+                onChangeText={setPopulation}
+                placeholder="~2,000"
+                placeholderTextColor="#2C201440"
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8 }}
+              />
+            </View>
+          </View>
         )}
 
         {/* Currently At (npc/pc/item only) */}

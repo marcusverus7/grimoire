@@ -245,9 +245,9 @@ export default function SessionFormScreen() {
         <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 10, marginBottom: 20 }}>
           {([
             { label: "Today", days: 0 },
-            { label: "Tomorrow", days: 1 },
-            { label: "+1 week", days: 7 },
-            { label: "+2 weeks", days: 14 },
+            { label: "Yesterday", days: -1 },
+            { label: "Last Week", days: -7 },
+            { label: "2 Weeks Ago", days: -14 },
           ] as const).map((chip) => (
             <Pressable
               key={chip.label}

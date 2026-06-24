@@ -6,6 +6,14 @@ read Part IV (build plan) before starting any phase.
 
 ## Doctrine (do not violate in any code you write)
 
+- **Parity across platforms.** Every feature shipped must work identically on
+  iOS, Android, and Web (recap-web). Before marking any phase complete, verify
+  the change is present and functional on all three. If a platform cannot support
+  a feature (e.g. native-only API unavailable on Web), flag it explicitly to the
+  user before proceeding — never silently ship partial coverage. Build triggers:
+  any code change to `apps/mobile` must trigger the iOS GitHub Actions build AND
+  an EAS Android APK build; any change to `apps/recap-web` must deploy to Vercel.
+
 - **Campaigns belong to the group, not the GM.** No `owner_id` on campaigns;
   ownership lives in `memberships`, the GM seat is a transferable role.
 - **Characters belong to players, not campaigns.** `character_profiles` (the

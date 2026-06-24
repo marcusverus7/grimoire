@@ -505,6 +505,42 @@ export default function EntityDetailScreen() {
           </View>
         ) : null}
 
+        {/* Quest giver + reward */}
+        {entity.kind === "quest" && attrs != null && (attrs["questGiver"] || attrs["questReward"]) ? (
+          <View style={{ marginBottom: 16, gap: 8 }}>
+            {typeof attrs["questGiver"] === "string" && attrs["questGiver"] ? (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 0.8 }}>Given by</Text>
+                <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 14, color: "#2C2014" }}>{String(attrs["questGiver"])}</Text>
+              </View>
+            ) : null}
+            {typeof attrs["questReward"] === "string" && attrs["questReward"] ? (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 0.8 }}>Reward</Text>
+                <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 14, color: "#4A8060" }}>{String(attrs["questReward"])}</Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+
+        {/* Location region + population */}
+        {entity.kind === "location" && attrs != null && (attrs["region"] || attrs["population"]) ? (
+          <View style={{ flexDirection: "row", gap: 16, marginBottom: 16 }}>
+            {typeof attrs["region"] === "string" && attrs["region"] ? (
+              <View>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 2 }}>Region</Text>
+                <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 14, color: "#2C2014" }}>{String(attrs["region"])}</Text>
+              </View>
+            ) : null}
+            {typeof attrs["population"] === "string" && attrs["population"] ? (
+              <View>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 2 }}>Population</Text>
+                <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 14, color: "#2C2014" }}>{String(attrs["population"])}</Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+
         {/* Faction relationships */}
         {entity.kind === "faction" && Array.isArray(attrs?.["relationships"]) && (attrs["relationships"] as { factionId: string; type: string }[]).length > 0 ? (
           <View style={{ marginBottom: 16 }}>
