@@ -34,7 +34,8 @@ ISSUER   = "de9eacfa-8bf1-4d2e-bbcb-e6ef66dac8c4"
 APP_ID   = "6781072827"
 BUNDLE   = "com.grimoirettrpg.app"
 TEAM_ID  = "JQS67937W6"
-REPO     = "markloughran7/grimoire"  # gh secret set needs this
+REPO     = "marcusverus7/grimoire"
+P12_PASS = b"grimoire"
 KEY_PATH = Path("apps/mobile/AuthKey_V7JYZ8YUDH.p8")
 
 # ── JWT auth ─────────────────────────────────────────────────────────────────
@@ -129,13 +130,15 @@ else:
         resp = create_cert()
     except urllib.error.HTTPError as e:
         if e.code == 409:
-            # At the 2-cert limit — list all certs and revoke the keyless one (63RTDJHPA3)
-            print("  At cert limit. Revoking keyless cert 63RTDJHPA3 created in failed prior run…")
-            all_certs = api("GET", "/v1/certificates?filter[certificateType]=DISTRIBUTION&limit=10")
+            # At the 2-cert limit — revoke the most recently created one (no key for it)
+            print("  At cert limit. Listing certs to find one to revoke…")
+            all_certs = api("GET", "/v1/certificates?filter[certificateType]=DISTRIBUTION&limit=10&sort=-id")
             for c in all_certs["data"]:
-                print(f"    Cert: {c['id']} {c['attributes']['name']} serial={c['attributes']['serialNumber']}")
-            # Revoke the one we created in prior run (no key for it)
-            api("DELETE", "/v1/certificates/63RTDJHPA3", ok204=True)
+                print(f"    Cert: {c['id']} {c['attributes']['name']} expires={c['attributes']['expirationDate']}")
+            # Revoke the most recently created (first in sort=-id order) — we don't have its key
+            to_revoke = all_certs["data"][0]["id"]
+            print(f"  Revoking {to_revoke}…")
+            api("DELETE", f"/v1/certificates/{to_revoke}", ok204=True)
             print("  Revoked. Retrying cert creation…")
             resp = create_cert()
         else:
@@ -157,7 +160,7 @@ p12_bytes = pkcs12.serialize_key_and_certificates(
     key=private_key,
     cert=cert_obj,
     cas=None,
-    encryption_algorithm=serialization.NoEncryption()
+    encryption_algorithm=serialization.BestAvailableEncryption(P12_PASS)
 )
 p12_b64 = base64.b64encode(p12_bytes).decode()
 print(f"  P12 size: {len(p12_bytes)} bytes")
@@ -175,7 +178,7 @@ new_profile = api("POST", "/v1/profiles", {
     "data": {
         "type": "profiles",
         "attributes": {
-            "name": "Grimoire AppStore Distribution",
+            "name": "Grimoire AppStore",
             "profileType": "IOS_APP_STORE"
         },
         "relationships": {
@@ -201,12 +204,12 @@ def gh_secret(name, value):
     if result.returncode != 0:
         print(f"  ERROR setting {name}: {result.stderr}", file=sys.stderr)
         return False
-    print(f"  Set {name} ✓")
+    print(f"  Set {name} ok")
     return True
 
 ok1 = gh_secret("IOS_DIST_P12_BASE64", p12_b64)
 ok2 = gh_secret("IOS_PROVISION_PROFILE_BASE64", profile_b64)
-ok3 = gh_secret("IOS_DIST_P12_PASSWORD", "")  # no password
+ok3 = gh_secret("IOS_DIST_P12_PASSWORD", P12_PASS.decode())
 
 if ok1 and ok2 and ok3:
     print("\nAll secrets updated. Ready to trigger build.")

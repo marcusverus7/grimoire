@@ -10,6 +10,7 @@ dist/
 # TestFlight feedback pulls (contains tester PII + screenshots)
 testflight-feedback/
 
-# Temp signing key (created by fix_signing.py, deleted on success)
+# Temp signing files (created by signing scripts, deleted on success)
 apps/mobile/dist_key_tmp.pem
 apps/mobile/ios_dist_debug.p12
+apps/mobile/_signing_tmp/
