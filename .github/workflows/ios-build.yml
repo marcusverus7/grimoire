@@ -16,7 +16,7 @@ on:
 jobs:
   build:
     runs-on: macos-15
-    timeout-minutes: 150
+    timeout-minutes: 240
     env:
       COREPACK_INTEGRITY_KEYS: "0"
 
@@ -122,6 +122,15 @@ jobs:
           restore-keys: |
             pods-${{ runner.os }}-
 
+      - name: Cache Xcode DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: derived-${{ runner.os }}-${{ hashFiles('apps/mobile/ios/Podfile.lock') }}-${{ hashFiles('apps/mobile/package.json') }}
+          restore-keys: |
+            derived-${{ runner.os }}-${{ hashFiles('apps/mobile/ios/Podfile.lock') }}-
+            derived-${{ runner.os }}-
+
       - name: Install CocoaPods
         working-directory: apps/mobile/ios
         run: |
@@ -204,6 +213,8 @@ jobs:
             -configuration Release \
             -archivePath "$GITHUB_WORKSPACE/grimoire.xcarchive" \
             -destination "generic/platform=iOS" \
+            -parallelizeTargets \
+            -jobs $(sysctl -n hw.ncpu) \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
             CODE_SIGN_IDENTITY="$SIGN_IDENTITY" \
