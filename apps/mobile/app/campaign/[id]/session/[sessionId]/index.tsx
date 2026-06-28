@@ -231,7 +231,8 @@ export default function SessionDetailScreen() {
       />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-parchment-deep"
+        className="flex-1"
+        style={{ backgroundColor: "transparent" }}
         contentContainerStyle={{ padding: 20 }}
       >
         {/* Prep shortcut for planned/in_progress sessions */}

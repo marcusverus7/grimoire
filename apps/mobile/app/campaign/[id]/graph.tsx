@@ -219,7 +219,7 @@ export default function GraphScreen() {
     <>
       <Stack.Screen options={{ title: "Relationship Map" }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
-      <ScrollView className="flex-1 bg-parchment" contentContainerStyle={{ padding: 16 }}>
+      <ScrollView className="flex-1" style={{ backgroundColor: "transparent" }} contentContainerStyle={{ padding: 16 }}>
         {nodes.length === 0 ? (
           <View style={{ paddingTop: 80, alignItems: "center" }}>
             <Text

@@ -298,7 +298,7 @@ export default function EntityDetailScreen() {
         }}
       />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
-      <ScrollView className="flex-1 bg-parchment-deep" contentContainerStyle={{ padding: 20 }}>
+      <ScrollView className="flex-1" style={{ backgroundColor: "transparent" }} contentContainerStyle={{ padding: 20 }}>
         {/* Header */}
         {typeof attrs?.["imageUri"] === "string" && (
           <View style={{ alignItems: "center", marginBottom: 16 }}>
