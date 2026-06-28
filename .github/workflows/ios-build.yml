@@ -16,7 +16,7 @@ on:
 jobs:
   build:
     runs-on: macos-15
-    timeout-minutes: 240
+    timeout-minutes: 120
     env:
       COREPACK_INTEGRITY_KEYS: "0"
 
@@ -96,6 +96,12 @@ jobs:
           security create-keychain -p "temppass" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "temppass" build.keychain
+          # CRITICAL: disable the keychain auto-lock timeout (default 300s) and
+          # lock-on-sleep. Without this the keychain re-locks during the long
+          # Xcode compile, then codesign HANGS FOREVER in the "Embed Pods
+          # Frameworks" phase waiting for keychain auth that never comes in
+          # headless CI — the cause of every prior 2.5–4h build timeout.
+          security set-keychain-settings build.keychain
           security import "$HOME/grimoire-creds/ios_dist.p12" \
             -k build.keychain \
             -P "$IOS_DIST_P12_PASSWORD" \
