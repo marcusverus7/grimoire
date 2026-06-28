@@ -57,7 +57,7 @@ export function RecapView({ recap }: { recap: RecapData }) {
           </p>
           {recap.quotes.map((q, i) => (
             <blockquote key={i} style={{ borderLeft: "2px solid rgba(160,122,44,0.3)", paddingLeft: "1rem", marginLeft: 0, marginBottom: "1.25rem" }}>
-              <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.1rem", fontStyle: "italic", color: "#ECE3CF", margin: "0 0 0.35rem" }}>
+              <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.1rem", fontStyle: "italic", color: "#3A2C1A", margin: "0 0 0.35rem" }}>
                 &ldquo;{q.text}&rdquo;
               </p>
               {q.attribution && (
@@ -133,7 +133,7 @@ const styles = {
     fontFamily: "'Cormorant Garamond', Georgia, serif",
     fontSize: "1.5rem",
     fontWeight: 600,
-    color: "#ECE3CF",
+    color: "#2C2014",
     lineHeight: 1.35,
     margin: "0 0 0.75rem",
   },
@@ -141,7 +141,7 @@ const styles = {
     display: "block" as const,
     fontFamily: "'Inter', sans-serif",
     fontSize: "0.75rem",
-    color: "rgba(236, 227, 207, 0.4)",
+    color: "rgba(44, 32, 20, 0.5)",
     letterSpacing: "0.05em",
     marginBottom: "1.5rem",
   },
@@ -152,7 +152,7 @@ const styles = {
   body: {
     lineHeight: 1.8,
     fontSize: "1.05rem",
-    color: "#ECE3CF",
+    color: "#2C2014",
   },
   paragraph: {
     margin: "0 0 1.25rem",
@@ -160,7 +160,7 @@ const styles = {
   },
   hookParagraph: {
     fontStyle: "italic" as const,
-    color: "rgba(236, 227, 207, 0.75)",
+    color: "rgba(44, 32, 20, 0.8)",
     borderLeft: "2px solid #A07A2C",
     paddingLeft: "1rem",
     marginTop: "1.5rem",
@@ -196,7 +196,7 @@ const styles = {
   footerText: {
     fontFamily: "'Inter', sans-serif",
     fontSize: "0.7rem",
-    color: "rgba(236, 227, 207, 0.3)",
+    color: "rgba(44, 32, 20, 0.45)",
     margin: 0,
   },
   footerBrand: {

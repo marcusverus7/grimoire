@@ -108,9 +108,16 @@ The ward-stones are cracked, and Sister Maren says they cannot be renewed. Whate
 const styles = {
   container: {
     maxWidth: 640,
-    margin: "0 auto" as const,
-    padding: "2rem 1.5rem",
-    minHeight: "100vh",
+    margin: "2.5rem auto" as const,
+    padding: "2.75rem 2.25rem",
+    backgroundColor: "#EAD9B0",
+    backgroundImage: "url(/textures/parchment-bg.png)",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    borderRadius: 6,
+    border: "1px solid #5a3d23",
+    boxShadow: "0 12px 48px rgba(0,0,0,0.55)",
+    color: "#2C2014",
   } as const,
   centered: {
     display: "flex" as const,
@@ -145,8 +152,7 @@ const styles = {
     marginBottom: "0.75rem",
   },
   subtitle: {
-    color: "#ECE3CF",
-    opacity: 0.6,
+    color: "#5A4D3E",
     marginBottom: "1.5rem",
     lineHeight: 1.6,
   },
