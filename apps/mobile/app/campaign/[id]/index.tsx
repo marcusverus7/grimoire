@@ -404,7 +404,7 @@ export default function CampaignDetailScreen() {
         }}
       />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
-      <ScrollView className="flex-1 bg-parchment" contentContainerStyle={{ padding: 16 }} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
+      <ScrollView className="flex-1" style={{ backgroundColor: "transparent" }} contentContainerStyle={{ padding: 16 }} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
         {/* In-Play bar — shown when a session is in progress */}
         {inProgressSession ? (
           <View style={{ marginBottom: 16, borderRadius: 2, overflow: "hidden", borderWidth: 1, borderColor: "#7A241840" }}>

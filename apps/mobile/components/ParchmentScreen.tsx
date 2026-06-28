@@ -1,15 +1,29 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import type { ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
   edges?: ("top" | "bottom" | "left" | "right")[];
+  /**
+   * Render the aged-parchment paper texture as the base layer. Default true.
+   * Screens whose content sits on an opaque background won't show it through —
+   * make the content container transparent to reveal the texture. Capture-heavy
+   * screens (editors/forms) can pass `texture={false}` for a flatter surface.
+   */
+  texture?: boolean;
 }
 
-export function ParchmentScreen({ children, edges = ["top", "bottom"] }: Props) {
+export function ParchmentScreen({ children, edges = ["top", "bottom"], texture = true }: Props) {
   return (
     <View style={styles.container}>
+      {texture && (
+        <Image
+          source={require("../assets/textures/parchment-bg.png")}
+          style={StyleSheet.absoluteFill}
+          resizeMode="cover"
+        />
+      )}
       {children}
       {edges.includes("top") && (
         <LinearGradient
@@ -48,7 +62,7 @@ export function ParchmentScreen({ children, edges = ["top", "bottom"] }: Props) 
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, position: "relative" },
+  container: { flex: 1, position: "relative", backgroundColor: "#EAD9B0" },
   top: { position: "absolute", top: 0, left: 0, right: 0, height: 60 },
   bottom: { position: "absolute", bottom: 0, left: 0, right: 0, height: 60 },
   left: { position: "absolute", top: 0, bottom: 0, left: 0, width: 24 },

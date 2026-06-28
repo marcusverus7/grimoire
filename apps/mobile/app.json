@@ -2,7 +2,7 @@
   "expo": {
     "name": "Grimoire",
     "slug": "grimoire",
-    "version": "1.9.15",
+    "version": "1.9.16",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "grimoire",
@@ -12,7 +12,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.grimoirettrpg.app",
       "appleTeamId": "JQS67937W6",
-      "buildNumber": "5",
+      "buildNumber": "6",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryUsageDescription": "Grimoire uses your photo library to add images to entities and campaigns.",
