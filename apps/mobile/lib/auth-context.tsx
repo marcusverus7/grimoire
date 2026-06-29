@@ -10,6 +10,7 @@ type AuthContextType = {
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  continueAsGuest: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -103,12 +104,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn('signOut error (clearing local session anyway):', e);
+    }
+    setSession(null);
+    setKv('supabase_session', '');
+  };
+
+  // Continue without an account — local guest session, no Supabase needed.
+  // Lets testers (and offline users) reach the app without the auth gate.
+  const continueAsGuest = () => {
+    const guest = { user: { id: 'guest', email: 'guest@grimoire.local' }, access_token: 'guest' };
+    setSession(guest as any);
+    setKv('supabase_session', JSON.stringify(guest));
   };
 
   return (
-    <AuthContext.Provider value={{ session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, loading, signUp, signIn, signOut, continueAsGuest }}>
       {children}
     </AuthContext.Provider>
   );

@@ -7,7 +7,7 @@ import { GoldRule } from '@/components/GoldRule';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, continueAsGuest } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -86,6 +86,22 @@ export default function LoginScreen() {
             Don't have an account? <Text style={{ fontFamily: 'Inter_600SemiBold' }}>Sign up</Text>
           </Text>
         </Pressable>
+
+        <View style={{ marginTop: 28 }}>
+          <GoldRule />
+          <Pressable
+            onPress={() => { continueAsGuest(); router.replace('/(tabs)'); }}
+            disabled={loading}
+            style={{ borderWidth: 1, borderColor: '#C4B49A', borderRadius: 2, padding: 13, alignItems: 'center', marginTop: 20 }}
+          >
+            <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#2C2014' }}>
+              Continue without an account
+            </Text>
+          </Pressable>
+          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, color: '#8A7D6D', textAlign: 'center', marginTop: 8 }}>
+            Everything is stored on your device. You can sign in later to back up.
+          </Text>
+        </View>
       </ScrollView>
     </ParchmentScreen>
   );
