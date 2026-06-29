@@ -48,20 +48,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [loading, session, router]);
 
-  // Listen for auth changes
+  // Listen for auth changes. Wrapped defensively so a supabase init/runtime
+  // error can never crash app startup — auth is non-essential to booting.
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
-      setSession(sess ?? null);
-      if (sess) {
-        setKv('supabase_session', JSON.stringify(sess));
-      } else {
-        setKv('supabase_session', '');
-      }
-    });
+    try {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+        setSession(sess ?? null);
+        if (sess) {
+          setKv('supabase_session', JSON.stringify(sess));
+        } else {
+          setKv('supabase_session', '');
+        }
+      });
 
-    return () => {
-      subscription?.unsubscribe();
-    };
+      return () => {
+        subscription?.unsubscribe();
+      };
+    } catch (e) {
+      console.warn('Auth listener failed to attach:', e);
+      return undefined;
+    }
   }, []);
 
   const signUp = async (email: string, password: string) => {
