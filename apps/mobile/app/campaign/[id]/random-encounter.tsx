@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { db } from "@/lib/db";
+import { color, withAlpha } from "@/lib/theme";
 import { schema } from "@grimoire/core";
 import { eq } from "drizzle-orm";
 
@@ -389,7 +390,7 @@ const NIGHT_NOTES = [
 
 const TERRAINS = ["Forest", "Road", "Dungeon", "City", "Mountain", "Desert", "Swamp", "Coast", "Underdark"];
 const TIERS = [
-  { key: "low", label: "Low", color: "#2D7A4F" },
+  { key: "low", label: "Low", color: color.successBright },
   { key: "medium", label: "Medium", color: "#8A5C1A" },
   { key: "high", label: "High", color: "#8A1A1A" },
   { key: "deadly", label: "Deadly", color: "#3A0A0A" },
@@ -465,13 +466,13 @@ export default function RandomEncounterScreen() {
     <ParchmentScreen>
       <Stack.Screen options={{ title: "Random Encounter", headerBackTitle: "Campaign" }} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 4 }}>
           Random Encounter
         </Text>
         <GoldRule />
 
         {/* Terrain selector */}
-        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
           Terrain
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
@@ -481,17 +482,17 @@ export default function RandomEncounterScreen() {
               onPress={() => setTerrain(t)}
               style={{
                 paddingHorizontal: 12, paddingVertical: 6, marginRight: 8, borderRadius: 2,
-                backgroundColor: terrain === t ? "#2C2014" : "#E8DCC8",
-                borderWidth: 1, borderColor: terrain === t ? "#2C2014" : "#C4B49A",
+                backgroundColor: terrain === t ? color.ink : color.parchmentEdge,
+                borderWidth: 1, borderColor: terrain === t ? color.ink : color.border,
               }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: terrain === t ? "#C9A24A" : "#4A3F32" }}>{t}</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: terrain === t ? color.goldBright : color.borderDark }}>{t}</Text>
             </Pressable>
           ))}
         </ScrollView>
 
         {/* Danger tier */}
-        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
           Danger Level
         </Text>
         <View style={{ flexDirection: "row", marginBottom: 16, gap: 8 }}>
@@ -501,11 +502,11 @@ export default function RandomEncounterScreen() {
               onPress={() => setTier(t.key)}
               style={{
                 flex: 1, paddingVertical: 8, borderRadius: 2, alignItems: "center",
-                backgroundColor: tier === t.key ? t.color : "#E8DCC8",
-                borderWidth: 1, borderColor: tier === t.key ? t.color : "#C4B49A",
+                backgroundColor: tier === t.key ? t.color : color.parchmentEdge,
+                borderWidth: 1, borderColor: tier === t.key ? t.color : color.border,
               }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: tier === t.key ? "#F5EDD8" : "#4A3F32" }}>{t.label}</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: tier === t.key ? color.parchmentWarm : color.borderDark }}>{t.label}</Text>
             </Pressable>
           ))}
         </View>
@@ -515,12 +516,12 @@ export default function RandomEncounterScreen() {
           onPress={() => setIsNight(n => !n)}
           style={{
             flexDirection: "row", alignItems: "center", justifyContent: "center",
-            backgroundColor: isNight ? "#1A1430" : "#E8DCC8",
+            backgroundColor: isNight ? "#1A1430" : color.parchmentEdge,
             borderRadius: 2, padding: 10, marginBottom: 20,
-            borderWidth: 1, borderColor: isNight ? "#4A3A7A" : "#C4B49A",
+            borderWidth: 1, borderColor: isNight ? "#4A3A7A" : color.border,
           }}
         >
-          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: isNight ? "#B0A0E0" : "#4A3F32" }}>
+          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: isNight ? "#B0A0E0" : color.borderDark }}>
             {isNight ? "🌙 Night" : "☀ Day"} — tap to toggle
           </Text>
         </Pressable>
@@ -528,19 +529,19 @@ export default function RandomEncounterScreen() {
         {/* Generate */}
         <Pressable
           onPress={() => setResult(rollEncounter(terrain, tier, isNight))}
-          style={{ backgroundColor: "#2C2014", borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 24 }}
+          style={{ backgroundColor: color.ink, borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 24 }}
         >
-          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: "#C9A24A", letterSpacing: 1 }}>
+          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: color.goldBright, letterSpacing: 1 }}>
             ⚄ Roll Encounter
           </Text>
         </Pressable>
 
         {/* Result */}
         {result && (
-          <View style={{ backgroundColor: "#E8DCC820", borderRadius: 4, borderWidth: 1, borderColor: "#A07A2C40", padding: 16, gap: 14 }}>
+          <View style={{ backgroundColor: withAlpha("parchmentEdge", 0x20 / 255), borderRadius: 4, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), padding: 16, gap: 14 }}>
             {/* Creatures */}
             <View>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
                 Encounter
               </Text>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -548,17 +549,17 @@ export default function RandomEncounterScreen() {
                   <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 15, color: tierColor }}>
                     {result.creatures}
                   </Text>
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#4A3F32", marginTop: 2 }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.borderDark, marginTop: 2 }}>
                     × {result.count}
                   </Text>
                 </View>
                 <Pressable onPress={() => reroll("creatures")} style={{ padding: 6 }}>
-                  <Text style={{ fontSize: 14, color: "#A07A2C" }}>⚄</Text>
+                  <Text style={{ fontSize: 14, color: color.gold }}>⚄</Text>
                 </Pressable>
               </View>
             </View>
 
-            <View style={{ height: 1, backgroundColor: "#A07A2C20" }} />
+            <View style={{ height: 1, backgroundColor: withAlpha("gold", 0x20 / 255) }} />
 
             {/* Tactic */}
             <ResultRow label="Tactic" value={result.tactic} onReroll={() => reroll("tactic")} />
@@ -578,22 +579,22 @@ export default function RandomEncounterScreen() {
             <View style={{ flexDirection: "row", gap: 8, marginTop: 4 }}>
               <Pressable
                 onPress={() => setResult(rollEncounter(terrain, tier, isNight))}
-                style={{ flex: 1, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, padding: 10, alignItems: "center" }}
+                style={{ flex: 1, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, padding: 10, alignItems: "center" }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C" }}>⚄ Re-roll All</Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold }}>⚄ Re-roll All</Text>
               </Pressable>
               <Pressable
                 onPress={saveToNotes}
-                style={{ flex: 1, backgroundColor: "#2C2014", borderRadius: 2, padding: 10, alignItems: "center" }}
+                style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#C9A24A" }}>Save to Notes</Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.goldBright }}>Save to Notes</Text>
               </Pressable>
             </View>
           </View>
         )}
 
         {!result && (
-          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#8A7D6D60", textAlign: "center", marginTop: 20 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("inkFaint", 0x60 / 255), textAlign: "center", marginTop: 20 }}>
             Select terrain and danger level, then roll an encounter.
           </Text>
         )}
@@ -605,13 +606,13 @@ export default function RandomEncounterScreen() {
 function ResultRow({ label, value, onReroll }: { label: string; value: string; onReroll: () => void }) {
   return (
     <View>
-      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>
+      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>
         {label}
       </Text>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <Text style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", lineHeight: 18 }}>{value}</Text>
+        <Text style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, lineHeight: 18 }}>{value}</Text>
         <Pressable onPress={onReroll} style={{ padding: 6, marginLeft: 4 }}>
-          <Text style={{ fontSize: 14, color: "#A07A2C" }}>⚄</Text>
+          <Text style={{ fontSize: 14, color: color.gold }}>⚄</Text>
         </Pressable>
       </View>
     </View>

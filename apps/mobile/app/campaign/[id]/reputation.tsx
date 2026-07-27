@@ -8,6 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { db, getKv, setKv } from "@/lib/db";
 import { schema } from "@grimoire/core";
 import { randomUUID } from "expo-crypto";
+import { color, withAlpha } from "@/lib/theme";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type RepEvent = { id: string; delta: number; note: string; timestamp: number };
@@ -25,9 +26,9 @@ type RepData = { factions: FactionRep[] };
 function standing(score: number): { label: string; color: string } {
   if (score <= -5) return { label: "Hostile", color: "#7A1A1A" };
   if (score <= -3) return { label: "Unfriendly", color: "#C44A1A" };
-  if (score <= -1) return { label: "Wary", color: "#A07A2C" };
-  if (score === 0) return { label: "Neutral", color: "#8A7D6D" };
-  if (score <= 2) return { label: "Friendly", color: "#2D7A4F" };
+  if (score <= -1) return { label: "Wary", color: color.gold };
+  if (score === 0) return { label: "Neutral", color: color.inkFaint };
+  if (score <= 2) return { label: "Friendly", color: color.successBright };
   if (score <= 4) return { label: "Trusted", color: "#1A6A4A" };
   return { label: "Allied", color: "#0A4A30" };
 }
@@ -137,18 +138,18 @@ export default function ReputationScreen() {
     <ParchmentScreen>
       <Stack.Screen options={{ title: "Faction Reputation", headerBackTitle: "Campaign" }} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 4 }}>
           Faction Reputation
         </Text>
         <GoldRule />
 
         {data.factions.length === 0 && (
           <View style={{ alignItems: "center", paddingVertical: 24 }}>
-            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#8A7D6D", textAlign: "center", marginBottom: 12 }}>
+            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: color.inkFaint, textAlign: "center", marginBottom: 12 }}>
               No factions tracked yet.{"\n"}Add faction entities to your campaign to track reputation automatically.
             </Text>
-            <Pressable onPress={addFactionManual} style={{ borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, paddingHorizontal: 16, paddingVertical: 8 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C" }}>+ Add Faction Manually</Text>
+            <Pressable onPress={addFactionManual} style={{ borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, paddingHorizontal: 16, paddingVertical: 8 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold }}>+ Add Faction Manually</Text>
             </Pressable>
           </View>
         )}
@@ -156,16 +157,16 @@ export default function ReputationScreen() {
         {sorted.map(faction => {
           const st = standing(faction.score);
           return (
-            <View key={faction.factionId} style={{ backgroundColor: "#E8DCC820", borderRadius: 4, borderWidth: 1, borderColor: "#C4B49A", padding: 14, marginBottom: 12 }}>
+            <View key={faction.factionId} style={{ backgroundColor: withAlpha("parchmentEdge", 0x20 / 255), borderRadius: 4, borderWidth: 1, borderColor: color.border, padding: 14, marginBottom: 12 }}>
               {/* Header */}
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 15, color: "#2C2014" }}>{faction.factionName}</Text>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 15, color: color.ink }}>{faction.factionName}</Text>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
                     <View style={{ backgroundColor: st.color + "20", borderRadius: 2, paddingHorizontal: 6, paddingVertical: 2 }}>
                       <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: st.color }}>{st.label.toUpperCase()}</Text>
                     </View>
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D" }}>Score: {faction.score > 0 ? `+${faction.score}` : faction.score}</Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint }}>Score: {faction.score > 0 ? `+${faction.score}` : faction.score}</Text>
                   </View>
                 </View>
                 <Pressable
@@ -173,7 +174,7 @@ export default function ReputationScreen() {
                   onPress={() => {}}
                   style={{ padding: 4 }}
                 >
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D60" }}>hold to reset</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkFaint", 0x60 / 255) }}>hold to reset</Text>
                 </Pressable>
               </View>
 
@@ -184,9 +185,9 @@ export default function ReputationScreen() {
                     key={v}
                     style={{
                       flex: 1, height: 6, borderRadius: 1,
-                      backgroundColor: v === 0 ? "#C4B49A" :
+                      backgroundColor: v === 0 ? color.border :
                         (faction.score >= v && v > 0) ? st.color :
-                        (faction.score <= v && v < 0) ? "#7A1A1A" : "#E8DCC8",
+                        (faction.score <= v && v < 0) ? "#7A1A1A" : color.parchmentEdge,
                       borderWidth: v === faction.score ? 1.5 : 0,
                       borderColor: st.color,
                     }}
@@ -196,11 +197,11 @@ export default function ReputationScreen() {
 
               {/* Adjust buttons */}
               <View style={{ flexDirection: "row", gap: 6 }}>
-                <Pressable onPress={() => openAdjust(faction)} style={{ flex: 1, backgroundColor: "#2C2014", borderRadius: 2, padding: 8, alignItems: "center" }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#C9A24A" }}>± Adjust</Text>
+                <Pressable onPress={() => openAdjust(faction)} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 8, alignItems: "center" }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.goldBright }}>± Adjust</Text>
                 </Pressable>
-                <Pressable onPress={() => setHistoryFaction(historyFaction?.factionId === faction.factionId ? null : faction)} style={{ borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 8, alignItems: "center", minWidth: 60 }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#4A3F32" }}>History</Text>
+                <Pressable onPress={() => setHistoryFaction(historyFaction?.factionId === faction.factionId ? null : faction)} style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 8, alignItems: "center", minWidth: 60 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.borderDark }}>History</Text>
                 </Pressable>
               </View>
 
@@ -208,14 +209,14 @@ export default function ReputationScreen() {
               {historyFaction?.factionId === faction.factionId && (
                 <View style={{ marginTop: 10 }}>
                   {faction.history.length === 0 && (
-                    <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 12, color: "#8A7D6D60" }}>No history yet.</Text>
+                    <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 12, color: withAlpha("inkFaint", 0x60 / 255) }}>No history yet.</Text>
                   )}
                   {faction.history.slice(0, 8).map(ev => (
-                    <View key={ev.id} style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 5, borderTopWidth: 1, borderTopColor: "#E8DCC8", gap: 8 }}>
-                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: ev.delta > 0 ? "#2D7A4F" : ev.delta < 0 ? "#7A1A1A" : "#8A7D6D", width: 28 }}>
+                    <View key={ev.id} style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 5, borderTopWidth: 1, borderTopColor: color.parchmentEdge, gap: 8 }}>
+                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: ev.delta > 0 ? color.successBright : ev.delta < 0 ? "#7A1A1A" : color.inkFaint, width: 28 }}>
                         {ev.delta > 0 ? `+${ev.delta}` : ev.delta}
                       </Text>
-                      <Text style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 12, color: "#4A3F32" }}>{ev.note || "—"}</Text>
+                      <Text style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 12, color: color.borderDark }}>{ev.note || "—"}</Text>
                     </View>
                   ))}
                 </View>
@@ -225,50 +226,50 @@ export default function ReputationScreen() {
         })}
 
         {data.factions.length > 0 && (
-          <Pressable onPress={addFactionManual} style={{ borderWidth: 1, borderColor: "#C4B49A60", borderRadius: 2, padding: 10, alignItems: "center", marginTop: 4 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#8A7D6D" }}>+ Add Faction</Text>
+          <Pressable onPress={addFactionManual} style={{ borderWidth: 1, borderColor: withAlpha("border", 0x60 / 255), borderRadius: 2, padding: 10, alignItems: "center", marginTop: 4 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.inkFaint }}>+ Add Faction</Text>
           </Pressable>
         )}
       </ScrollView>
 
       {/* Adjust Modal */}
       <Modal visible={modalVisible} transparent animationType="fade">
-        <View style={{ flex: 1, backgroundColor: "#00000060", justifyContent: "center", padding: 24 }}>
-          <View style={{ backgroundColor: "#F5EDD8", borderRadius: 4, padding: 20 }}>
-            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: "#2C2014", marginBottom: 4 }}>
+        <View style={{ flex: 1, backgroundColor: withAlpha("shadow", 0x60 / 255), justifyContent: "center", padding: 24 }}>
+          <View style={{ backgroundColor: color.parchmentWarm, borderRadius: 4, padding: 20 }}>
+            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: color.ink, marginBottom: 4 }}>
               Adjust Reputation
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#4A3F32", marginBottom: 16 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.borderDark, marginBottom: 16 }}>
               {selectedFaction?.factionName} — current: {(selectedFaction?.score ?? 0) > 0 ? `+${selectedFaction?.score}` : selectedFaction?.score}
             </Text>
 
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Amount</Text>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Amount</Text>
             <TextInput
               value={delta}
               onChangeText={setDelta}
               keyboardType="number-pad"
-              style={{ borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10, fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", textAlign: "center", marginBottom: 12 }}
+              style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, fontFamily: "Inter_400Regular", fontSize: 16, color: color.ink, textAlign: "center", marginBottom: 12 }}
             />
 
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Reason (optional)</Text>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Reason (optional)</Text>
             <TextInput
               value={note}
               onChangeText={setNote}
               placeholder="e.g. Helped recover stolen goods"
-              placeholderTextColor="#8A7D6D80"
-              style={{ borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10, fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", marginBottom: 16 }}
+              placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
+              style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, marginBottom: 16 }}
             />
 
             <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
               <Pressable onPress={() => submitAdjust(false)} style={{ flex: 1, backgroundColor: "#7A1A1A", borderRadius: 2, padding: 12, alignItems: "center" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#F5EDD8" }}>− Decrease</Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.parchmentWarm }}>− Decrease</Text>
               </Pressable>
-              <Pressable onPress={() => submitAdjust(true)} style={{ flex: 1, backgroundColor: "#2D7A4F", borderRadius: 2, padding: 12, alignItems: "center" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#F5EDD8" }}>+ Increase</Text>
+              <Pressable onPress={() => submitAdjust(true)} style={{ flex: 1, backgroundColor: color.successBright, borderRadius: 2, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.parchmentWarm }}>+ Increase</Text>
               </Pressable>
             </View>
             <Pressable onPress={() => setModalVisible(false)} style={{ padding: 8, alignItems: "center" }}>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D" }}>Cancel</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint }}>Cancel</Text>
             </Pressable>
           </View>
         </View>

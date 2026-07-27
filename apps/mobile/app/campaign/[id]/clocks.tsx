@@ -16,6 +16,7 @@ import { getKv, setKv } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
+import { color, withAlpha } from "@/lib/theme";
 
 type Clock = {
   id: string;
@@ -104,23 +105,23 @@ export default function ClocksScreen() {
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-            <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 13, color: "#5A4D3E80", fontStyle: "italic", flex: 1 }}>
+            <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 13, color: withAlpha("inkSoft", 0x80 / 255), fontStyle: "italic", flex: 1 }}>
               Track in-world pressures, countdowns, and goals.
             </Text>
             <Pressable
               onPress={() => setShowAdd(true)}
-              style={{ paddingHorizontal: 14, paddingVertical: 7, backgroundColor: "#7A2418", borderRadius: 2, marginLeft: 12 }}
+              style={{ paddingHorizontal: 14, paddingVertical: 7, backgroundColor: color.oxblood, borderRadius: 2, marginLeft: 12 }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#FAF5EA" }}>+ Clock</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.parchment }}>+ Clock</Text>
             </Pressable>
           </View>
 
           {clocks.length === 0 ? (
             <View style={{ paddingVertical: 40, alignItems: "center" }}>
-              <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: "#5A4D3E50", fontStyle: "italic" }}>
+              <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: withAlpha("inkSoft", 0x50 / 255), fontStyle: "italic" }}>
                 No clocks yet.
               </Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E40", marginTop: 6, textAlign: "center" }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("inkSoft", 0x40 / 255), marginTop: 6, textAlign: "center" }}>
                 Add a clock for events like "Dragon Arrives" or "Food Runs Out".
               </Text>
             </View>
@@ -137,29 +138,29 @@ export default function ClocksScreen() {
                     marginBottom: 20,
                     padding: 14,
                     borderWidth: 1,
-                    borderColor: isComplete ? "#4A806040" : "#A07A2C25",
+                    borderColor: isComplete ? withAlpha("success", 0x40 / 255) : withAlpha("gold", 0x25 / 255),
                     borderRadius: 3,
-                    backgroundColor: isComplete ? "#4A806008" : "#A07A2C05",
+                    backgroundColor: isComplete ? withAlpha("success", 0x08 / 255) : withAlpha("gold", 0x05 / 255),
                   }}
                 >
                   {/* Name + delete */}
                   <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 10 }}>
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: isComplete ? "#4A8060" : "#2C2014" }}>
+                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: isComplete ? color.success : color.ink }}>
                         {clock.name}
                       </Text>
                       {clock.unit ? (
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60", marginTop: 1 }}>{clock.unit}</Text>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x60 / 255), marginTop: 1 }}>{clock.unit}</Text>
                       ) : null}
                     </View>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                       {filled > 0 && (
                         <Pressable onPress={() => resetClock(clock.id)} style={{ paddingHorizontal: 8, paddingVertical: 3 }}>
-                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60" }}>Reset</Text>
+                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x60 / 255) }}>Reset</Text>
                         </Pressable>
                       )}
                       <Pressable onPress={() => deleteClock(clock.id)} style={{ padding: 4 }}>
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#7A241840" }}>✕</Text>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: withAlpha("oxblood", 0x40 / 255) }}>✕</Text>
                       </Pressable>
                     </View>
                   </View>
@@ -176,12 +177,12 @@ export default function ClocksScreen() {
                             height: 28,
                             borderRadius: 2,
                             backgroundColor: isFilled
-                              ? isComplete ? "#4A8060" : "#7A2418"
+                              ? isComplete ? color.success : color.oxblood
                               : "transparent",
                             borderWidth: 1.5,
                             borderColor: isFilled
-                              ? isComplete ? "#4A806080" : "#7A241880"
-                              : "#A07A2C30",
+                              ? isComplete ? withAlpha("success", 0x80 / 255) : withAlpha("oxblood", 0x80 / 255)
+                              : withAlpha("gold", 0x30 / 255),
                           }}
                         />
                       );
@@ -190,14 +191,14 @@ export default function ClocksScreen() {
 
                   {/* Progress text */}
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: isComplete ? "#4A8060" : "#2C2014", marginRight: 8 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: isComplete ? color.success : color.ink, marginRight: 8 }}>
                       {filled}/{clock.max}
                     </Text>
-                    <View style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: "#A07A2C15", overflow: "hidden" }}>
-                      <View style={{ height: 3, borderRadius: 2, width: `${pct * 100}%`, backgroundColor: isComplete ? "#4A8060" : "#7A2418" }} />
+                    <View style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: withAlpha("gold", 0x15 / 255), overflow: "hidden" }}>
+                      <View style={{ height: 3, borderRadius: 2, width: `${pct * 100}%`, backgroundColor: isComplete ? color.success : color.oxblood }} />
                     </View>
                     {isComplete && (
-                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#4A8060", marginLeft: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.success, marginLeft: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                         Complete
                       </Text>
                     )}
@@ -213,12 +214,12 @@ export default function ClocksScreen() {
                         paddingVertical: 9,
                         alignItems: "center",
                         borderWidth: 1,
-                        borderColor: filled <= 0 ? "#A07A2C20" : "#A07A2C40",
+                        borderColor: filled <= 0 ? withAlpha("gold", 0x20 / 255) : withAlpha("gold", 0x40 / 255),
                         borderRadius: 2,
-                        backgroundColor: filled <= 0 ? "transparent" : "#A07A2C08",
+                        backgroundColor: filled <= 0 ? "transparent" : withAlpha("gold", 0x08 / 255),
                       }}
                     >
-                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: filled <= 0 ? "#A07A2C30" : "#A07A2C" }}>−</Text>
+                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: filled <= 0 ? withAlpha("gold", 0x30 / 255) : color.gold }}>−</Text>
                     </Pressable>
                     <Pressable
                       onPress={() => tick(clock.id, 1)}
@@ -228,12 +229,12 @@ export default function ClocksScreen() {
                         paddingVertical: 9,
                         alignItems: "center",
                         borderWidth: 1,
-                        borderColor: filled >= clock.max ? "#7A241820" : "#7A241860",
+                        borderColor: filled >= clock.max ? withAlpha("oxblood", 0x20 / 255) : withAlpha("oxblood", 0x60 / 255),
                         borderRadius: 2,
-                        backgroundColor: filled >= clock.max ? "transparent" : "#7A241810",
+                        backgroundColor: filled >= clock.max ? "transparent" : withAlpha("oxblood", 0x10 / 255),
                       }}
                     >
-                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: filled >= clock.max ? "#7A241830" : "#7A2418", textTransform: "uppercase", letterSpacing: 1 }}>
+                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: filled >= clock.max ? withAlpha("oxblood", 0x30 / 255) : color.oxblood, textTransform: "uppercase", letterSpacing: 1 }}>
                         Tick
                       </Text>
                     </Pressable>
@@ -252,24 +253,24 @@ export default function ClocksScreen() {
             onPress={() => setShowAdd(false)}
             style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", paddingHorizontal: 24 }}
           >
-            <Pressable onPress={() => {}} style={{ backgroundColor: "#FAF5EA", borderRadius: 4, borderWidth: 1, borderColor: "#A07A2C30", padding: 20 }}>
-              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 16 }}>
+            <Pressable onPress={() => {}} style={{ backgroundColor: color.parchment, borderRadius: 4, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255), padding: 20 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 16 }}>
                 New Clock
               </Text>
 
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.gold, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>
                 Name
               </Text>
               <TextInput
                 value={newName}
                 onChangeText={setNewName}
                 placeholder="e.g. Dragon Arrives"
-                placeholderTextColor="#2C201440"
+                placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                 autoFocus
-                style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 20 }}
+                style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 20 }}
               />
 
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.gold, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>
                 Segments
               </Text>
               <View style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}>
@@ -282,30 +283,30 @@ export default function ClocksScreen() {
                       paddingVertical: 8,
                       alignItems: "center",
                       borderWidth: 1.5,
-                      borderColor: newMax === n ? "#A07A2C" : "#A07A2C25",
+                      borderColor: newMax === n ? color.gold : withAlpha("gold", 0x25 / 255),
                       borderRadius: 2,
-                      backgroundColor: newMax === n ? "#A07A2C15" : "transparent",
+                      backgroundColor: newMax === n ? withAlpha("gold", 0x15 / 255) : "transparent",
                     }}
                   >
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: newMax === n ? "#A07A2C" : "#5A4D3E" }}>{n}</Text>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: newMax === n ? color.gold : color.inkSoft }}>{n}</Text>
                   </Pressable>
                 ))}
               </View>
 
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.gold, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>
                 Unit (optional)
               </Text>
               <TextInput
                 value={newUnit}
                 onChangeText={setNewUnit}
                 placeholder="e.g. sessions, days, milestones"
-                placeholderTextColor="#2C201440"
-                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 20 }}
+                placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 20 }}
               />
 
               <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 12 }}>
                 <Pressable onPress={() => setShowAdd(false)} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#5A4D3E" }}>Cancel</Text>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.inkSoft }}>Cancel</Text>
                 </Pressable>
                 <Pressable
                   onPress={addClock}
@@ -314,10 +315,10 @@ export default function ClocksScreen() {
                     paddingHorizontal: 20,
                     paddingVertical: 10,
                     borderRadius: 2,
-                    backgroundColor: newName.trim() ? "#7A2418" : "#7A241830",
+                    backgroundColor: newName.trim() ? color.oxblood : withAlpha("oxblood", 0x30 / 255),
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: newName.trim() ? "#FAF5EA" : "#FAF5EA60", textTransform: "uppercase", letterSpacing: 1 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: newName.trim() ? color.parchment : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
                     Create
                   </Text>
                 </Pressable>

@@ -19,6 +19,7 @@ import { newId } from "@/lib/id";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { schema } from "@grimoire/core";
+import { color, withAlpha } from "@/lib/theme";
 
 type CharacterProfile = typeof schema.characterProfiles.$inferSelect;
 
@@ -28,9 +29,9 @@ const STATUS_LABELS: Record<string, string> = {
   archived: "Archived",
 };
 const STATUS_COLORS: Record<string, string> = {
-  active: "#4A8060",
-  retired: "#A07A2C",
-  archived: "#5A4D3E",
+  active: color.success,
+  retired: color.gold,
+  archived: color.inkSoft,
 };
 
 function getOrCreateGmId(): string {
@@ -176,83 +177,83 @@ export default function CharactersScreen() {
       >
         <Pressable onPress={() => {}}>
           <ScrollView
-            style={{ backgroundColor: "#FAF0DC", borderRadius: 4, borderWidth: 1, borderColor: "#A07A2C30" }}
+            style={{ backgroundColor: "#FAF0DC", borderRadius: 4, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255) }}
             contentContainerStyle={{ padding: 20 }}
             keyboardShouldPersistTaps="handled"
           >
-            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014", textAlign: "center", marginBottom: 20 }}>
+            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: color.ink, textAlign: "center", marginBottom: 20 }}>
               {showEdit ? "Edit Character" : "New Character"}
             </Text>
 
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
               Character Name *
             </Text>
             <TextInput
               value={name}
               onChangeText={setName}
               placeholder="e.g. Kira Ashwood"
-              placeholderTextColor="#2C201440"
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
               autoFocus
-              style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 16 }}
+              style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 16 }}
             />
 
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
               One-line Description
             </Text>
             <TextInput
               value={summary}
               onChangeText={setSummary}
               placeholder="e.g. Rogue, former Tidewarden courier"
-              placeholderTextColor="#2C201440"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 16 }}
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 16 }}
             />
 
             <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
               <View style={{ flex: 2 }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Class</Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Class</Text>
                 <TextInput
                   value={charClass}
                   onChangeText={setCharClass}
                   placeholder="Rogue"
-                  placeholderTextColor="#2C201440"
-                  style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8 }}
+                  placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+                  style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8 }}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Level</Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Level</Text>
                 <TextInput
                   value={level}
                   onChangeText={setLevel}
                   placeholder="3"
-                  placeholderTextColor="#2C201440"
+                  placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                   keyboardType="numeric"
-                  style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8 }}
+                  style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8 }}
                 />
               </View>
             </View>
 
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
               Race / Ancestry
             </Text>
             <TextInput
               value={race}
               onChangeText={setRace}
               placeholder="e.g. Half-Elf"
-              placeholderTextColor="#2C201440"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 24 }}
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 24 }}
               onSubmitEditing={showEdit ? handleSave : handleCreate}
             />
 
             <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 12 }}>
               <Pressable onPress={() => { setShowCreate(false); setShowEdit(null); }} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#5A4D3E" }}>Cancel</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.inkSoft }}>Cancel</Text>
               </Pressable>
               <Pressable
                 onPress={showEdit ? handleSave : handleCreate}
                 disabled={!name.trim()}
-                style={{ paddingHorizontal: 20, paddingVertical: 10, backgroundColor: name.trim() ? "#7A2418" : "#7A241830", borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C30" }}
+                style={{ paddingHorizontal: 20, paddingVertical: 10, backgroundColor: name.trim() ? color.oxblood : withAlpha("oxblood", 0x30 / 255), borderRadius: 2, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255) }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: name.trim() ? "#FAF5EA" : "#FAF5EA60", textTransform: "uppercase", letterSpacing: 1 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: name.trim() ? color.parchment : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
                   {showEdit ? "Save" : "Create"}
                 </Text>
               </Pressable>
@@ -268,18 +269,18 @@ export default function CharactersScreen() {
       <View style={{ flex: 1 }}>
         {visible.length === 0 && !hasArchived ? (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
-            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 32, color: "#A07A2C", marginBottom: 16 }}>⚔</Text>
-            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 22, color: "#2C2014", marginBottom: 8, textAlign: "center" }}>
+            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 32, color: color.gold, marginBottom: 16 }}>⚔</Text>
+            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 22, color: color.ink, marginBottom: 8, textAlign: "center" }}>
               Your Characters Await
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", textAlign: "center", lineHeight: 20, marginBottom: 32 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, textAlign: "center", lineHeight: 20, marginBottom: 32 }}>
               Character passports travel with you across campaigns. Create one for each player at your table.
             </Text>
             <Pressable
               onPress={openCreate}
-              style={{ backgroundColor: "#7A2418", paddingHorizontal: 32, paddingVertical: 12, borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C30" }}
+              style={{ backgroundColor: color.oxblood, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 2, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255) }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.parchment, textTransform: "uppercase", letterSpacing: 1 }}>
                 Add Character
               </Text>
             </Pressable>
@@ -294,7 +295,7 @@ export default function CharactersScreen() {
               <View>
                 {hasArchived && (
                   <Pressable onPress={() => setShowArchived((v) => !v)} style={{ alignSelf: "flex-end", marginBottom: 12 }}>
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60" }}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x60 / 255) }}>
                       {showArchived ? "Hide archived" : "Show archived"}
                     </Text>
                   </Pressable>
@@ -303,7 +304,7 @@ export default function CharactersScreen() {
             }
             renderItem={({ item }) => {
               const attrs = (item.attrs as Record<string, string> | null) ?? {};
-              const statusColor = STATUS_COLORS[item.status] ?? "#5A4D3E";
+              const statusColor = STATUS_COLORS[item.status] ?? color.inkSoft;
               const classParts = [attrs["race"], attrs["class"], attrs["level"] ? `Lv ${attrs["level"]}` : ""].filter(Boolean).join(" · ");
               return (
                 <Pressable
@@ -312,7 +313,7 @@ export default function CharactersScreen() {
                   style={{ paddingVertical: 12, paddingHorizontal: 4 }}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: "#2C2014", flex: 1 }}>
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: color.ink, flex: 1 }}>
                       {item.name}
                     </Text>
                     {item.status !== "active" && (
@@ -322,16 +323,16 @@ export default function CharactersScreen() {
                     )}
                   </View>
                   {classParts ? (
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C", marginTop: 2 }}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.gold, marginTop: 2 }}>
                       {classParts}
                     </Text>
                   ) : null}
                   {item.summary ? (
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#5A4D3E", marginTop: 2 }} numberOfLines={2}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkSoft, marginTop: 2 }} numberOfLines={2}>
                       {item.summary}
                     </Text>
                   ) : null}
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D50", marginTop: 4 }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkFaint", 0x50 / 255), marginTop: 4 }}>
                     Tap to view · Long press to archive
                   </Text>
                 </Pressable>
@@ -340,9 +341,9 @@ export default function CharactersScreen() {
             ListFooterComponent={
               <Pressable
                 onPress={openCreate}
-                style={{ marginTop: 12, paddingVertical: 12, borderWidth: 1, borderColor: "#A07A2C30", borderRadius: 2, alignItems: "center" }}
+                style={{ marginTop: 12, paddingVertical: 12, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255), borderRadius: 2, alignItems: "center" }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.gold, textTransform: "uppercase", letterSpacing: 1 }}>
                   + Add Character
                 </Text>
               </Pressable>

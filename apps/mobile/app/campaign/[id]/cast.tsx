@@ -14,6 +14,7 @@ import { db } from "@/lib/db";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { schema } from "@grimoire/core";
+import { color, withAlpha } from "@/lib/theme";
 
 type Entity = typeof schema.entities.$inferSelect;
 type CastFilter = "all" | "pcs" | "npcs" | "alive";
@@ -130,11 +131,11 @@ export default function CastScreen() {
                   paddingVertical: 5,
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: filter === f ? "#A07A2C" : "#A07A2C40",
-                  backgroundColor: filter === f ? "#A07A2C15" : "transparent",
+                  borderColor: filter === f ? color.gold : withAlpha("gold", 0x40 / 255),
+                  backgroundColor: filter === f ? withAlpha("gold", 0x15 / 255) : "transparent",
                 }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: filter === f ? "#A07A2C" : "#8A7D6D" }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: filter === f ? color.gold : color.inkFaint }}>
                   {FILTER_LABELS[f]}
                 </Text>
               </Pressable>
@@ -148,17 +149,17 @@ export default function CastScreen() {
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Search cast…"
-                placeholderTextColor="#2C201440"
+                placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                 style={{
                   fontFamily: "Inter_400Regular",
                   fontSize: 13,
-                  color: "#2C2014",
+                  color: color.ink,
                   borderWidth: 1,
-                  borderColor: "#A07A2C20",
+                  borderColor: withAlpha("gold", 0x20 / 255),
                   borderRadius: 3,
                   paddingHorizontal: 12,
                   paddingVertical: 8,
-                  backgroundColor: "#FAF5EA",
+                  backgroundColor: color.parchment,
                 }}
               />
             </View>
@@ -167,7 +168,7 @@ export default function CastScreen() {
           <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}>
             {filtered.length === 0 ? (
               <View style={{ paddingVertical: 40, alignItems: "center" }}>
-                <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: "#5A4D3E80", fontStyle: "italic" }}>
+                <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: withAlpha("inkSoft", 0x80 / 255), fontStyle: "italic" }}>
                   No characters found.
                 </Text>
               </View>
@@ -175,7 +176,7 @@ export default function CastScreen() {
               <>
                 {pcs.length > 0 && (
                   <View style={{ marginTop: 8, marginBottom: 16 }}>
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#C9A24A", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.goldBright, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
                       Player Characters
                     </Text>
                     {pcs.map((entity) => (
@@ -192,7 +193,7 @@ export default function CastScreen() {
 
                 {npcs.length > 0 && (
                   <View style={{ marginTop: pcs.length > 0 ? 12 : 8 }}>
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
                       NPCs
                     </Text>
                     {npcs.map((entity) => (
@@ -238,7 +239,7 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
         alignItems: "center",
         paddingVertical: 10,
         borderBottomWidth: 0.5,
-        borderBottomColor: "#A07A2C12",
+        borderBottomColor: withAlpha("gold", 0x12 / 255),
         opacity: isDead ? 0.5 : 1,
       }}
     >
@@ -252,7 +253,7 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
             borderRadius: 22,
             marginRight: 12,
             borderWidth: 1.5,
-            borderColor: entity.kind === "pc" ? "#C9A24A60" : "#A07A2C40",
+            borderColor: entity.kind === "pc" ? withAlpha("goldBright", 0x60 / 255) : withAlpha("gold", 0x40 / 255),
           }}
         />
       ) : (
@@ -263,13 +264,13 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
             borderRadius: 22,
             marginRight: 12,
             borderWidth: 1.5,
-            borderColor: entity.kind === "pc" ? "#C9A24A40" : "#A07A2C30",
-            backgroundColor: entity.kind === "pc" ? "#C9A24A10" : "#A07A2C08",
+            borderColor: entity.kind === "pc" ? withAlpha("goldBright", 0x40 / 255) : withAlpha("gold", 0x30 / 255),
+            backgroundColor: entity.kind === "pc" ? withAlpha("goldBright", 0x10 / 255) : withAlpha("gold", 0x08 / 255),
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: entity.kind === "pc" ? "#C9A24A80" : "#A07A2C80" }}>
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: entity.kind === "pc" ? withAlpha("goldBright", 0x80 / 255) : withAlpha("gold", 0x80 / 255) }}>
             {entity.name.charAt(0).toUpperCase()}
           </Text>
         </View>
@@ -279,13 +280,13 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
       <View style={{ flex: 1, minWidth: 0 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           {isPinned && (
-            <Text style={{ fontSize: 10, color: "#A07A2C80" }}>★</Text>
+            <Text style={{ fontSize: 10, color: withAlpha("gold", 0x80 / 255) }}>★</Text>
           )}
           <Text
             style={{
               fontFamily: "CormorantGaramond_600SemiBold",
               fontSize: 17,
-              color: isDead ? "#5A4D3E80" : "#2C2014",
+              color: isDead ? withAlpha("inkSoft", 0x80 / 255) : color.ink,
               textDecorationLine: isDead ? "line-through" : "none",
             }}
             numberOfLines={1}
@@ -293,25 +294,25 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
             {entity.name}
           </Text>
           {isGmOnly && (
-            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#7A2418" }}>GM</Text>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: color.oxblood }}>GM</Text>
           )}
         </View>
 
         <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6, marginTop: 2 }}>
           {level ? (
-            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#C9A24A" }}>Lv {level}</Text>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: color.goldBright }}>Lv {level}</Text>
           ) : null}
           {role ? (
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E70" }} numberOfLines={1}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x70 / 255) }} numberOfLines={1}>
               {role}
             </Text>
           ) : entity.summary ? (
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E70" }} numberOfLines={1}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x70 / 255) }} numberOfLines={1}>
               {entity.summary}
             </Text>
           ) : null}
           {pronouns ? (
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D80", fontStyle: "italic" }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkFaint", 0x80 / 255), fontStyle: "italic" }}>
               {pronouns}
             </Text>
           ) : null}
@@ -319,7 +320,7 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
 
         {/* Last seen */}
         {entity.lastSeenSessionNumber !== undefined && isAlive && (
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E50", marginTop: 2 }}>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkSoft", 0x50 / 255), marginTop: 2 }}>
             Last seen S{entity.lastSeenSessionNumber}{entity.lastSeenSessionTitle ? ` · ${entity.lastSeenSessionTitle}` : ""}
           </Text>
         )}
@@ -327,12 +328,12 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
         {conditions.length > 0 && isAlive && (
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 3 }}>
             {conditions.slice(0, 3).map((c, i) => (
-              <View key={i} style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 3, backgroundColor: "#7A241810", borderWidth: 0.5, borderColor: "#7A241840" }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#7A2418" }}>{c}</Text>
+              <View key={i} style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 3, backgroundColor: withAlpha("oxblood", 0x10 / 255), borderWidth: 0.5, borderColor: withAlpha("oxblood", 0x40 / 255) }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: color.oxblood }}>{c}</Text>
               </View>
             ))}
             {conditions.length > 3 && (
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#7A241860" }}>+{conditions.length - 3}</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: withAlpha("oxblood", 0x60 / 255) }}>+{conditions.length - 3}</Text>
             )}
           </View>
         )}
@@ -342,26 +343,26 @@ function CastRow({ entity, onPress }: { entity: EntityWithLastSeen; onPress: () 
       <View style={{ alignItems: "flex-end", marginLeft: 8 }}>
         {maxHp !== undefined && currentHp !== undefined && isAlive ? (
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: currentHp <= maxHp * 0.25 ? "#7A2418" : currentHp <= maxHp * 0.5 ? "#A07A2C" : "#4A8060" }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: currentHp <= maxHp * 0.25 ? color.oxblood : currentHp <= maxHp * 0.5 ? color.gold : color.success }}>
               {currentHp}/{maxHp}
             </Text>
-            <View style={{ width: 40, height: 3, backgroundColor: "#A07A2C15", borderRadius: 2, marginTop: 2 }}>
-              <View style={{ width: `${Math.round((currentHp / maxHp) * 100)}%`, height: 3, backgroundColor: currentHp <= maxHp * 0.25 ? "#7A2418" : currentHp <= maxHp * 0.5 ? "#A07A2C" : "#4A8060", borderRadius: 2 }} />
+            <View style={{ width: 40, height: 3, backgroundColor: withAlpha("gold", 0x15 / 255), borderRadius: 2, marginTop: 2 }}>
+              <View style={{ width: `${Math.round((currentHp / maxHp) * 100)}%`, height: 3, backgroundColor: currentHp <= maxHp * 0.25 ? color.oxblood : currentHp <= maxHp * 0.5 ? color.gold : color.success, borderRadius: 2 }} />
             </View>
           </View>
         ) : null}
         {isDead && (
-          <View style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, backgroundColor: "#7A241810", borderWidth: 0.5, borderColor: "#7A241840" }}>
-            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#7A2418" }}>☠ Dead</Text>
+          <View style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, backgroundColor: withAlpha("oxblood", 0x10 / 255), borderWidth: 0.5, borderColor: withAlpha("oxblood", 0x40 / 255) }}>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: color.oxblood }}>☠ Dead</Text>
           </View>
         )}
         {isMissing && (
-          <View style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, backgroundColor: "#A07A2C10", borderWidth: 0.5, borderColor: "#A07A2C40" }}>
-            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#A07A2C" }}>? Missing</Text>
+          <View style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, backgroundColor: withAlpha("gold", 0x10 / 255), borderWidth: 0.5, borderColor: withAlpha("gold", 0x40 / 255) }}>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: color.gold }}>? Missing</Text>
           </View>
         )}
         {isAlive && maxHp === undefined && (
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C60" }}>›</Text>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: withAlpha("gold", 0x60 / 255) }}>›</Text>
         )}
       </View>
     </Pressable>

@@ -32,7 +32,8 @@ export type Capability =
   | "generateAiRecap" // rationed on free, unlimited on plus
   | "cloudBackup" // plus only
   | "prepTemplates" // plus only
-  | "secretsTools"; // plus only (GM secret notes, reveal tooling)
+  | "secretsTools" // plus only (GM secret notes, reveal tooling)
+  | "bindKeepsake"; // one-time purchase per book (engine 2), not a subscription perk
 
 export interface EntitlementUsage {
   /** Non-archived campaigns the user currently owns. */
@@ -84,6 +85,13 @@ export function can(
       return { allowed: false, reason: "Prep templates are a Grimoire+ feature." };
     case "secretsTools":
       return { allowed: false, reason: "Advanced GM tools are a Grimoire+ feature." };
+    case "bindKeepsake":
+      // Keepsakes are a one-time purchase (PDF £19.99 / hardcover £49.99),
+      // not part of the subscription — so this is where the IAP receipt check
+      // slots in, not a plan check. Until the store integration exists,
+      // binding stays free even after monetization flips on: never block a
+      // purchase path we cannot actually sell through.
+      return ALLOWED;
     default:
       return ALLOWED;
   }

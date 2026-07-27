@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { eq } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
+import { publishRecap, recapShareUrl } from "@/lib/publishRecap";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { RichTextRenderer } from "@/components/RichTextRenderer";
@@ -62,7 +63,17 @@ export default function RecapsScreen() {
   useFocusEffect(load);
 
   const shareRecap = async (r: RecapRow) => {
-    const url = `https://grimoire-recap-web.vercel.app/r/${r.shareSlug}`;
+    // Publish (idempotent upsert) before handing out the link — the web viewer
+    // reads from Supabase, not this device, so an unpublished link is a 404.
+    const published = await publishRecap(r.id);
+    if (!published.ok) {
+      Alert.alert(
+        "Can't share yet",
+        `Publishing to the web failed (${published.error}). Try again with a connection.`,
+      );
+      return;
+    }
+    const url = `https://${recapShareUrl(r.shareSlug)}`;
     await Share.share({
       title: `Session ${r.sessionNumber} Recap`,
       message: url,

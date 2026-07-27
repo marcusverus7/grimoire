@@ -16,6 +16,7 @@ import { getKv, setKv } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
+import { color, withAlpha } from "@/lib/theme";
 
 type RandTable = { id: string; name: string; items: string[] };
 
@@ -99,7 +100,7 @@ export default function TablesScreen() {
           title: "Random Tables",
           headerRight: () => (
             <Pressable onPress={openCreate} style={{ paddingHorizontal: 12 }}>
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 22, color: "#A07A2C", lineHeight: 28 }}>+</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 22, color: color.gold, lineHeight: 28 }}>+</Text>
             </Pressable>
           ),
         }}
@@ -113,11 +114,11 @@ export default function TablesScreen() {
         >
           {/* Last roll banner */}
           {lastRoll ? (
-            <View style={{ backgroundColor: "#7A241810", borderWidth: 1, borderColor: "#7A241830", borderRadius: 2, padding: 16, marginBottom: 20, alignItems: "center" }}>
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#7A241880", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
+            <View style={{ backgroundColor: withAlpha("oxblood", 0x10 / 255), borderWidth: 1, borderColor: withAlpha("oxblood", 0x30 / 255), borderRadius: 2, padding: 16, marginBottom: 20, alignItems: "center" }}>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: withAlpha("oxblood", 0x80 / 255), textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
                 {lastRoll.tableName}
               </Text>
-              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 24, color: "#2C2014", textAlign: "center" }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 24, color: color.ink, textAlign: "center" }}>
                 {lastRoll.result}
               </Text>
             </View>
@@ -125,17 +126,17 @@ export default function TablesScreen() {
 
           {tables.length === 0 ? (
             <View style={{ alignItems: "center", paddingVertical: 40 }}>
-              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014", marginBottom: 8 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: color.ink, marginBottom: 8 }}>
                 No tables yet
               </Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", textAlign: "center", lineHeight: 20, maxWidth: 260 }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, textAlign: "center", lineHeight: 20, maxWidth: 260 }}>
                 Create encounter tables, loot tables, weather tables, or any other random prompt list.
               </Text>
               <Pressable
                 onPress={openCreate}
-                style={{ marginTop: 20, paddingHorizontal: 20, paddingVertical: 10, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2 }}
+                style={{ marginTop: 20, paddingHorizontal: 20, paddingVertical: 10, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2 }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold, textTransform: "uppercase", letterSpacing: 1 }}>
                   Create First Table
                 </Text>
               </Pressable>
@@ -145,36 +146,36 @@ export default function TablesScreen() {
               <View key={table.id}>
                 {i > 0 ? <GoldRule className="my-4" /> : null}
                 <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014", flex: 1 }}>
+                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: color.ink, flex: 1 }}>
                     {table.name}
                   </Text>
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginRight: 12 }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint, marginRight: 12 }}>
                     d{table.items.length}
                   </Text>
                   <Pressable
                     onPress={() => openEdit(table)}
                     style={{ paddingHorizontal: 8, paddingVertical: 4, marginRight: 8 }}
                   >
-                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C80" }}>Edit</Text>
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: withAlpha("gold", 0x80 / 255) }}>Edit</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => deleteTable(table)}
                     style={{ paddingHorizontal: 8, paddingVertical: 4 }}
                   >
-                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#7A241860" }}>✕</Text>
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: withAlpha("oxblood", 0x60 / 255) }}>✕</Text>
                   </Pressable>
                 </View>
 
                 {/* Items list */}
                 <View style={{ marginBottom: 12 }}>
                   {table.items.slice(0, 6).map((item, j) => (
-                    <View key={j} style={{ flexDirection: "row", paddingVertical: 3, borderBottomWidth: j < Math.min(table.items.length, 6) - 1 ? 0.5 : 0, borderBottomColor: "#A07A2C12" }}>
-                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", width: 24 }}>{j + 1}.</Text>
+                    <View key={j} style={{ flexDirection: "row", paddingVertical: 3, borderBottomWidth: j < Math.min(table.items.length, 6) - 1 ? 0.5 : 0, borderBottomColor: withAlpha("gold", 0x12 / 255) }}>
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint, width: 24 }}>{j + 1}.</Text>
                       <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#3A2E24", flex: 1 }}>{item}</Text>
                     </View>
                   ))}
                   {table.items.length > 6 ? (
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D80", marginTop: 4 }}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkFaint", 0x80 / 255), marginTop: 4 }}>
                       +{table.items.length - 6} more entries
                     </Text>
                   ) : null}
@@ -185,15 +186,15 @@ export default function TablesScreen() {
                   onPress={() => roll(table)}
                   disabled={table.items.length === 0}
                   style={{
-                    backgroundColor: "#7A2418",
+                    backgroundColor: color.oxblood,
                     borderWidth: 1,
-                    borderColor: "#C9A24A40",
+                    borderColor: withAlpha("goldBright", 0x40 / 255),
                     borderRadius: 2,
                     paddingVertical: 12,
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1.5 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.parchment, textTransform: "uppercase", letterSpacing: 1.5 }}>
                     Roll d{table.items.length}
                   </Text>
                 </Pressable>
@@ -222,39 +223,39 @@ export default function TablesScreen() {
           >
             <Pressable
               onPress={() => {}}
-              style={{ backgroundColor: "#FAF5EA", borderTopLeftRadius: 8, borderTopRightRadius: 8, borderWidth: 1, borderColor: "#A07A2C30", padding: 20, maxHeight: "80%" }}
+              style={{ backgroundColor: color.parchment, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255), padding: 20, maxHeight: "80%" }}
             >
-              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014", textAlign: "center", marginBottom: 16 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: color.ink, textAlign: "center", marginBottom: 16 }}>
                 {editTarget ? "Edit Table" : "New Table"}
               </Text>
 
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>
                 Table Name
               </Text>
               <TextInput
                 value={formName}
                 onChangeText={setFormName}
                 placeholder="e.g. Random Encounters"
-                placeholderTextColor="#2C201440"
+                placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                 autoFocus
-                style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 16 }}
+                style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 16 }}
               />
 
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>
                 Entries (one per line)
               </Text>
               <TextInput
                 value={formItems}
                 onChangeText={setFormItems}
                 placeholder={"Goblin ambush\nAncient ruins\nMerchant caravan"}
-                placeholderTextColor="#2C201440"
+                placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                 multiline
                 style={{
                   fontFamily: "Inter_400Regular",
                   fontSize: 14,
-                  color: "#2C2014",
+                  color: color.ink,
                   borderWidth: 1,
-                  borderColor: "#A07A2C25",
+                  borderColor: withAlpha("gold", 0x25 / 255),
                   borderRadius: 2,
                   padding: 12,
                   minHeight: 140,
@@ -266,7 +267,7 @@ export default function TablesScreen() {
 
               <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 12 }}>
                 <Pressable onPress={() => setShowCreate(false)} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#5A4D3E" }}>Cancel</Text>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.inkSoft }}>Cancel</Text>
                 </Pressable>
                 <Pressable
                   onPress={saveTable}
@@ -275,12 +276,12 @@ export default function TablesScreen() {
                     paddingHorizontal: 20,
                     paddingVertical: 10,
                     borderRadius: 2,
-                    backgroundColor: formName.trim() ? "#7A2418" : "#7A241830",
+                    backgroundColor: formName.trim() ? color.oxblood : withAlpha("oxblood", 0x30 / 255),
                     borderWidth: 1,
-                    borderColor: "#A07A2C30",
+                    borderColor: withAlpha("gold", 0x30 / 255),
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: formName.trim() ? "#FAF5EA" : "#FAF5EA60", textTransform: "uppercase", letterSpacing: 1 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: formName.trim() ? color.parchment : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
                     Save
                   </Text>
                 </Pressable>

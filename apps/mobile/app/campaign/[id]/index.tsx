@@ -22,6 +22,7 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { DiceRoller } from "@/components/DiceRoller";
 import { schema, nodeText } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
+import { color, withAlpha } from "@/lib/theme";
 
 type Campaign = typeof schema.campaigns.$inferSelect;
 type Entity = typeof schema.entities.$inferSelect;
@@ -39,13 +40,13 @@ const KIND_LABELS: Record<string, string> = {
   custom: "Custom",
 };
 const KIND_COLORS: Record<string, string> = {
-  npc: "#A07A2C",
-  pc: "#C9A24A",
-  location: "#4A8060",
-  faction: "#7A2418",
-  item: "#6A5ACD",
+  npc: color.gold,
+  pc: color.goldBright,
+  location: color.success,
+  faction: color.oxblood,
+  item: color.arcane,
   quest: "#D4A843",
-  custom: "#4A3F32",
+  custom: color.borderDark,
 };
 
 function fmtDuration(ms: number): string {
@@ -380,7 +381,7 @@ export default function CampaignDetailScreen() {
                 style={{
                   fontFamily: "Inter_500Medium",
                   fontSize: 13,
-                  color: "#A07A2C",
+                  color: color.gold,
                 }}
               >
                 ‹ Campaigns
@@ -399,7 +400,7 @@ export default function CampaignDetailScreen() {
               }}
               style={{ paddingHorizontal: 12, paddingVertical: 6 }}
             >
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 18, color: "#A07A2C" }}>⇄</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 18, color: color.gold }}>⇄</Text>
             </Pressable>
           ),
         }}
@@ -408,20 +409,20 @@ export default function CampaignDetailScreen() {
       <ScrollView className="flex-1" style={{ backgroundColor: "transparent" }} contentContainerStyle={{ padding: 16 }} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
         {/* In-Play bar — shown when a session is in progress */}
         {inProgressSession ? (
-          <View style={{ marginBottom: 16, borderRadius: 2, overflow: "hidden", borderWidth: 1, borderColor: "#7A241840" }}>
-            <View style={{ backgroundColor: "#7A2418", paddingHorizontal: 14, paddingVertical: 8, flexDirection: "row", alignItems: "center" }}>
-              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#FAF5EA", marginRight: 8, opacity: 0.8 }} />
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+          <View style={{ marginBottom: 16, borderRadius: 2, overflow: "hidden", borderWidth: 1, borderColor: withAlpha("oxblood", 0x40 / 255) }}>
+            <View style={{ backgroundColor: color.oxblood, paddingHorizontal: 14, paddingVertical: 8, flexDirection: "row", alignItems: "center" }}>
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: color.parchment, marginRight: 8, opacity: 0.8 }} />
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.parchment, textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
                 Session {inProgressSession.number}{inProgressSession.title ? ` · ${inProgressSession.title}` : ""} — In Play
               </Text>
               <Pressable
                 onPress={() => router.push(`/campaign/${id}/session/${inProgressSession.id}` as Parameters<typeof router.push>[0])}
-                style={{ paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: "#FAF5EA40", borderRadius: 2 }}
+                style={{ paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: withAlpha("parchment", 0x40 / 255), borderRadius: 2 }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1 }}>Open</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: color.parchment, textTransform: "uppercase", letterSpacing: 1 }}>Open</Text>
               </Pressable>
             </View>
-            <View style={{ flexDirection: "row", backgroundColor: "#7A241808", paddingVertical: 8, paddingHorizontal: 14, gap: 16 }}>
+            <View style={{ flexDirection: "row", backgroundColor: withAlpha("oxblood", 0x08 / 255), paddingVertical: 8, paddingHorizontal: 14, gap: 16 }}>
               {[
                 { label: "Dash", path: `/campaign/${id}/playview` },
                 { label: "Tracker", path: `/campaign/${id}/tracker` },
@@ -436,11 +437,11 @@ export default function CampaignDetailScreen() {
                   key={btn.label}
                   onPress={() => router.push(btn.path as Parameters<typeof router.push>[0])}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#7A2418" }}>{btn.label}</Text>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.oxblood }}>{btn.label}</Text>
                 </Pressable>
               ))}
               <Pressable onPress={() => setShowDice(true)}>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#7A2418" }}>Dice</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.oxblood }}>Dice</Text>
               </Pressable>
             </View>
           </View>
@@ -467,8 +468,8 @@ export default function CampaignDetailScreen() {
               onSubmitEditing={saveName}
               autoFocus
               className="flex-1 text-ink font-cormorant-bold text-2xl border-b border-gold/30 pb-1"
-              style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 24, color: "#2C2014" }}
-              placeholderTextColor="#8A7D6D"
+              style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 24, color: color.ink }}
+              placeholderTextColor={color.inkFaint}
             />
           </View>
         ) : (
@@ -485,7 +486,7 @@ export default function CampaignDetailScreen() {
               </Text>
             ) : null}
             {(campaign.settings as CampaignSettings)?.logline ? (
-              <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#5A4D3ECC", fontStyle: "italic", marginTop: 4, lineHeight: 20 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("inkSoft", 0xCC / 255), fontStyle: "italic", marginTop: 4, lineHeight: 20 }}>
                 {(campaign.settings as CampaignSettings).logline}
               </Text>
             ) : null}
@@ -503,7 +504,7 @@ export default function CampaignDetailScreen() {
               paddingVertical: 10,
               marginBottom: 4,
               borderBottomWidth: 1,
-              borderBottomColor: "#A07A2C12",
+              borderBottomColor: withAlpha("gold", 0x12 / 255),
             }}
           >
             <StatPill label="Sessions" value={`${stats.sessionsPlayed}/${stats.sessionsTotal}`} />
@@ -528,35 +529,35 @@ export default function CampaignDetailScreen() {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: "#A07A2C12",
+                  backgroundColor: withAlpha("gold", 0x12 / 255),
                   borderWidth: 1,
-                  borderColor: "#A07A2C25",
+                  borderColor: withAlpha("gold", 0x25 / 255),
                   borderRadius: 2,
                   paddingHorizontal: 12,
                   paddingVertical: 8,
                   marginBottom: 8,
                 }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.2, marginRight: 8 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1.2, marginRight: 8 }}>
                   Next Session
                 </Text>
-                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 17, color: "#2C2014", flex: 1 }}>
+                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 17, color: color.ink, flex: 1 }}>
                   {(campaign.settings as CampaignSettings).nextSession}
                 </Text>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: nextSessionDays <= 0 ? "#7A2418" : nextSessionDays <= 3 ? "#A07A2C" : "#5A4D3E", marginRight: 8 }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: nextSessionDays <= 0 ? color.oxblood : nextSessionDays <= 3 ? color.gold : color.inkSoft, marginRight: 8 }}>
                   {nextSessionDays <= 0 ? "Today!" : nextSessionDays === 1 ? "Tomorrow" : `${nextSessionDays}d`}
                 </Text>
                 {nextSessionAttendance ? (
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#4A8060", marginRight: 8 }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.success, marginRight: 8 }}>
                     {nextSessionAttendance.yes}/{nextSessionAttendance.total}
                   </Text>
                 ) : null}
                 {nextPlannedSessionId ? (
                   <Pressable
                     onPress={() => router.push(`/campaign/${id}/session/${nextPlannedSessionId}/prep` as Parameters<typeof router.push>[0])}
-                    style={{ paddingHorizontal: 8, paddingVertical: 4, backgroundColor: "#7A2418", borderRadius: 2 }}
+                    style={{ paddingHorizontal: 8, paddingVertical: 4, backgroundColor: color.oxblood, borderRadius: 2 }}
                   >
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.parchment, textTransform: "uppercase", letterSpacing: 1 }}>
                       Prep
                     </Text>
                   </Pressable>
@@ -565,7 +566,7 @@ export default function CampaignDetailScreen() {
             ) : null}
             {(campaign.settings as CampaignSettings)?.notes ? (
               <Pressable onPress={() => router.push(`/campaign/${id}/settings`)}>
-                <Text numberOfLines={2} style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#5A4D3E80", fontStyle: "italic", lineHeight: 18 }}>
+                <Text numberOfLines={2} style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: withAlpha("inkSoft", 0x80 / 255), fontStyle: "italic", lineHeight: 18 }}>
                   {(campaign.settings as CampaignSettings).notes}
                 </Text>
               </Pressable>
@@ -575,13 +576,13 @@ export default function CampaignDetailScreen() {
                 onPress={() => router.push(`/campaign/${id}/notes` as Parameters<typeof router.push>[0])}
                 style={{ marginTop: 6, flexDirection: "row", alignItems: "center" }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1, marginRight: 6 }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: withAlpha("gold", 0x80 / 255), textTransform: "uppercase", letterSpacing: 1, marginRight: 6 }}>
                   World Notes
                 </Text>
-                <Text numberOfLines={1} style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E60", flex: 1 }}>
+                <Text numberOfLines={1} style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("inkSoft", 0x60 / 255), flex: 1 }}>
                   {nodeText((campaign.settings as CampaignSettings).worldNotes!).slice(0, 80)}
                 </Text>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C60" }}>›</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("gold", 0x60 / 255) }}>›</Text>
               </Pressable>
             ) : null}
           </View>
@@ -595,26 +596,26 @@ export default function CampaignDetailScreen() {
               marginTop: 16,
               padding: 12,
               borderWidth: 1,
-              borderColor: "#A07A2C20",
+              borderColor: withAlpha("gold", 0x20 / 255),
               borderRadius: 2,
-              backgroundColor: "#A07A2C06",
+              backgroundColor: withAlpha("gold", 0x06 / 255),
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: withAlpha("gold", 0x80 / 255), textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
                 Previously on…
               </Text>
               {lastRecapText ? (
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#A07A2C60" }}>✦ AI recap</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: withAlpha("gold", 0x60 / 255) }}>✦ AI recap</Text>
               ) : null}
             </View>
-            <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", marginBottom: 4 }}>
+            <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: color.ink, marginBottom: 4 }}>
               Session {lastPlayedSession.number}{lastPlayedSession.title ? `: ${lastPlayedSession.title}` : ""}
             </Text>
             {(lastRecapText ?? (lastPlayedSession.body ? nodeText(lastPlayedSession.body as RichTextNode).slice(0, 200) : null)) ? (
               <Text
                 numberOfLines={3}
-                style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 14, color: "#5A4D3E", lineHeight: 20, fontStyle: "italic" }}
+                style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 14, color: color.inkSoft, lineHeight: 20, fontStyle: "italic" }}
               >
                 {lastRecapText ?? nodeText(lastPlayedSession.body as RichTextNode).slice(0, 200)}
               </Text>
@@ -625,18 +626,18 @@ export default function CampaignDetailScreen() {
         {/* Recently Revealed */}
         {recentlyRevealed.length > 0 ? (
           <View style={{ marginTop: 16 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#4A806080", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: withAlpha("success", 0x80 / 255), textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
               Recently Revealed
             </Text>
             {recentlyRevealed.map((r) => (
               <Pressable
                 key={r.entityId}
                 onPress={() => router.push(`/campaign/${id}/entity/${r.entityId}` as Parameters<typeof router.push>[0])}
-                style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: "#4A806020" }}
+                style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: withAlpha("success", 0x20 / 255) }}
               >
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#4A8060", marginRight: 6 }}>↗</Text>
-                <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", flex: 1 }}>{r.name}</Text>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E60" }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.success, marginRight: 6 }}>↗</Text>
+                <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: color.ink, flex: 1 }}>{r.name}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkSoft", 0x60 / 255) }}>
                   {new Date(r.revealedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                 </Text>
               </Pressable>
@@ -654,7 +655,7 @@ export default function CampaignDetailScreen() {
               >
                 Sessions
               </Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C60" }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("gold", 0x60 / 255) }}>
                 {showSessions ? "▼" : "▶"}
               </Text>
             </Pressable>
@@ -707,11 +708,11 @@ export default function CampaignDetailScreen() {
               <View key={gi}>
                 {group.arcId ? (
                   <View style={{ flexDirection: "row", alignItems: "center", marginTop: gi > 0 ? 12 : 0, marginBottom: 4 }}>
-                    <View style={{ flex: 1, height: 0.5, backgroundColor: "#A07A2C30" }} />
-                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1.2, marginHorizontal: 10 }}>
+                    <View style={{ flex: 1, height: 0.5, backgroundColor: withAlpha("gold", 0x30 / 255) }} />
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: withAlpha("gold", 0x80 / 255), textTransform: "uppercase", letterSpacing: 1.2, marginHorizontal: 10 }}>
                       {arcById.get(group.arcId) ?? "Arc"}
                     </Text>
-                    <View style={{ flex: 1, height: 0.5, backgroundColor: "#A07A2C30" }} />
+                    <View style={{ flex: 1, height: 0.5, backgroundColor: withAlpha("gold", 0x30 / 255) }} />
                   </View>
                 ) : null}
                 {group.items.map((s) => (
@@ -749,7 +750,7 @@ export default function CampaignDetailScreen() {
                       const summ = (s.attrs as Record<string, unknown> | null)?.summary as string | undefined;
                       if (!summ) return null;
                       return (
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E80", marginTop: 1 }} numberOfLines={1}>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x80 / 255), marginTop: 1 }} numberOfLines={1}>
                           {summ}
                         </Text>
                       );
@@ -759,7 +760,7 @@ export default function CampaignDetailScreen() {
                         className="text-xs uppercase tracking-wider"
                         style={{
                           fontFamily: "Inter_400Regular",
-                          color: s.status === "played" ? "#A07A2C" : s.status === "in_progress" ? "#7A2418" : "#5A4D3E",
+                          color: s.status === "played" ? color.gold : s.status === "in_progress" ? color.oxblood : color.inkSoft,
                         }}
                       >
                         {s.status}
@@ -773,7 +774,7 @@ export default function CampaignDetailScreen() {
                         const a = (s.attrs ?? {}) as { startedAt?: number; endedAt?: number };
                         if (!a.startedAt || !a.endedAt) return null;
                         return (
-                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E50", marginLeft: 6 }}>
+                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkSoft", 0x50 / 255), marginLeft: 6 }}>
                             ⏱ {fmtDuration(a.endedAt - a.startedAt)}
                           </Text>
                         );
@@ -782,7 +783,7 @@ export default function CampaignDetailScreen() {
                         const r = (s.attrs as Record<string, unknown> | null)?.rating;
                         if (typeof r !== "number" || r < 1) return null;
                         return (
-                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", marginLeft: 6 }}>
+                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("gold", 0x80 / 255), marginLeft: 6 }}>
                             {"★".repeat(r)}
                           </Text>
                         );
@@ -801,7 +802,7 @@ export default function CampaignDetailScreen() {
                         );
                       })()}
                       {s.status !== "played" ? (
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#2C201425", marginLeft: 6 }}>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: withAlpha("ink", 0x25 / 255), marginLeft: 6 }}>
                           long press to mark played
                         </Text>
                       ) : null}
@@ -825,7 +826,7 @@ export default function CampaignDetailScreen() {
               >
                 Entities
               </Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C60" }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("gold", 0x60 / 255) }}>
                 {showEntities ? "▼" : "▶"}
               </Text>
             </Pressable>
@@ -846,12 +847,12 @@ export default function CampaignDetailScreen() {
                   paddingHorizontal: 10,
                   paddingVertical: 4,
                   borderRadius: 12,
-                  backgroundColor: kindFilter === null ? "#A07A2C" : "transparent",
+                  backgroundColor: kindFilter === null ? color.gold : "transparent",
                   borderWidth: 1,
-                  borderColor: kindFilter === null ? "#A07A2C" : "#A07A2C40",
+                  borderColor: kindFilter === null ? color.gold : withAlpha("gold", 0x40 / 255),
                 }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: kindFilter === null ? "#FAF5EA" : "#A07A2C" }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: kindFilter === null ? color.parchment : color.gold }}>
                   All
                 </Text>
               </Pressable>
@@ -864,12 +865,12 @@ export default function CampaignDetailScreen() {
                     paddingHorizontal: 10,
                     paddingVertical: 4,
                     borderRadius: 12,
-                    backgroundColor: kindFilter === k ? "#A07A2C" : "transparent",
+                    backgroundColor: kindFilter === k ? color.gold : "transparent",
                     borderWidth: 1,
-                    borderColor: kindFilter === k ? "#A07A2C" : "#A07A2C40",
+                    borderColor: kindFilter === k ? color.gold : withAlpha("gold", 0x40 / 255),
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: kindFilter === k ? "#FAF5EA" : "#A07A2C" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: kindFilter === k ? color.parchment : color.gold }}>
                     {KIND_LABELS[k]}
                   </Text>
                 </Pressable>
@@ -890,11 +891,11 @@ export default function CampaignDetailScreen() {
                     paddingVertical: 4,
                     borderRadius: 10,
                     borderWidth: 1,
-                    borderColor: tagFilter === tag ? "#A07A2C" : "#A07A2C40",
-                    backgroundColor: tagFilter === tag ? "#A07A2C15" : "transparent",
+                    borderColor: tagFilter === tag ? color.gold : withAlpha("gold", 0x40 / 255),
+                    backgroundColor: tagFilter === tag ? withAlpha("gold", 0x15 / 255) : "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: tagFilter === tag ? "#A07A2C" : "#A07A2C80" }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: tagFilter === tag ? color.gold : withAlpha("gold", 0x80 / 255) }}>
                     {tag}
                   </Text>
                 </Pressable>
@@ -907,9 +908,9 @@ export default function CampaignDetailScreen() {
               value={search}
               onChangeText={setSearch}
               placeholder="Search entities…"
-              placeholderTextColor="#8A7D6D"
+              placeholderTextColor={color.inkFaint}
               className="border border-ink/10 rounded-sm px-3 py-2 mb-2"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014" }}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink }}
             />
           )}
           {entities.length > 0 && (
@@ -923,11 +924,11 @@ export default function CampaignDetailScreen() {
                     paddingVertical: 3,
                     borderRadius: 2,
                     borderWidth: 1,
-                    borderColor: entitySort === s ? "#A07A2C60" : "#2C201415",
-                    backgroundColor: entitySort === s ? "#A07A2C10" : "transparent",
+                    borderColor: entitySort === s ? withAlpha("gold", 0x60 / 255) : withAlpha("ink", 0x15 / 255),
+                    backgroundColor: entitySort === s ? withAlpha("gold", 0x10 / 255) : "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: entitySort === s ? "#A07A2C" : "#5A4D3E60", textTransform: "capitalize" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: entitySort === s ? color.gold : withAlpha("inkSoft", 0x60 / 255), textTransform: "capitalize" }}>
                     {s === "updated" ? "Recent" : s}
                   </Text>
                 </Pressable>
@@ -940,11 +941,11 @@ export default function CampaignDetailScreen() {
                     paddingVertical: 3,
                     borderRadius: 2,
                     borderWidth: 1,
-                    borderColor: showGmOnly ? "#7A241860" : "#2C201415",
-                    backgroundColor: showGmOnly ? "#7A241810" : "transparent",
+                    borderColor: showGmOnly ? withAlpha("oxblood", 0x60 / 255) : withAlpha("ink", 0x15 / 255),
+                    backgroundColor: showGmOnly ? withAlpha("oxblood", 0x10 / 255) : "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: showGmOnly ? "#7A2418" : "#5A4D3E60" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: showGmOnly ? color.oxblood : withAlpha("inkSoft", 0x60 / 255) }}>
                     GM Only
                   </Text>
                 </Pressable>
@@ -952,8 +953,8 @@ export default function CampaignDetailScreen() {
             </View>
           )}
           {entitiesByKind.length === 0 && sessions.length === 0 ? (
-            <View style={{ marginTop: 8, padding: 16, borderWidth: 1, borderColor: "#A07A2C20", borderRadius: 2, backgroundColor: "#A07A2C05" }}>
-              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014", marginBottom: 12 }}>
+            <View style={{ marginTop: 8, padding: 16, borderWidth: 1, borderColor: withAlpha("gold", 0x20 / 255), borderRadius: 2, backgroundColor: withAlpha("gold", 0x05 / 255) }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: color.ink, marginBottom: 12 }}>
                 First steps
               </Text>
               {[
@@ -964,11 +965,11 @@ export default function CampaignDetailScreen() {
                 <Pressable
                   key={i}
                   onPress={step.action}
-                  style={{ flexDirection: "row", alignItems: "center", paddingVertical: 10, borderBottomWidth: i < 2 ? 0.5 : 0, borderBottomColor: "#A07A2C15" }}
+                  style={{ flexDirection: "row", alignItems: "center", paddingVertical: 10, borderBottomWidth: i < 2 ? 0.5 : 0, borderBottomColor: withAlpha("gold", 0x15 / 255) }}
                 >
                   <Text style={{ fontSize: 18, marginRight: 12 }}>{step.icon}</Text>
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 1 }}>{step.label}</Text>
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C60" }}>›</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, flex: 1 }}>{step.label}</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: withAlpha("gold", 0x60 / 255) }}>›</Text>
                 </Pressable>
               ))}
             </View>
@@ -980,7 +981,7 @@ export default function CampaignDetailScreen() {
             entitiesByKind.map((group) => (
               <View key={group.kind} className="mb-4">
                 <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: KIND_COLORS[group.kind] ?? "#4A3F32", marginRight: 6 }} />
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: KIND_COLORS[group.kind] ?? color.borderDark, marginRight: 6 }} />
                   <Text
                     className="text-ink/50 text-xs uppercase tracking-wider"
                     style={{ fontFamily: "Inter_500Medium" }}
@@ -1018,11 +1019,11 @@ export default function CampaignDetailScreen() {
                         {(entity.attrs as Record<string, unknown> | null)?.["imageUri"] ? (
                           <Image
                             source={{ uri: String((entity.attrs as Record<string, unknown>)["imageUri"]) }}
-                            style={{ width: 28, height: 28, borderRadius: 14, marginRight: 8, borderWidth: 1, borderColor: "#A07A2C30" }}
+                            style={{ width: 28, height: 28, borderRadius: 14, marginRight: 8, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255) }}
                           />
                         ) : null}
                         {isPinned && (
-                          <Text style={{ fontSize: 10, color: "#A07A2C80", marginRight: 4 }}>★</Text>
+                          <Text style={{ fontSize: 10, color: withAlpha("gold", 0x80 / 255), marginRight: 4 }}>★</Text>
                         )}
                         <Text
                           className="text-ink text-base flex-1"
@@ -1031,20 +1032,20 @@ export default function CampaignDetailScreen() {
                           {entity.name}
                         </Text>
                         {entity.kind === "pc" && (entity.attrs as Record<string, unknown> | null)?.["level"] ? (
-                          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#C9A24A", marginLeft: 6 }}>
+                          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: color.goldBright, marginLeft: 6 }}>
                             Lv {String((entity.attrs as Record<string, unknown>)["level"])}
                           </Text>
                         ) : null}
                         {(entity.kind === "npc" || entity.kind === "pc") && (() => {
                           const st = (entity.attrs as Record<string, unknown> | null)?.["npcStatus"];
                           if (st === "dead") return (
-                            <View style={{ marginLeft: 6, paddingHorizontal: 5, paddingVertical: 1, borderRadius: 2, backgroundColor: "#7A241810", borderWidth: 1, borderColor: "#7A241840" }}>
-                              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#7A2418" }}>☠ Dead</Text>
+                            <View style={{ marginLeft: 6, paddingHorizontal: 5, paddingVertical: 1, borderRadius: 2, backgroundColor: withAlpha("oxblood", 0x10 / 255), borderWidth: 1, borderColor: withAlpha("oxblood", 0x40 / 255) }}>
+                              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: color.oxblood }}>☠ Dead</Text>
                             </View>
                           );
                           if (st === "missing") return (
-                            <View style={{ marginLeft: 6, paddingHorizontal: 5, paddingVertical: 1, borderRadius: 2, backgroundColor: "#A07A2C10", borderWidth: 1, borderColor: "#A07A2C40" }}>
-                              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#A07A2C" }}>? Missing</Text>
+                            <View style={{ marginLeft: 6, paddingHorizontal: 5, paddingVertical: 1, borderRadius: 2, backgroundColor: withAlpha("gold", 0x10 / 255), borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255) }}>
+                              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: color.gold }}>? Missing</Text>
                             </View>
                           );
                           return null;
@@ -1067,7 +1068,7 @@ export default function CampaignDetailScreen() {
                           {entity.summary}
                         </Text>
                       ) : (entity.attrs as Record<string, unknown> | null)?.["role"] ? (
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60", marginTop: 1 }} numberOfLines={1}>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x60 / 255), marginTop: 1 }} numberOfLines={1}>
                           {String((entity.attrs as Record<string, unknown>)["role"])}
                         </Text>
                       ) : null}
@@ -1077,8 +1078,8 @@ export default function CampaignDetailScreen() {
                         return (
                           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 3 }}>
                             {(tags as string[]).map((tag, ti) => (
-                              <View key={ti} style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8, borderWidth: 1, borderColor: "#A07A2C30", backgroundColor: "#A07A2C08" }}>
-                                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80" }}>{tag}</Text>
+                              <View key={ti} style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255), backgroundColor: withAlpha("gold", 0x08 / 255) }}>
+                                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("gold", 0x80 / 255) }}>{tag}</Text>
                               </View>
                             ))}
                           </View>
@@ -1114,13 +1115,15 @@ export default function CampaignDetailScreen() {
               key={btn.label}
               onPress={() => btn.action ? btn.action() : router.push(btn.path as Parameters<typeof router.push>[0])}
               className="mb-2 mr-2 px-4 py-2.5 border rounded-sm items-center"
-              style={{ borderColor: btn.gold ? "#A07A2C40" : "#8A7D6D30" }}
+              style={{ borderColor: btn.gold ? withAlpha("gold", 0x40 / 255) : withAlpha("inkFaint", 0x30 / 255) }}
             >
               <Text
                 style={{
                   fontFamily: "Inter_500Medium",
                   fontSize: 11,
-                  color: btn.gold ? "#A07A2C" : "#5A4D3E",
+                  // goldText, not gold: these are functional labels and must
+                  // clear WCAG AA on parchment (gold is 3.6:1, goldText 4.6:1).
+                  color: btn.gold ? color.goldText : color.inkSoft,
                   textTransform: "uppercase",
                   letterSpacing: 1,
                 }}
@@ -1132,9 +1135,9 @@ export default function CampaignDetailScreen() {
           <Pressable
             onPress={() => setShowDice(true)}
             className="mb-2 mr-2 px-4 py-2.5 border rounded-sm items-center"
-            style={{ borderColor: "#A07A2C40" }}
+            style={{ borderColor: withAlpha("gold", 0x40 / 255) }}
           >
-            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.goldText, textTransform: "uppercase", letterSpacing: 1 }}>
               Dice
             </Text>
           </Pressable>
@@ -1151,7 +1154,7 @@ export default function CampaignDetailScreen() {
             <Text className="text-gold text-xs uppercase tracking-widest" style={{ fontFamily: "Inter_600SemiBold" }}>
               GM Toolbox
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C60" }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("gold", 0x60 / 255) }}>
               {showToolbox ? "▼" : "▶"}
             </Text>
           </Pressable>
@@ -1190,13 +1193,13 @@ export default function CampaignDetailScreen() {
                   key={btn.label}
                   onPress={() => router.push(btn.path as Parameters<typeof router.push>[0])}
                   className="mb-2 mr-2 px-4 py-2.5 border rounded-sm items-center"
-                  style={{ borderColor: "#8A7D6D30" }}
+                  style={{ borderColor: withAlpha("inkFaint", 0x30 / 255) }}
                 >
                   <Text
                     style={{
                       fontFamily: "Inter_500Medium",
                       fontSize: 11,
-                      color: "#5A4D3E",
+                      color: color.inkSoft,
                       textTransform: "uppercase",
                       letterSpacing: 1,
                     }}
@@ -1227,8 +1230,8 @@ export default function CampaignDetailScreen() {
             onPress={() => setShowQuickAdd(false)}
             style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", paddingHorizontal: 24 }}
           >
-            <Pressable onPress={() => {}} style={{ backgroundColor: "#FAF5EA", borderRadius: 4, borderWidth: 1, borderColor: "#A07A2C30", padding: 20 }}>
-              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 16 }}>
+            <Pressable onPress={() => {}} style={{ backgroundColor: color.parchment, borderRadius: 4, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255), padding: 20 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 16 }}>
                 Add Entity
               </Text>
 
@@ -1243,11 +1246,11 @@ export default function CampaignDetailScreen() {
                       paddingVertical: 5,
                       borderRadius: 2,
                       borderWidth: 1,
-                      borderColor: quickAddKind === k ? "#A07A2C" : "#A07A2C30",
-                      backgroundColor: quickAddKind === k ? "#A07A2C15" : "transparent",
+                      borderColor: quickAddKind === k ? color.gold : withAlpha("gold", 0x30 / 255),
+                      backgroundColor: quickAddKind === k ? withAlpha("gold", 0x15 / 255) : "transparent",
                     }}
                   >
-                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: quickAddKind === k ? "#A07A2C" : "#5A4D3E", textTransform: "capitalize" }}>
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: quickAddKind === k ? color.gold : color.inkSoft, textTransform: "capitalize" }}>
                       {KIND_LABELS[k] ?? k}
                     </Text>
                   </Pressable>
@@ -1258,16 +1261,16 @@ export default function CampaignDetailScreen() {
                 value={quickAddName}
                 onChangeText={setQuickAddName}
                 placeholder="Name"
-                placeholderTextColor="#2C201440"
+                placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                 autoFocus
-                style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 20 }}
+                style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 20 }}
                 onSubmitEditing={quickAddEntity}
                 returnKeyType="done"
               />
 
               <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 12 }}>
                 <Pressable onPress={() => setShowQuickAdd(false)} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#5A4D3E" }}>Cancel</Text>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.inkSoft }}>Cancel</Text>
                 </Pressable>
                 <Pressable
                   onPress={quickAddEntity}
@@ -1276,12 +1279,12 @@ export default function CampaignDetailScreen() {
                     paddingHorizontal: 20,
                     paddingVertical: 10,
                     borderRadius: 2,
-                    backgroundColor: quickAddName.trim() ? "#7A2418" : "#7A241830",
+                    backgroundColor: quickAddName.trim() ? color.oxblood : withAlpha("oxblood", 0x30 / 255),
                     borderWidth: 1,
-                    borderColor: "#A07A2C30",
+                    borderColor: withAlpha("gold", 0x30 / 255),
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: quickAddName.trim() ? "#FAF5EA" : "#FAF5EA60", textTransform: "uppercase", letterSpacing: 1 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: quickAddName.trim() ? color.parchment : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
                     Create
                   </Text>
                 </Pressable>
@@ -1302,11 +1305,11 @@ export default function CampaignDetailScreen() {
           onPress={() => setShowSwitcher(false)}
           style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" }}
         >
-          <Pressable onPress={() => {}} style={{ backgroundColor: "#FAF5EA", borderTopLeftRadius: 8, borderTopRightRadius: 8, borderTopWidth: 1, borderColor: "#A07A2C30", paddingBottom: 32 }}>
-            <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C20", flexDirection: "row", alignItems: "center" }}>
-              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: "#2C2014", flex: 1 }}>Switch Campaign</Text>
+          <Pressable onPress={() => {}} style={{ backgroundColor: color.parchment, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderTopWidth: 1, borderColor: withAlpha("gold", 0x30 / 255), paddingBottom: 32 }}>
+            <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 0.5, borderBottomColor: withAlpha("gold", 0x20 / 255), flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: color.ink, flex: 1 }}>Switch Campaign</Text>
               <Pressable onPress={() => setShowSwitcher(false)}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 18, color: "#A07A2C" }}>✕</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 18, color: color.gold }}>✕</Text>
               </Pressable>
             </View>
             {allCampaigns.map((c) => {
@@ -1320,16 +1323,16 @@ export default function CampaignDetailScreen() {
                       router.replace(`/campaign/${c.id}` as Parameters<typeof router.replace>[0]);
                     }
                   }}
-                  style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C12", backgroundColor: isCurrent ? "#A07A2C08" : "transparent" }}
+                  style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: withAlpha("gold", 0x12 / 255), backgroundColor: isCurrent ? withAlpha("gold", 0x08 / 255) : "transparent" }}
                 >
                   {isCurrent && (
-                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C", marginRight: 8 }}>●</Text>
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.gold, marginRight: 8 }}>●</Text>
                   )}
-                  <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 17, color: isCurrent ? "#A07A2C" : "#2C2014", flex: 1 }}>
+                  <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 17, color: isCurrent ? color.gold : color.ink, flex: 1 }}>
                     {c.name}
                   </Text>
                   {c.status === "archived" && (
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D80", textTransform: "uppercase", letterSpacing: 1 }}>Archived</Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkFaint", 0x80 / 255), textTransform: "uppercase", letterSpacing: 1 }}>Archived</Text>
                   )}
                 </Pressable>
               );
@@ -1345,7 +1348,7 @@ export default function CampaignDetailScreen() {
               }}
               style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 14, marginTop: 4 }}
             >
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>← All Campaigns</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.gold }}>← All Campaigns</Text>
             </Pressable>
           </Pressable>
         </Pressable>
@@ -1357,10 +1360,10 @@ export default function CampaignDetailScreen() {
 function StatPill({ label, value }: { label: string; value: string }) {
   return (
     <View style={{ alignItems: "center" }}>
-      <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014" }}>
+      <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: color.ink }}>
         {value}
       </Text>
-      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1 }}>
+      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1 }}>
         {label}
       </Text>
     </View>

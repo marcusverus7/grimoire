@@ -8,6 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { db, getKv, setKv } from "@/lib/db";
 import { schema } from "@grimoire/core";
 import { randomUUID } from "expo-crypto";
+import { color, withAlpha } from "@/lib/theme";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type ActivityType =
@@ -157,23 +158,23 @@ export default function DowntimeScreen() {
     <ParchmentScreen>
       <Stack.Screen options={{ title: "Downtime Activities", headerBackTitle: "Campaign" }} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 4 }}>
           Downtime Activities
         </Text>
         <GoldRule />
 
         <Pressable
           onPress={openAdd}
-          style={{ backgroundColor: "#2C2014", borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
+          style={{ backgroundColor: color.ink, borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
         >
-          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: "#C9A24A", letterSpacing: 1 }}>
+          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: color.goldBright, letterSpacing: 1 }}>
             + Add Activity
           </Text>
         </Pressable>
 
         {/* Active activities */}
         {active.length === 0 && (
-          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#8A7D6D60", textAlign: "center", paddingVertical: 20 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("inkFaint", 0x60 / 255), textAlign: "center", paddingVertical: 20 }}>
             No active downtime activities.{"\n"}Add activities to track what PCs are doing between sessions.
           </Text>
         )}
@@ -195,10 +196,10 @@ export default function DowntimeScreen() {
               onPress={() => setShowDone(s => !s)}
               style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 10, marginBottom: 8 }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1 }}>
                 Completed ({done.length})
               </Text>
-              <Text style={{ fontSize: 12, color: "#8A7D6D" }}>{showDone ? "▼" : "▶"}</Text>
+              <Text style={{ fontSize: 12, color: color.inkFaint }}>{showDone ? "▼" : "▶"}</Text>
             </Pressable>
             {showDone && done.map(a => (
               <ActivityCard
@@ -217,10 +218,10 @@ export default function DowntimeScreen() {
 
       {/* Add/Edit Modal */}
       <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={{ flex: 1, backgroundColor: "#00000060", justifyContent: "flex-end" }}>
-          <View style={{ backgroundColor: "#F5EDD8", borderTopLeftRadius: 12, borderTopRightRadius: 12, padding: 20, maxHeight: "90%" }}>
+        <View style={{ flex: 1, backgroundColor: withAlpha("shadow", 0x60 / 255), justifyContent: "flex-end" }}>
+          <View style={{ backgroundColor: color.parchmentWarm, borderTopLeftRadius: 12, borderTopRightRadius: 12, padding: 20, maxHeight: "90%" }}>
             <ScrollView keyboardShouldPersistTaps="handled">
-              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 15, color: "#2C2014", marginBottom: 16 }}>
+              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 15, color: color.ink, marginBottom: 16 }}>
                 {editActivity ? "Edit Activity" : "New Downtime Activity"}
               </Text>
 
@@ -230,16 +231,16 @@ export default function DowntimeScreen() {
                   <Pressable
                     key={pc.id}
                     onPress={() => { setFpc(pc.name); setFpcId(pc.id); }}
-                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fpc === pc.name ? "#2C2014" : "#C4B49A", backgroundColor: fpc === pc.name ? "#2C2014" : "#E8DCC8" }}
+                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fpc === pc.name ? color.ink : color.border, backgroundColor: fpc === pc.name ? color.ink : color.parchmentEdge }}
                   >
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: fpc === pc.name ? "#C9A24A" : "#4A3F32" }}>{pc.name}</Text>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: fpc === pc.name ? color.goldBright : color.borderDark }}>{pc.name}</Text>
                   </Pressable>
                 ))}
                 {pcs.length === 0 && (
                   <TextInput
                     value={fpc} onChangeText={setFpc}
                     placeholder="PC name"
-                    placeholderTextColor="#8A7D6D80"
+                    placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
                     style={inputStyle}
                   />
                 )}
@@ -254,15 +255,15 @@ export default function DowntimeScreen() {
                       setFtype(t);
                       if (t !== "Custom") setFrequired(String(ACTIVITY_DEFAULT_DAYS[t]));
                     }}
-                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: ftype === t ? "#A07A2C" : "#C4B49A", backgroundColor: ftype === t ? "#A07A2C20" : "#E8DCC8" }}
+                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: ftype === t ? color.gold : color.border, backgroundColor: ftype === t ? withAlpha("gold", 0x20 / 255) : color.parchmentEdge }}
                   >
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: ftype === t ? "#A07A2C" : "#4A3F32" }}>{t}</Text>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: ftype === t ? color.gold : color.borderDark }}>{t}</Text>
                   </Pressable>
                 ))}
               </ScrollView>
 
               {ftype !== "Custom" && (
-                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 12, color: "#8A7D6D", marginBottom: 12 }}>
+                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 12, color: color.inkFaint, marginBottom: 12 }}>
                   {ACTIVITY_DESCRIPTIONS[ftype]}
                 </Text>
               )}
@@ -273,7 +274,7 @@ export default function DowntimeScreen() {
                   <TextInput
                     value={fcustom} onChangeText={setFcustom}
                     placeholder="e.g. Building a Safe House"
-                    placeholderTextColor="#8A7D6D80"
+                    placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
                     style={inputStyle}
                   />
                 </>
@@ -300,17 +301,17 @@ export default function DowntimeScreen() {
               <TextInput
                 value={fnotes} onChangeText={setFnotes}
                 placeholder="Outcome, cost, complications…"
-                placeholderTextColor="#8A7D6D80"
+                placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
                 multiline numberOfLines={2}
                 style={[inputStyle, { minHeight: 60, textAlignVertical: "top" }]}
               />
 
               <View style={{ flexDirection: "row", gap: 8, marginTop: 4, marginBottom: 16 }}>
-                <Pressable onPress={() => setModalVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#4A3F32" }}>Cancel</Text>
+                <Pressable onPress={() => setModalVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
                 </Pressable>
-                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: "#2C2014", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#C9A24A" }}>
+                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>
                     {editActivity ? "Save" : "Add"}
                   </Text>
                 </Pressable>
@@ -324,13 +325,13 @@ export default function DowntimeScreen() {
 }
 
 const inputStyle = {
-  borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10,
-  fontFamily: "Inter_400Regular" as const, fontSize: 13, color: "#2C2014",
+  borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10,
+  fontFamily: "Inter_400Regular" as const, fontSize: 13, color: color.ink,
   backgroundColor: "#FFFDF8", marginBottom: 12,
 };
 
 function FL({ label }: { label: string }) {
-  return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;
+  return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;
 }
 
 function ActivityCard({
@@ -349,28 +350,28 @@ function ActivityCard({
     <Pressable
       onPress={onEdit}
       onLongPress={onDelete}
-      style={{ backgroundColor: dimmed ? "#E8DCC808" : "#E8DCC820", borderRadius: 4, borderWidth: 1, borderColor: "#C4B49A", padding: 12, marginBottom: 10 }}
+      style={{ backgroundColor: dimmed ? withAlpha("parchmentEdge", 0x08 / 255) : withAlpha("parchmentEdge", 0x20 / 255), borderRadius: 4, borderWidth: 1, borderColor: color.border, padding: 12, marginBottom: 10 }}
     >
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: dimmed ? "#8A7D6D" : "#2C2014" }}>{activity.pcName}</Text>
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: dimmed ? "#8A7D6D80" : "#4A3F32" }}>{label}</Text>
+          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: dimmed ? color.inkFaint : color.ink }}>{activity.pcName}</Text>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: dimmed ? withAlpha("inkFaint", 0x80 / 255) : color.borderDark }}>{label}</Text>
         </View>
         <View style={{ alignItems: "flex-end" }}>
-          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: activity.complete ? "#2D7A4F" : "#A07A2C" }}>
+          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: activity.complete ? color.successBright : color.gold }}>
             {activity.daysSpent}/{activity.daysRequired}d
           </Text>
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D" }}>days</Text>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint }}>days</Text>
         </View>
       </View>
 
       {/* Progress bar */}
-      <View style={{ height: 4, backgroundColor: "#C4B49A40", borderRadius: 2, marginBottom: 8 }}>
-        <View style={{ height: 4, width: `${Math.round(pct * 100)}%`, backgroundColor: activity.complete ? "#2D7A4F" : "#A07A2C", borderRadius: 2 }} />
+      <View style={{ height: 4, backgroundColor: withAlpha("border", 0x40 / 255), borderRadius: 2, marginBottom: 8 }}>
+        <View style={{ height: 4, width: `${Math.round(pct * 100)}%`, backgroundColor: activity.complete ? color.successBright : color.gold, borderRadius: 2 }} />
       </View>
 
       {activity.notes ? (
-        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: dimmed ? "#8A7D6D80" : "#4A3F32", marginBottom: 8 }} numberOfLines={2}>
+        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: dimmed ? withAlpha("inkFaint", 0x80 / 255) : color.borderDark, marginBottom: 8 }} numberOfLines={2}>
           {activity.notes}
         </Text>
       ) : null}
@@ -379,16 +380,16 @@ function ActivityCard({
         {!activity.complete && (
           <Pressable
             onPress={onAddDay}
-            style={{ flex: 1, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, padding: 6, alignItems: "center" }}
+            style={{ flex: 1, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, padding: 6, alignItems: "center" }}
           >
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#A07A2C" }}>+1 Day</Text>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.gold }}>+1 Day</Text>
           </Pressable>
         )}
         <Pressable
           onPress={onToggle}
-          style={{ flex: 1, borderWidth: 1, borderColor: activity.complete ? "#2D7A4F40" : "#2D7A4F40", borderRadius: 2, padding: 6, alignItems: "center", backgroundColor: activity.complete ? "#2D7A4F10" : "transparent" }}
+          style={{ flex: 1, borderWidth: 1, borderColor: activity.complete ? withAlpha("successBright", 0x40 / 255) : withAlpha("successBright", 0x40 / 255), borderRadius: 2, padding: 6, alignItems: "center", backgroundColor: activity.complete ? withAlpha("successBright", 0x10 / 255) : "transparent" }}
         >
-          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#2D7A4F" }}>
+          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.successBright }}>
             {activity.complete ? "✓ Done" : "Mark Done"}
           </Text>
         </Pressable>

@@ -8,7 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { WaxSeal } from "@/components/WaxSeal";
 import { schema } from "@grimoire/core";
-import { exportCampaign, slugify, richTextToMarkdown, exportableCampaignNamespaces, buildKeepsakeBook } from "@grimoire/core";
+import { exportCampaign, slugify, richTextToMarkdown, exportableCampaignNamespaces, buildKeepsakeBook, can } from "@grimoire/core";
 import type { RichTextNode, GmToolData } from "@grimoire/core";
 import { color, withAlpha } from "@/lib/theme";
 
@@ -175,6 +175,14 @@ export default function ExportScreen() {
    * path works identically on iOS, Android and web.
    */
   const doKeepsake = async () => {
+    // Purchase seam: allowed while the store integration doesn't exist; when
+    // keepsake IAP ships, can() checks the receipt here and this alert becomes
+    // the purchase sheet. Export itself stays free forever regardless.
+    const gate = can("bindKeepsake", "free", { activeCampaigns: 0, aiRecapsThisMonth: 0 });
+    if (!gate.allowed) {
+      Alert.alert("Keepsake unavailable", gate.reason ?? "Purchase required.");
+      return;
+    }
     setBinding(true);
     try {
       const campaign = db.select().from(schema.campaigns).where(eq(schema.campaigns.id, campaignId)).get();

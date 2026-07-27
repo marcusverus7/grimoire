@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { eq, and } from "drizzle-orm";
 import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
+import { publishRecap, recapShareUrl } from "@/lib/publishRecap";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema, richTextToMarkdown } from "@grimoire/core";
@@ -41,6 +42,7 @@ export default function SessionDetailScreen() {
   >([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [recapSlug, setRecapSlug] = useState<string | null>(null);
+  const [recapId, setRecapId] = useState<string | null>(null);
 
   const load = useCallback(() => {
     const s = db
@@ -98,11 +100,12 @@ export default function SessionDetailScreen() {
       setQuotes(sessionQuotes);
 
       const recap = db
-        .select({ shareSlug: schema.recaps.shareSlug })
+        .select({ id: schema.recaps.id, shareSlug: schema.recaps.shareSlug })
         .from(schema.recaps)
         .where(eq(schema.recaps.sessionId, sessionId))
         .get();
       setRecapSlug(recap?.shareSlug ?? null);
+      setRecapId(recap?.id ?? null);
     }
   }, [sessionId]);
 
@@ -479,7 +482,19 @@ export default function SessionDetailScreen() {
             {recapSlug ? (
               <Pressable
                 onPress={async () => {
-                  const url = `https://grimoire-recap-web.vercel.app/r/${recapSlug}`;
+                  // Publish first — the web viewer reads from Supabase, so an
+                  // unpublished link is a 404.
+                  if (recapId) {
+                    const published = await publishRecap(recapId);
+                    if (!published.ok) {
+                      Alert.alert(
+                        "Can't share yet",
+                        `Publishing to the web failed (${published.error}). Try again with a connection.`,
+                      );
+                      return;
+                    }
+                  }
+                  const url = `https://${recapShareUrl(recapSlug)}`;
                   await Share.share({ title: `Session ${session.number} Recap`, message: url, url });
                 }}
                 style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C40", backgroundColor: "#A07A2C0A", alignItems: "center" }}

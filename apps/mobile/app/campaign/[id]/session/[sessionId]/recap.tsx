@@ -10,8 +10,9 @@ import {
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { eq, and } from "drizzle-orm";
-import { db } from "@/lib/db";
+import { db, getKv, setKv } from "@/lib/db";
 import { newId } from "@/lib/id";
+import { publishRecap, recapShareUrl } from "@/lib/publishRecap";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { WaxSeal } from "@/components/WaxSeal";
@@ -22,6 +23,7 @@ import {
   buildAiRecapPrompt,
   richTextToMarkdown,
   generateShareSlug,
+  can,
 } from "@grimoire/core";
 import type { RichTextNode, RichTextDoc, RecapTone, Beat, AiRecapInput } from "@grimoire/core";
 
@@ -108,8 +110,25 @@ export default function RecapScreen() {
     );
   };
 
+  // Month-scoped AI usage counter (kv). Tracked NOW, while everything is free,
+  // so the free-tier ration is enforceable the day monetization flips on —
+  // a limit you never measured is a limit you can never honestly enforce.
+  const aiUsageKey = () => `ai_recaps_used_${new Date().toISOString().slice(0, 7)}`; // e.g. 2026-07
+  const aiRecapsThisMonth = () => parseInt(getKv(aiUsageKey()) ?? "0", 10) || 0;
+
   const generateAiRecap = async () => {
     if (!session?.body) return;
+
+    // Entitlement gate — always allows while MONETIZATION_ENABLED is false.
+    const gate = can("generateAiRecap", "free", {
+      activeCampaigns: 0,
+      aiRecapsThisMonth: aiRecapsThisMonth(),
+    });
+    if (!gate.allowed) {
+      Alert.alert("AI recap limit reached", gate.reason ?? "Upgrade for unlimited AI recaps.");
+      return;
+    }
+
     setAiGenerating(true);
     setAiText(null);
     try {
@@ -152,6 +171,7 @@ export default function RecapScreen() {
       const data = (await res.json()) as { recapText?: string; error?: string };
       if (!data.recapText) throw new Error(data.error ?? "No recap text returned");
 
+      setKv(aiUsageKey(), String(aiRecapsThisMonth() + 1));
       setAiText(data.recapText);
       setEditedAiText(data.recapText);
       setPreview(true);
@@ -197,28 +217,37 @@ export default function RecapScreen() {
       const now = Date.now();
       const saveDoc = buildSaveDoc();
 
+      let recapId: string;
+      let slug: string;
       if (existingRecap) {
+        recapId = existingRecap.id;
+        slug = existingRecap.shareSlug;
         db.update(schema.recaps)
           .set({ body: saveDoc, tone, publishedAt: new Date(now) })
-          .where(eq(schema.recaps.id, existingRecap.id))
+          .where(eq(schema.recaps.id, recapId))
           .run();
-
-        Alert.alert(
-          "Recap Updated",
-          `Share link: grimoire-recap-web.vercel.app/r/${existingRecap.shareSlug}`,
-          [{ text: "OK", onPress: () => router.back() }],
-        );
       } else {
-        const recapId = newId();
-        const slug = generateShareSlug();
+        recapId = newId();
+        slug = generateShareSlug();
         db.insert(schema.recaps)
           .values({ id: recapId, sessionId, body: saveDoc, tone, shareSlug: slug, publishedAt: new Date(now) })
           .run();
-
         setExistingRecap({ id: recapId, shareSlug: slug });
+      }
+
+      // Push to the web so the link actually resolves — the viewer reads from
+      // Supabase, not this device. Without this step the link is a 404.
+      const published = await publishRecap(recapId);
+      const title = existingRecap ? "Recap Updated" : "Recap Created";
+      if (published.ok) {
+        Alert.alert(title, `Share link (live): ${recapShareUrl(slug)}`, [
+          { text: "OK", onPress: () => router.back() },
+        ]);
+      } else {
         Alert.alert(
-          "Recap Created",
-          `Share link: grimoire-recap-web.vercel.app/r/${slug}`,
+          `${title} — not published`,
+          `Saved on this device, but publishing to the web failed (${published.error}). ` +
+            `The share link won't work until you save again with a connection.`,
           [{ text: "OK", onPress: () => router.back() }],
         );
       }

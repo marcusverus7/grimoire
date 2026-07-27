@@ -40,6 +40,13 @@ export const color = {
 
   gold: "#A07A2C",
   goldBright: "#C9A24A",
+  /**
+   * WCAG-AA gold for FUNCTIONAL text on parchment. color.gold is 3.6:1 against
+   * #FAF5EA — fine for ornament, below the 4.5:1 minimum for the small
+   * uppercase labels it was being used on. Same hue, darkened to 4.63:1.
+   * Use goldText for text people must read, gold for decoration.
+   */
+  goldText: "#8A6A24",
 
   oxblood: "#7A2418",
   oxbloodLight: "#9A3428",

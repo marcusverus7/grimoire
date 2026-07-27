@@ -21,6 +21,7 @@ describe("entitlements (dark-launched)", () => {
       "cloudBackup",
       "prepTemplates",
       "secretsTools",
+      "bindKeepsake",
     ] as const) {
       expect(can(cap, "free", heavyUsage).allowed).toBe(true);
     }

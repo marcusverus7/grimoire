@@ -8,6 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { db, getKv, setKv } from "@/lib/db";
 import { schema } from "@grimoire/core";
 import { randomUUID } from "expo-crypto";
+import { color, withAlpha } from "@/lib/theme";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Severity = "Minor" | "Major" | "Severe" | "Permanent";
@@ -61,7 +62,7 @@ const INJURY_PRESETS: Record<Severity, Array<{ description: string; effect: stri
 };
 
 const SEVERITY_COLORS: Record<Severity, string> = {
-  Minor: "#2D7A4F",
+  Minor: color.successBright,
   Major: "#8A5C1A",
   Severe: "#8A1A1A",
   Permanent: "#3A0A0A",
@@ -179,22 +180,22 @@ export default function InjuryTrackerScreen() {
     <ParchmentScreen>
       <Stack.Screen options={{ title: "Injury Tracker", headerBackTitle: "Campaign" }} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 4 }}>
           Injury Tracker
         </Text>
         <GoldRule />
 
         <Pressable
           onPress={openAdd}
-          style={{ backgroundColor: "#2C2014", borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
+          style={{ backgroundColor: color.ink, borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
         >
-          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: "#C9A24A", letterSpacing: 1 }}>
+          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: color.goldBright, letterSpacing: 1 }}>
             + Record Injury
           </Text>
         </Pressable>
 
         {active.length === 0 && recovered.length === 0 && (
-          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#8A7D6D60", textAlign: "center", paddingVertical: 20 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("inkFaint", 0x60 / 255), textAlign: "center", paddingVertical: 20 }}>
             No injuries tracked.{"\n"}Record injuries to monitor their effects and healing.
           </Text>
         )}
@@ -206,10 +207,10 @@ export default function InjuryTrackerScreen() {
         {recovered.length > 0 && (
           <View>
             <Pressable onPress={() => setShowRecovered(s => !s)} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 10 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1 }}>
                 Recovered ({recovered.length})
               </Text>
-              <Text style={{ fontSize: 12, color: "#8A7D6D" }}>{showRecovered ? "▼" : "▶"}</Text>
+              <Text style={{ fontSize: 12, color: color.inkFaint }}>{showRecovered ? "▼" : "▶"}</Text>
             </Pressable>
             {showRecovered && recovered.map(inj => (
               <InjuryCard key={inj.id} injury={inj} onEdit={() => openEdit(inj)} onDelete={() => removeInjury(inj.id)} onAdvanceDay={() => {}} dimmed />
@@ -220,10 +221,10 @@ export default function InjuryTrackerScreen() {
 
       {/* Add/Edit Modal */}
       <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={{ flex: 1, backgroundColor: "#00000060", justifyContent: "flex-end" }}>
-          <View style={{ backgroundColor: "#F5EDD8", borderTopLeftRadius: 12, borderTopRightRadius: 12, padding: 20, maxHeight: "92%" }}>
+        <View style={{ flex: 1, backgroundColor: withAlpha("shadow", 0x60 / 255), justifyContent: "flex-end" }}>
+          <View style={{ backgroundColor: color.parchmentWarm, borderTopLeftRadius: 12, borderTopRightRadius: 12, padding: 20, maxHeight: "92%" }}>
             <ScrollView keyboardShouldPersistTaps="handled">
-              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 15, color: "#2C2014", marginBottom: 16 }}>
+              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 15, color: color.ink, marginBottom: 16 }}>
                 {editInjury ? "Edit Injury" : "Record Injury"}
               </Text>
 
@@ -231,14 +232,14 @@ export default function InjuryTrackerScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
                 {entities.map(e => (
                   <Pressable key={e.id} onPress={() => { setFEntityId(e.id); setFEntityName(e.name); }}
-                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fEntityId === e.id ? "#2C2014" : "#C4B49A", backgroundColor: fEntityId === e.id ? "#2C2014" : "#E8DCC8" }}>
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: fEntityId === e.id ? "#C9A24A" : "#4A3F32" }}>{e.name}</Text>
+                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fEntityId === e.id ? color.ink : color.border, backgroundColor: fEntityId === e.id ? color.ink : color.parchmentEdge }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: fEntityId === e.id ? color.goldBright : color.borderDark }}>{e.name}</Text>
                   </Pressable>
                 ))}
                 {entities.length === 0 && (
                   <TextInput value={fEntityName} onChangeText={setFEntityName} placeholder="Character name"
-                    placeholderTextColor="#8A7D6D80"
-                    style={{ borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 8, fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014" }}
+                    placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
+                    style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 8, fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink }}
                   />
                 )}
               </ScrollView>
@@ -247,8 +248,8 @@ export default function InjuryTrackerScreen() {
               <View style={{ flexDirection: "row", gap: 6, marginBottom: 12 }}>
                 {(["Minor", "Major", "Severe", "Permanent"] as Severity[]).map(s => (
                   <Pressable key={s} onPress={() => { setFSeverity(s); if (s === "Permanent") setFDays("0"); }}
-                    style={{ flex: 1, padding: 6, alignItems: "center", borderRadius: 2, borderWidth: 1, borderColor: fSeverity === s ? SEVERITY_COLORS[s] : "#C4B49A", backgroundColor: fSeverity === s ? SEVERITY_COLORS[s] + "20" : "#E8DCC8" }}>
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: fSeverity === s ? SEVERITY_COLORS[s] : "#4A3F32" }}>{s}</Text>
+                    style={{ flex: 1, padding: 6, alignItems: "center", borderRadius: 2, borderWidth: 1, borderColor: fSeverity === s ? SEVERITY_COLORS[s] : color.border, backgroundColor: fSeverity === s ? SEVERITY_COLORS[s] + "20" : color.parchmentEdge }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: fSeverity === s ? SEVERITY_COLORS[s] : color.borderDark }}>{s}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -257,20 +258,20 @@ export default function InjuryTrackerScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
                 {INJURY_PRESETS[fSeverity].map((p, i) => (
                   <Pressable key={i} onPress={() => applyPreset(p)}
-                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: "#C4B49A", backgroundColor: "#E8DCC8" }}>
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#4A3F32" }}>{p.description}</Text>
+                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: color.border, backgroundColor: color.parchmentEdge }}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.borderDark }}>{p.description}</Text>
                   </Pressable>
                 ))}
               </ScrollView>
 
               <FL label="Injury Description" />
               <TextInput value={fDesc} onChangeText={setFDesc} placeholder="e.g. Deep stab wound to the shoulder"
-                placeholderTextColor="#8A7D6D80"
+                placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
                 style={inputStyle} />
 
               <FL label="Mechanical Effect" />
               <TextInput value={fEffect} onChangeText={setFEffect} placeholder="e.g. Disadvantage on Str checks"
-                placeholderTextColor="#8A7D6D80"
+                placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
                 style={inputStyle} />
 
               {fSeverity !== "Permanent" && (
@@ -282,11 +283,11 @@ export default function InjuryTrackerScreen() {
               )}
 
               <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
-                <Pressable onPress={() => setModalVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#4A3F32" }}>Cancel</Text>
+                <Pressable onPress={() => setModalVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
                 </Pressable>
-                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: "#2C2014", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#C9A24A" }}>{editInjury ? "Save" : "Record"}</Text>
+                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>{editInjury ? "Save" : "Record"}</Text>
                 </Pressable>
               </View>
             </ScrollView>
@@ -298,13 +299,13 @@ export default function InjuryTrackerScreen() {
 }
 
 const inputStyle = {
-  borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10,
-  fontFamily: "Inter_400Regular" as const, fontSize: 13, color: "#2C2014",
+  borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10,
+  fontFamily: "Inter_400Regular" as const, fontSize: 13, color: color.ink,
   backgroundColor: "#FFFDF8", marginBottom: 12,
 };
 
 function FL({ label }: { label: string }) {
-  return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;
+  return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;
 }
 
 function InjuryCard({ injury, onEdit, onDelete, onAdvanceDay, dimmed }: {
@@ -313,34 +314,34 @@ function InjuryCard({ injury, onEdit, onDelete, onAdvanceDay, dimmed }: {
   const col = SEVERITY_COLORS[injury.severity];
   const pct = injury.daysToHeal > 0 ? Math.min(1, injury.daysElapsed / injury.daysToHeal) : 1;
   return (
-    <Pressable onPress={onEdit} onLongPress={onDelete} style={{ backgroundColor: dimmed ? "#E8DCC808" : "#E8DCC820", borderRadius: 4, borderWidth: 1, borderColor: "#C4B49A", padding: 12, marginBottom: 10 }}>
+    <Pressable onPress={onEdit} onLongPress={onDelete} style={{ backgroundColor: dimmed ? withAlpha("parchmentEdge", 0x08 / 255) : withAlpha("parchmentEdge", 0x20 / 255), borderRadius: 4, borderWidth: 1, borderColor: color.border, padding: 12, marginBottom: 10 }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: dimmed ? "#8A7D6D" : "#2C2014" }}>{injury.entityName}</Text>
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: dimmed ? color.inkFaint : color.ink }}>{injury.entityName}</Text>
         <View style={{ flexDirection: "row", gap: 4 }}>
           <View style={{ backgroundColor: col + "20", borderRadius: 2, paddingHorizontal: 5, paddingVertical: 2 }}>
             <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: col }}>{injury.severity.toUpperCase()}</Text>
           </View>
           {injury.status === "recovered" && (
-            <View style={{ backgroundColor: "#2D7A4F20", borderRadius: 2, paddingHorizontal: 5, paddingVertical: 2 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#2D7A4F" }}>RECOVERED</Text>
+            <View style={{ backgroundColor: withAlpha("successBright", 0x20 / 255), borderRadius: 2, paddingHorizontal: 5, paddingVertical: 2 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.successBright }}>RECOVERED</Text>
             </View>
           )}
         </View>
       </View>
-      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: dimmed ? "#8A7D6D" : col }}>{injury.description}</Text>
-      {injury.effect ? <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 12, color: dimmed ? "#8A7D6D80" : "#4A3F32", marginTop: 2 }}>{injury.effect}</Text> : null}
+      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: dimmed ? color.inkFaint : col }}>{injury.description}</Text>
+      {injury.effect ? <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 12, color: dimmed ? withAlpha("inkFaint", 0x80 / 255) : color.borderDark, marginTop: 2 }}>{injury.effect}</Text> : null}
 
       {injury.severity !== "Permanent" && injury.status !== "recovered" && (
         <>
-          <View style={{ height: 4, backgroundColor: "#C4B49A40", borderRadius: 2, marginTop: 8, marginBottom: 4 }}>
-            <View style={{ height: 4, width: `${Math.round(pct * 100)}%`, backgroundColor: "#2D7A4F", borderRadius: 2 }} />
+          <View style={{ height: 4, backgroundColor: withAlpha("border", 0x40 / 255), borderRadius: 2, marginTop: 8, marginBottom: 4 }}>
+            <View style={{ height: 4, width: `${Math.round(pct * 100)}%`, backgroundColor: color.successBright, borderRadius: 2 }} />
           </View>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D" }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint }}>
               Day {injury.daysElapsed}/{injury.daysToHeal}
             </Text>
-            <Pressable onPress={onAdvanceDay} style={{ borderWidth: 1, borderColor: "#2D7A4F40", borderRadius: 2, paddingHorizontal: 10, paddingVertical: 4 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#2D7A4F" }}>+1 Day</Text>
+            <Pressable onPress={onAdvanceDay} style={{ borderWidth: 1, borderColor: withAlpha("successBright", 0x40 / 255), borderRadius: 2, paddingHorizontal: 10, paddingVertical: 4 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.successBright }}>+1 Day</Text>
             </Pressable>
           </View>
         </>

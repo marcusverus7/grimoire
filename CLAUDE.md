@@ -420,6 +420,31 @@ read Part IV (build plan) before starting any phase.
   despite the doctrine requiring both — every prior "parity" claim covered code,
   not builds.
 
+- Phase 51: Fable full-app review fixes. **CRITICAL FIX — share links were ALL
+  404s**: recaps only ever lived in device SQLite while /r/[slug] reads Supabase;
+  nothing bridged them, so every share link since Phase 3 was dead (only /r/demo
+  worked). New `/api/publish-recap` on recap-web (app-token guard + validation +
+  service-role upsert of campaign/session/recap/quotes; needs
+  SUPABASE_SERVICE_ROLE_KEY in Vercel, 503s until set) + `lib/publishRecap.ts`
+  called at ALL THREE share surfaces (recap save, recap library, session detail)
+  with honest offline messaging. Migration 00003: `backups` table (owner-only
+  RLS) + tightened quotes RLS (was `FOR ALL USING(true)` — anon could write;
+  now public read only for published-recap sessions, writes via service role).
+  **NOT YET APPLIED to Supabase — run migration 00003 + set
+  SUPABASE_SERVICE_ROLE_KEY or sharing stays broken.** Cloud backup made REAL:
+  backup.tsx previously console.logged and claimed success + "automatic backups"
+  (false); now `lib/backup.ts` pushes the full export-v2 snapshot via the user's
+  JWT (setSession from kv cache; guest mode politely refused), lists + deletes.
+  AI-recap usage counter (kv `ai_recaps_used_YYYY-MM`) feeds the entitlement
+  gate so the free ration is enforceable later; `bindKeepsake` capability =
+  the IAP receipt seam (free until store integration exists). Design: token
+  sweep extended to ~16 more screens (12 by agents before they hit a session
+  limit + repair; batch A files untouched: entity detail/edit, tracker, party,
+  calendar, magic-items, playview + stats/search/character/session-edit);
+  new `color.goldText` #8A6A24 (4.63:1 AA vs parchment; gold is 3.6:1) applied
+  to campaign-detail button labels — use goldText for functional text.
+  Version 1.11.0 → **1.12.0**, buildNumber 10 → **11**.
+
 ## What to build next
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred

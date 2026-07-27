@@ -7,6 +7,7 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { db, getKv, setKv } from "@/lib/db";
 import { schema } from "@grimoire/core";
+import { color, withAlpha } from "@/lib/theme";
 
 // ── D&D 5e spell slot tables ──────────────────────────────────────────────────
 // [level] → [slot counts per spell level 1-9]
@@ -180,7 +181,7 @@ export default function SpellSlotsScreen() {
     <ParchmentScreen>
       <Stack.Screen options={{ title: "Spell Slots", headerBackTitle: "Campaign" }} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 4 }}>
           Spell Slot Tracker
         </Text>
         <GoldRule />
@@ -189,23 +190,23 @@ export default function SpellSlotsScreen() {
         <View style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}>
           <Pressable
             onPress={shortRest}
-            style={{ flex: 1, borderWidth: 1, borderColor: "#2D7A4F40", borderRadius: 2, padding: 10, alignItems: "center" }}
+            style={{ flex: 1, borderWidth: 1, borderColor: withAlpha("successBright", 0x40 / 255), borderRadius: 2, padding: 10, alignItems: "center" }}
           >
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#2D7A4F" }}>⏸ Short Rest</Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", marginTop: 2 }}>Warlocks recover</Text>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.successBright }}>⏸ Short Rest</Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint, marginTop: 2 }}>Warlocks recover</Text>
           </Pressable>
           <Pressable
             onPress={longRest}
-            style={{ flex: 1, backgroundColor: "#2C2014", borderRadius: 2, padding: 10, alignItems: "center" }}
+            style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}
           >
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#C9A24A" }}>☾ Long Rest</Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#C9A24A80", marginTop: 2 }}>All recover</Text>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.goldBright }}>☾ Long Rest</Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("goldBright", 0x80 / 255), marginTop: 2 }}>All recover</Text>
           </Pressable>
         </View>
 
         {/* PC caster cards */}
         {data.pcs.length === 0 && (
-          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#8A7D6D60", textAlign: "center", paddingVertical: 20 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("inkFaint", 0x60 / 255), textAlign: "center", paddingVertical: 20 }}>
             Add casters to track their spell slots.
           </Text>
         )}
@@ -213,22 +214,22 @@ export default function SpellSlotsScreen() {
           const max = getMaxSlots(pc);
           const activeSlots = max.map((m, i) => ({ level: i + 1, max: m, used: pc.used[i] ?? 0 })).filter(s => s.max > 0);
           return (
-            <View key={pc.pcId} style={{ backgroundColor: "#E8DCC820", borderRadius: 4, borderWidth: 1, borderColor: "#C4B49A", padding: 14, marginBottom: 12 }}>
+            <View key={pc.pcId} style={{ backgroundColor: withAlpha("parchmentEdge", 0x20 / 255), borderRadius: 4, borderWidth: 1, borderColor: color.border, padding: 14, marginBottom: 12 }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <View>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#2C2014" }}>{pc.pcName}</Text>
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D" }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.ink }}>{pc.pcName}</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint }}>
                     Level {pc.level} • {pc.casterType} Caster
                     {pc.casterType === "Warlock" ? " (Pact Magic)" : ""}
                   </Text>
                 </View>
                 <Pressable onPress={() => removePc(pc.pcId)} style={{ padding: 4 }}>
-                  <Text style={{ fontSize: 12, color: "#8A7D6D60" }}>✕</Text>
+                  <Text style={{ fontSize: 12, color: withAlpha("inkFaint", 0x60 / 255) }}>✕</Text>
                 </Pressable>
               </View>
               {activeSlots.map(slot => (
                 <View key={slot.level} style={{ flexDirection: "row", alignItems: "center", marginBottom: 8, gap: 8 }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#8A7D6D", width: 28 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.inkFaint, width: 28 }}>
                     {SLOT_ORDINALS[slot.level - 1]}
                   </Text>
                   <View style={{ flexDirection: "row", gap: 4, flex: 1 }}>
@@ -239,19 +240,19 @@ export default function SpellSlotsScreen() {
                         style={{
                           width: 22, height: 22, borderRadius: 11,
                           borderWidth: 1.5,
-                          borderColor: i < slot.used ? "#C4B49A60" : "#A07A2C",
-                          backgroundColor: i < slot.used ? "transparent" : "#A07A2C20",
+                          borderColor: i < slot.used ? withAlpha("border", 0x60 / 255) : color.gold,
+                          backgroundColor: i < slot.used ? "transparent" : withAlpha("gold", 0x20 / 255),
                         }}
                       />
                     ))}
                   </View>
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", width: 32, textAlign: "right" }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint, width: 32, textAlign: "right" }}>
                     {slot.max - slot.used}/{slot.max}
                   </Text>
                 </View>
               ))}
               {activeSlots.length === 0 && (
-                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 12, color: "#8A7D6D80" }}>
+                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 12, color: withAlpha("inkFaint", 0x80 / 255) }}>
                   No spell slots at this level.
                 </Text>
               )}
@@ -267,17 +268,17 @@ export default function SpellSlotsScreen() {
             setSelLevel(first?.level ?? 5); setSelType("Full");
             setAddModal(true);
           }}
-          style={{ borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, padding: 10, alignItems: "center", marginTop: 4 }}
+          style={{ borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, padding: 10, alignItems: "center", marginTop: 4 }}
         >
-          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C" }}>+ Add Caster</Text>
+          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold }}>+ Add Caster</Text>
         </Pressable>
       </ScrollView>
 
       {/* Add Modal */}
       <Modal visible={addModal} transparent animationType="fade">
-        <View style={{ flex: 1, backgroundColor: "#00000060", justifyContent: "center", padding: 24 }}>
-          <View style={{ backgroundColor: "#F5EDD8", borderRadius: 4, padding: 20 }}>
-            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: "#2C2014", marginBottom: 16 }}>
+        <View style={{ flex: 1, backgroundColor: withAlpha("shadow", 0x60 / 255), justifyContent: "center", padding: 24 }}>
+          <View style={{ backgroundColor: color.parchmentWarm, borderRadius: 4, padding: 20 }}>
+            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: color.ink, marginBottom: 16 }}>
               Add Caster
             </Text>
 
@@ -287,17 +288,17 @@ export default function SpellSlotsScreen() {
                 <Pressable
                   key={pc.id}
                   onPress={() => { setSelPc(pc.name); setSelPcId(pc.id); setSelLevel(pc.level); }}
-                  style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: selPcId === pc.id ? "#2C2014" : "#C4B49A", backgroundColor: selPcId === pc.id ? "#2C2014" : "#E8DCC8" }}
+                  style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: selPcId === pc.id ? color.ink : color.border, backgroundColor: selPcId === pc.id ? color.ink : color.parchmentEdge }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: selPcId === pc.id ? "#C9A24A" : "#4A3F32" }}>{pc.name}</Text>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: selPcId === pc.id ? color.goldBright : color.borderDark }}>{pc.name}</Text>
                 </Pressable>
               ))}
               {allPcs.length === 0 && (
                 <TextInput
                   value={selPc} onChangeText={setSelPc}
                   placeholder="Enter PC name"
-                  placeholderTextColor="#8A7D6D80"
-                  style={{ borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 8, fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014" }}
+                  placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
+                  style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 8, fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink }}
                 />
               )}
             </ScrollView>
@@ -308,9 +309,9 @@ export default function SpellSlotsScreen() {
                 <Pressable
                   key={l}
                   onPress={() => setSelLevel(l)}
-                  style={{ width: 32, height: 32, marginRight: 4, borderRadius: 2, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: selLevel === l ? "#A07A2C" : "#C4B49A", backgroundColor: selLevel === l ? "#A07A2C20" : "#E8DCC8" }}
+                  style={{ width: 32, height: 32, marginRight: 4, borderRadius: 2, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: selLevel === l ? color.gold : color.border, backgroundColor: selLevel === l ? withAlpha("gold", 0x20 / 255) : color.parchmentEdge }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: selLevel === l ? "#A07A2C" : "#4A3F32" }}>{l}</Text>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: selLevel === l ? color.gold : color.borderDark }}>{l}</Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -321,19 +322,19 @@ export default function SpellSlotsScreen() {
                 <Pressable
                   key={t}
                   onPress={() => setSelType(t)}
-                  style={{ flex: 1, padding: 8, alignItems: "center", borderRadius: 2, borderWidth: 1, borderColor: selType === t ? "#A07A2C" : "#C4B49A", backgroundColor: selType === t ? "#A07A2C20" : "#E8DCC8" }}
+                  style={{ flex: 1, padding: 8, alignItems: "center", borderRadius: 2, borderWidth: 1, borderColor: selType === t ? color.gold : color.border, backgroundColor: selType === t ? withAlpha("gold", 0x20 / 255) : color.parchmentEdge }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: selType === t ? "#A07A2C" : "#4A3F32" }}>{t}</Text>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: selType === t ? color.gold : color.borderDark }}>{t}</Text>
                 </Pressable>
               ))}
             </View>
 
             <View style={{ flexDirection: "row", gap: 8 }}>
-              <Pressable onPress={() => setAddModal(false)} style={{ flex: 1, borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#4A3F32" }}>Cancel</Text>
+              <Pressable onPress={() => setAddModal(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
               </Pressable>
-              <Pressable onPress={addPc} style={{ flex: 1, backgroundColor: "#2C2014", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#C9A24A" }}>Add</Text>
+              <Pressable onPress={addPc} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>Add</Text>
               </Pressable>
             </View>
           </View>
@@ -343,4 +344,4 @@ export default function SpellSlotsScreen() {
   );
 }
 
-const labelStyle = { fontFamily: "Inter_600SemiBold" as const, fontSize: 10, color: "#8A7D6D", textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 4 };
+const labelStyle = { fontFamily: "Inter_600SemiBold" as const, fontSize: 10, color: color.inkFaint, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 4 };

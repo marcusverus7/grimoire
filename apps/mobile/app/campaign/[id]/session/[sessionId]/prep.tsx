@@ -8,6 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema, nodeText } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
+import { color, withAlpha } from "@/lib/theme";
 
 type Session = typeof schema.sessions.$inferSelect;
 type Entity = typeof schema.entities.$inferSelect;
@@ -18,10 +19,10 @@ const WEATHER_WINDS = ["Calm", "Gentle", "Brisk", "Strong", "Howling gale"];
 const WEATHER_MOODS = ["The air feels electric with tension", "An eerie stillness hangs over everything", "The world feels tired and grey", "Spirits are high despite the elements", "Something feels wrong about the sky", "Nature seems indifferent to mortal concerns", "A strange smell drifts on the wind", "The weather mirrors the party's mood"];
 
 const STATUS_COLORS: Record<string, string> = {
-  active: "#A07A2C",
-  rumoured: "#5A4D3E",
+  active: color.gold,
+  rumoured: color.inkSoft,
   complete: "#4A7A2C",
-  failed: "#7A2418",
+  failed: color.oxblood,
 };
 
 export default function SessionPrepScreen() {
@@ -194,7 +195,7 @@ export default function SessionPrepScreen() {
           title: `Prep — Session ${session.number}`,
           headerRight: () => (
             <Pressable onPress={beginSession} style={{ paddingHorizontal: 12 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#A07A2C" }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.gold }}>
                 Begin ›
               </Text>
             </Pressable>
@@ -208,13 +209,13 @@ export default function SessionPrepScreen() {
         >
           {/* Session Header */}
           <Text
-            style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 26, color: "#2C2014" }}
+            style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 26, color: color.ink }}
           >
             Session {session.number}
             {session.title ? `: ${session.title}` : ""}
           </Text>
           {session.playedOn ? (
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D", marginTop: 2 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.inkFaint, marginTop: 2 }}>
               {session.playedOn}
             </Text>
           ) : null}
@@ -225,7 +226,7 @@ export default function SessionPrepScreen() {
           <Section label="Previously On…">
             {prevSession ? (
               <View>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
                   Session {prevSession.number}{prevSession.title ? `: ${prevSession.title}` : ""}
                 </Text>
                 {prevBodyText ? (
@@ -236,7 +237,7 @@ export default function SessionPrepScreen() {
                     {prevBodyText}
                   </Text>
                 ) : (
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", fontStyle: "italic" }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, fontStyle: "italic" }}>
                     No notes written for that session.
                   </Text>
                 )}
@@ -244,13 +245,13 @@ export default function SessionPrepScreen() {
                   onPress={() => router.push(`/campaign/${campaignId}/session/${prevSession.id}`)}
                   style={{ marginTop: 8 }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold }}>
                     Read full session →
                   </Text>
                 </Pressable>
               </View>
             ) : (
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", fontStyle: "italic" }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, fontStyle: "italic" }}>
                 This is the first session.
               </Text>
             )}
@@ -266,15 +267,15 @@ export default function SessionPrepScreen() {
                   <Pressable
                     key={e.id}
                     onPress={() => router.push(`/campaign/${campaignId}/entity/${e.id}`)}
-                    style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: "#7A241815" }}
+                    style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: withAlpha("oxblood", 0x15 / 255) }}
                   >
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: "#2C2014" }}>{e.name}</Text>
+                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: color.ink }}>{e.name}</Text>
                       {(e.attrs as Record<string, unknown> | null)?.["role"] ? (
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60" }}>{String((e.attrs as Record<string, unknown>)["role"])}</Text>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x60 / 255) }}>{String((e.attrs as Record<string, unknown>)["role"])}</Text>
                       ) : null}
                     </View>
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1 }}>{e.kind}</Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("gold", 0x80 / 255), textTransform: "uppercase", letterSpacing: 1 }}>{e.kind}</Text>
                   </Pressable>
                 ))}
               </Section>
@@ -289,15 +290,15 @@ export default function SessionPrepScreen() {
               <Section label="Party Status">
                 {partyStatus.map((pc) => {
                   const pct = pc.hp && pc.hp > 0 && pc.currentHp != null ? pc.currentHp / pc.hp : null;
-                  const hpColor = pct == null ? "#2C2014" : pc.currentHp === 0 ? "#7A2418" : pct < 0.5 ? "#A07A2C" : "#2C2014";
+                  const hpColor = pct == null ? color.ink : pc.currentHp === 0 ? color.oxblood : pct < 0.5 ? color.gold : color.ink;
                   return (
                     <Pressable
                       key={pc.id}
                       onPress={() => router.push(`/campaign/${campaignId}/entity/${pc.id}`)}
-                      style={{ paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: "#A07A2C12" }}
+                      style={{ paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x12 / 255) }}
                     >
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: "#2C2014", flex: 1 }}>{pc.name}</Text>
+                        <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: color.ink, flex: 1 }}>{pc.name}</Text>
                         {pc.hp != null ? (
                           <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: hpColor, marginRight: 8 }}>
                             {pc.currentHp != null && pc.currentHp !== pc.hp ? `${pc.currentHp}/` : ""}{pc.hp} HP
@@ -306,16 +307,16 @@ export default function SessionPrepScreen() {
                         {pc.conditions.length > 0 ? (
                           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 3 }}>
                             {pc.conditions.slice(0, 2).map((c) => (
-                              <View key={c} style={{ paddingHorizontal: 5, paddingVertical: 2, borderRadius: 2, borderWidth: 1, borderColor: "#7A241840", backgroundColor: "#7A241808" }}>
-                                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#7A2418", textTransform: "uppercase" }}>{c}</Text>
+                              <View key={c} style={{ paddingHorizontal: 5, paddingVertical: 2, borderRadius: 2, borderWidth: 1, borderColor: withAlpha("oxblood", 0x40 / 255), backgroundColor: withAlpha("oxblood", 0x08 / 255) }}>
+                                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: color.oxblood, textTransform: "uppercase" }}>{c}</Text>
                               </View>
                             ))}
-                            {pc.conditions.length > 2 ? <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#7A241880" }}>+{pc.conditions.length - 2}</Text> : null}
+                            {pc.conditions.length > 2 ? <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: withAlpha("oxblood", 0x80 / 255) }}>+{pc.conditions.length - 2}</Text> : null}
                           </View>
                         ) : null}
                       </View>
                       {pc.resources.length > 0 ? (
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E80", marginTop: 2 }} numberOfLines={1}>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x80 / 255), marginTop: 2 }} numberOfLines={1}>
                           {pc.resources.map((r) => `${r.name} ${r.current}/${r.max}`).join(" · ")}
                         </Text>
                       ) : null}
@@ -331,7 +332,7 @@ export default function SessionPrepScreen() {
           {/* Open Quests */}
           <Section label="Open Quests">
             {activeQuests.length === 0 ? (
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", fontStyle: "italic" }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, fontStyle: "italic" }}>
                 No active quests.
               </Text>
             ) : (
@@ -346,7 +347,7 @@ export default function SessionPrepScreen() {
                       alignItems: "flex-start",
                       paddingVertical: 6,
                       borderBottomWidth: 1,
-                      borderBottomColor: "#A07A2C15",
+                      borderBottomColor: withAlpha("gold", 0x15 / 255),
                     }}
                   >
                     <View
@@ -354,17 +355,17 @@ export default function SessionPrepScreen() {
                         width: 6,
                         height: 6,
                         borderRadius: 3,
-                        backgroundColor: STATUS_COLORS[qStatus] ?? "#8A7D6D",
+                        backgroundColor: STATUS_COLORS[qStatus] ?? color.inkFaint,
                         marginTop: 6,
                         marginRight: 10,
                       }}
                     />
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: "#2C2014" }}>
+                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: color.ink }}>
                         {q.name}
                       </Text>
                       {q.summary ? (
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D", marginTop: 2 }} numberOfLines={2}>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.inkFaint, marginTop: 2 }} numberOfLines={2}>
                           {q.summary}
                         </Text>
                       ) : null}
@@ -389,17 +390,17 @@ export default function SessionPrepScreen() {
                       alignItems: "center",
                       paddingVertical: 6,
                       borderBottomWidth: 1,
-                      borderBottomColor: "#A07A2C15",
+                      borderBottomColor: withAlpha("gold", 0x15 / 255),
                     }}
                   >
-                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 0.8, width: 56 }}>
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 0.8, width: 56 }}>
                       {e.kind}
                     </Text>
-                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: "#2C2014", flex: 1 }}>
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: color.ink, flex: 1 }}>
                       {e.name}
                     </Text>
                     {e.summary ? (
-                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D", flex: 1 }} numberOfLines={1}>
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.inkFaint, flex: 1 }} numberOfLines={1}>
                         {e.summary}
                       </Text>
                     ) : null}
@@ -425,14 +426,14 @@ export default function SessionPrepScreen() {
                   .run();
               }}
               placeholder="What do you want to accomplish this session?"
-              placeholderTextColor="#8A7D6D"
+              placeholderTextColor={color.inkFaint}
               multiline
               style={{
                 fontFamily: "Inter_400Regular",
                 fontSize: 14,
-                color: "#2C2014",
+                color: color.ink,
                 borderWidth: 1,
-                borderColor: "#A07A2C25",
+                borderColor: withAlpha("gold", 0x25 / 255),
                 borderRadius: 2,
                 padding: 12,
                 minHeight: 80,
@@ -448,19 +449,19 @@ export default function SessionPrepScreen() {
           <Section label="Atmosphere">
             <View style={{ gap: 10 }}>
               {weather ? (
-                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: "#2C2014", lineHeight: 24 }}>
+                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: color.ink, lineHeight: 24 }}>
                   {weather}
                 </Text>
               ) : (
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", fontStyle: "italic" }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, fontStyle: "italic" }}>
                   No weather set. Roll to generate session atmosphere.
                 </Text>
               )}
               <Pressable
                 onPress={rollWeather}
-                style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: "#A07A2C30", borderRadius: 2, alignSelf: "flex-start" }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255), borderRadius: 2, alignSelf: "flex-start" }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold, textTransform: "uppercase", letterSpacing: 1 }}>
                   ⚄ {weather ? "Re-roll" : "Roll Weather"}
                 </Text>
               </Pressable>
@@ -473,16 +474,16 @@ export default function SessionPrepScreen() {
           <Pressable
             onPress={beginSession}
             style={{
-              backgroundColor: "#7A2418",
+              backgroundColor: color.oxblood,
               borderWidth: 1,
-              borderColor: "#C9A24A40",
+              borderColor: withAlpha("goldBright", 0x40 / 255),
               borderRadius: 2,
               paddingVertical: 14,
               alignItems: "center",
               marginBottom: 40,
             }}
           >
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 2 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.parchment, textTransform: "uppercase", letterSpacing: 2 }}>
               Begin Session {session.number}
             </Text>
           </Pressable>
@@ -499,7 +500,7 @@ function Section({ label, children }: { label: string; children: React.ReactNode
         style={{
           fontFamily: "Inter_600SemiBold",
           fontSize: 10,
-          color: "#A07A2C",
+          color: color.gold,
           textTransform: "uppercase",
           letterSpacing: 1.5,
           marginBottom: 12,
