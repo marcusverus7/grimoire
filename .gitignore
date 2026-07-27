@@ -14,3 +14,7 @@ testflight-feedback/
 apps/mobile/dist_key_tmp.pem
 apps/mobile/ios_dist_debug.p12
 apps/mobile/_signing_tmp/
+
+# Python bytecode cache (ASC helper scripts)
+__pycache__/
+*.pyc

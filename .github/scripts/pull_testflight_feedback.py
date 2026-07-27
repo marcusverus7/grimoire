@@ -182,21 +182,43 @@ def main():
     lines.append("")
     if not crashes:
         lines.append("_None submitted yet._\n")
+    logs_dir = out / "crashlogs"
     for i, item in enumerate(crashes, 1):
         a = item.get("attributes", {})
         rel = item.get("relationships", {})
         tester_id = (rel.get("tester", {}).get("data") or {}).get("id")
+        build_id = (rel.get("build", {}).get("data") or {}).get("id")
         who = cmap.get(tester_id, "(unknown tester)")
+        build = cmap.get(build_id, "?")
         comment = a.get("comment") or "(no comment)"
         lines.append(f"### {i}. {comment[:80]}")
         lines.append(f"- **Comment:** {comment}")
         lines.append(f"- **Tester:** {who}")
-        lines.append(f"- **Device:** {a.get('deviceModel','?')} · {a.get('osVersion','?')}")
+        lines.append(f"- **Device:** {a.get('deviceModel','?')} · {a.get('osVersion','?')} · {build}")
         lines.append(f"- **Date:** {a.get('createdDate','?')}")
-        for j, url in enumerate(find_image_urls(a)):
-            fn = f"crashlog_{i:02d}_{j+1}.txt"
-            if download(url, shots_dir / fn):
-                lines.append(f"- **Crash log:** [{fn}](screenshots/{fn})")
+
+        # The crash log lives behind the crashLog relationship. ASC returns the
+        # full report inline as attributes.logText (a betaCrashLogs resource) —
+        # there is no separate file to download; those relationship URLs are
+        # auth-gated API endpoints, not pre-signed links.
+        sub_id = item.get("id")
+        got_log = False
+        if sub_id:
+            cl = api_get(f"/betaFeedbackCrashSubmissions/{sub_id}/crashLog", token)
+            log_text = (((cl or {}).get("data") or {}).get("attributes") or {}).get("logText")
+            if log_text:
+                logs_dir.mkdir(parents=True, exist_ok=True)
+                fn = f"crashlog_{i:02d}.crash"
+                (logs_dir / fn).write_text(log_text, encoding="utf-8")
+                lines.append(f"- **Crash log:** [{fn}](crashlogs/{fn})")
+                # Surface the exception header inline for quick triage.
+                for key in ("Exception Type", "Termination Reason", "Triggered by Thread"):
+                    idx = log_text.find(key)
+                    if idx >= 0:
+                        lines.append(f"  - {log_text[idx:log_text.find(chr(10), idx)].strip()}")
+                got_log = True
+        if not got_log:
+            lines.append("- **Crash log:** _(no logText returned by ASC crashLog relationship)_")
         lines.append("")
 
     (out / "SUMMARY.md").write_text("\n".join(lines), encoding="utf-8")

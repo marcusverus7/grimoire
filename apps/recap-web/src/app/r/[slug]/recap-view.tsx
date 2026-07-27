@@ -1,6 +1,7 @@
 "use client";
 
 import type { RecapData } from "./page";
+import { installUrl, hasInstallLink } from "../../../lib/site";
 
 export function RecapView({ recap }: { recap: RecapData }) {
   const paragraphs = recap.body
@@ -80,6 +81,19 @@ export function RecapView({ recap }: { recap: RecapData }) {
           <p style={styles.footerText}>
             Recorded in{" "}
             <span style={styles.footerBrand}>The Grimoire Archive</span>
+          </p>
+        </div>
+
+        {/* Acquisition CTA — every shared recap reaches a whole table. */}
+        <div style={styles.cta}>
+          <p style={styles.ctaLead}>
+            Keep your own campaign&apos;s story.
+          </p>
+          <a href={installUrl()} style={styles.ctaButton}>
+            {hasInstallLink() ? "Get Grimoire →" : "Discover Grimoire →"}
+          </a>
+          <p style={styles.ctaSub}>
+            Track every NPC, quest and quote — then share recaps like this one.
           </p>
         </div>
       </footer>
@@ -201,5 +215,39 @@ const styles = {
   },
   footerBrand: {
     color: "#A07A2C",
+  },
+  cta: {
+    marginTop: "2rem",
+    padding: "1.5rem",
+    textAlign: "center" as const,
+    border: "1px solid rgba(160, 122, 44, 0.25)",
+    borderRadius: 4,
+    backgroundColor: "rgba(122, 36, 24, 0.04)",
+  },
+  ctaLead: {
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontSize: "1.35rem",
+    fontWeight: 600,
+    color: "#2C2014",
+    margin: "0 0 0.9rem",
+  },
+  ctaButton: {
+    display: "inline-block" as const,
+    padding: "0.6rem 1.4rem",
+    backgroundColor: "#7A2418",
+    color: "#F5EFDE",
+    textDecoration: "none" as const,
+    borderRadius: 3,
+    border: "1px solid #C9A24A",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: "0.85rem",
+    fontWeight: 600,
+    letterSpacing: "0.05em",
+  },
+  ctaSub: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: "0.72rem",
+    color: "rgba(44, 32, 20, 0.55)",
+    margin: "0.9rem 0 0",
   },
 };

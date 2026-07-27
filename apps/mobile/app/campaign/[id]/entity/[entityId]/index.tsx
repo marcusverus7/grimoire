@@ -773,11 +773,25 @@ export default function EntityDetailScreen() {
             <>
               <GoldRule />
               <View style={{ marginTop: 16, marginBottom: 4 }}>
-                {sessionBls.length > 0 && (
+                {sessionBls.length > 0 && (() => {
+                  const sessionDates = sessionBls.map((bl) => {
+                    const s = db.select({ number: schema.sessions.number, playedOn: schema.sessions.playedOn })
+                      .from(schema.sessions).where(eq(schema.sessions.id, bl.fromId)).get();
+                    return s ? { number: s.number, date: typeof s.playedOn === "string" ? s.playedOn : null } : null;
+                  }).filter((s): s is NonNullable<typeof s> => s != null && s.date != null)
+                    .sort((a, b) => a.date!.localeCompare(b.date!));
+                  const firstSession = sessionDates[0];
+                  const lastSession = sessionDates.length > 1 ? sessionDates[sessionDates.length - 1] : null;
+                  return (
                   <View style={{ marginBottom: 12 }}>
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
                       Appears in Sessions
                     </Text>
+                    {firstSession && (
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60", marginBottom: 8 }}>
+                        First: Session {firstSession.number}{lastSession ? ` · Last: Session ${lastSession.number}` : ""}
+                      </Text>
+                    )}
                     {sessionBls.map((bl, i) => (
                       <Pressable
                         key={`s-${bl.fromId}-${i}`}
@@ -796,7 +810,8 @@ export default function EntityDetailScreen() {
                       </Pressable>
                     ))}
                   </View>
-                )}
+                  );
+                })()}
                 {entityBls.length > 0 && (
                   <View style={{ marginBottom: 4 }}>
                     <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#5A4D3E", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>

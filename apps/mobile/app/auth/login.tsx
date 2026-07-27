@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/lib/auth-context';
 import { ParchmentScreen } from '@/components/ParchmentScreen';
 import { GoldRule } from '@/components/GoldRule';
+import { color, withAlpha } from '@/lib/theme';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -32,41 +33,41 @@ export default function LoginScreen() {
   return (
     <ParchmentScreen>
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60, justifyContent: 'center', minHeight: '100%' }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: 'CinzelDecorative_400Regular', fontSize: 24, color: '#2C2014', textAlign: 'center', marginBottom: 4 }}>
+        <Text style={{ fontFamily: 'CinzelDecorative_400Regular', fontSize: 24, color: color.ink, textAlign: 'center', marginBottom: 4 }}>
           Grimoire
         </Text>
-        <Text style={{ fontFamily: 'CormorantGaramond_400Regular_Italic', fontSize: 14, color: '#8A7D6D', textAlign: 'center', marginBottom: 24 }}>
+        <Text style={{ fontFamily: 'CormorantGaramond_400Regular_Italic', fontSize: 14, color: color.inkFaint, textAlign: 'center', marginBottom: 24 }}>
           Campaign Memory System
         </Text>
         <GoldRule />
 
-        <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#8A7D6D', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, marginTop: 24 }}>
+        <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: color.inkFaint, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, marginTop: 24 }}>
           Email
         </Text>
         <TextInput
           value={email}
           onChangeText={setEmail}
           placeholder="your@email.com"
-          placeholderTextColor="#8A7D6D80"
+          placeholderTextColor={withAlpha('inkFaint', 0.5)}
           editable={!loading}
-          style={{ borderWidth: 1, borderColor: '#C4B49A', borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#2C2014', marginBottom: 16 }}
+          style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: color.ink, marginBottom: 16 }}
         />
 
-        <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#8A7D6D', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+        <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: color.inkFaint, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
           Password
         </Text>
         <TextInput
           value={password}
           onChangeText={setPassword}
           placeholder="••••••••"
-          placeholderTextColor="#8A7D6D80"
+          placeholderTextColor={withAlpha('inkFaint', 0.5)}
           secureTextEntry
           editable={!loading}
-          style={{ borderWidth: 1, borderColor: '#C4B49A', borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#2C2014', marginBottom: 12 }}
+          style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: color.ink, marginBottom: 12 }}
         />
 
         <Pressable onPress={() => Alert.alert('Forgot Password', 'Password reset via email is coming soon. For now, please contact support.')} disabled={loading} style={{ alignSelf: 'flex-end', marginBottom: 24 }}>
-          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, color: '#A07A2C' }}>
+          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, color: color.gold }}>
             Forgot password?
           </Text>
         </Pressable>
@@ -74,15 +75,15 @@ export default function LoginScreen() {
         <Pressable
           onPress={handleSignIn}
           disabled={loading}
-          style={{ backgroundColor: '#2C2014', borderRadius: 2, padding: 14, alignItems: 'center', marginBottom: 12, opacity: loading ? 0.6 : 1 }}
+          style={{ backgroundColor: color.ink, borderRadius: 2, padding: 14, alignItems: 'center', marginBottom: 12, opacity: loading ? 0.6 : 1 }}
         >
-          <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#C9A24A' }}>
+          <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: color.goldBright }}>
             {loading ? 'Signing In...' : 'Sign In'}
           </Text>
         </Pressable>
 
         <Pressable onPress={() => router.push('./signup')} disabled={loading}>
-          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 13, color: '#A07A2C', textAlign: 'center' }}>
+          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 13, color: color.gold, textAlign: 'center' }}>
             Don't have an account? <Text style={{ fontFamily: 'Inter_600SemiBold' }}>Sign up</Text>
           </Text>
         </Pressable>
@@ -92,13 +93,13 @@ export default function LoginScreen() {
           <Pressable
             onPress={() => { continueAsGuest(); router.replace('/(tabs)'); }}
             disabled={loading}
-            style={{ borderWidth: 1, borderColor: '#C4B49A', borderRadius: 2, padding: 13, alignItems: 'center', marginTop: 20 }}
+            style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 13, alignItems: 'center', marginTop: 20 }}
           >
-            <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#2C2014' }}>
+            <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 13, color: color.ink }}>
               Continue without an account
             </Text>
           </Pressable>
-          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, color: '#8A7D6D', textAlign: 'center', marginTop: 8 }}>
+          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, color: color.inkFaint, textAlign: 'center', marginTop: 8 }}>
             Everything is stored on your device. You can sign in later to back up.
           </Text>
         </View>

@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { openDatabaseSync } from "expo-sqlite";
+import { randomUUID } from "expo-crypto";
 import * as schema from "@grimoire/core/schema";
 
 const DB_NAME = "grimoire.db";
@@ -200,6 +201,53 @@ export function setKv(key: string, value: string): void {
     "INSERT OR REPLACE INTO app_kv (key, value) VALUES (?, ?)",
     [key, value],
   );
+  recordChange("app_kv", key, "update");
+}
+
+export function deleteKv(key: string): void {
+  expoDb.runSync("DELETE FROM app_kv WHERE key = ?", [key]);
+  recordChange("app_kv", key, "delete");
+}
+
+// ---------------------------------------------------------------------------
+// Change log (sync_log) — dark-launched, like entitlements.
+//
+// sync_log is the change feed a future Grimoire+ cloud backup will push from
+// (last-write-wins). Nothing consumes it yet, so writing on every mutation now
+// would just accumulate unread rows and add write overhead on hot paths like
+// scene-note autosave. So recordChange() is a no-op while SYNC_ENABLED is false.
+//
+// When cloud backup ships: flip SYNC_ENABLED, call recordChange() from the
+// relational mutation sites (campaign/entity/session insert+update+delete) — the
+// kv chokepoints below already cover all GM-tool data — and build the pusher
+// that drains sync_log to Supabase. See core `can("cloudBackup", …)`.
+// ---------------------------------------------------------------------------
+
+export const SYNC_ENABLED = false;
+
+export type ChangeOp = "insert" | "update" | "delete";
+
+function getDeviceId(): string {
+  let deviceId = getKv("device_id");
+  if (!deviceId) {
+    deviceId = randomUUID();
+    // Write directly to avoid recording a change for the device-id bookkeeping.
+    expoDb.runSync("INSERT OR REPLACE INTO app_kv (key, value) VALUES (?, ?)", ["device_id", deviceId]);
+  }
+  return deviceId;
+}
+
+/** Append a row-level change to sync_log. No-op until SYNC_ENABLED is true. */
+export function recordChange(tableName: string, rowId: string, op: ChangeOp): void {
+  if (!SYNC_ENABLED) return;
+  try {
+    expoDb.runSync(
+      "INSERT INTO sync_log (id, table_name, row_id, op, updated_at, device_id) VALUES (?, ?, ?, ?, ?, ?)",
+      [randomUUID(), tableName, rowId, op, Date.now(), getDeviceId()],
+    );
+  } catch {
+    // Change logging must never break a user mutation.
+  }
 }
 
 export function applyMigrations(): void {

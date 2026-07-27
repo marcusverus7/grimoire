@@ -85,6 +85,7 @@ export default function CampaignDetailScreen() {
   const [campaignArcs, setCampaignArcs] = useState<{ id: string; name: string }[]>([]);
   const [showSessions, setShowSessions] = useState(true);
   const [showEntities, setShowEntities] = useState(true);
+  const [showToolbox, setShowToolbox] = useState(false);
 
   const load = useCallback(() => {
     const c = db
@@ -1094,40 +1095,17 @@ export default function CampaignDetailScreen() {
 
         <GoldRule className="my-4" />
 
-        {/* Actions */}
+        {/* Core loop — the capture → link → recap → share surfaces, always
+            visible. Everyday GM utilities live in the collapsed toolbox below. */}
         <View className="flex-row flex-wrap">
           {(
             [
-              { label: "Cast", path: `/campaign/${id}/cast`, gold: true },
-              { label: "Clocks", path: `/campaign/${id}/clocks`, gold: true },
-              { label: "Party", path: `/campaign/${id}/party`, gold: true },
-              { label: "Brief", action: shareBriefing, gold: true },
-              { label: "NPC Gen", path: `/campaign/${id}/npcgen`, gold: true },
-              { label: "Hook Gen", path: `/campaign/${id}/hookgen`, gold: true },
-              { label: "Loot", path: `/campaign/${id}/loot`, gold: true },
-              { label: "Clues", path: `/campaign/${id}/clues`, gold: true },
-              { label: "Rumours", path: `/campaign/${id}/rumours`, gold: true },
-              { label: "Reference", path: `/campaign/${id}/reference`, gold: true },
-              { label: "Tavern", path: `/campaign/${id}/tavern`, gold: true },
-              { label: "Rand Enc", path: `/campaign/${id}/random-encounter`, gold: true },
-              { label: "Calendar", path: `/campaign/${id}/calendar`, gold: true },
-              { label: "Items", path: `/campaign/${id}/magic-items`, gold: true },
-              { label: "Downtime", path: `/campaign/${id}/downtime`, gold: true },
-              { label: "Reputation", path: `/campaign/${id}/reputation`, gold: true },
-              { label: "Room Gen", path: `/campaign/${id}/room-gen`, gold: true },
-              { label: "Spells", path: `/campaign/${id}/spell-slots`, gold: true },
-              { label: "Injuries", path: `/campaign/${id}/injury-tracker`, gold: true },
-              { label: "Search", path: `/campaign/${id}/search`, gold: true },
-              { label: "Notes", path: `/campaign/${id}/notes`, gold: true },
+              { label: "Recaps", path: `/campaign/${id}/recaps`, gold: true },
+              { label: "Map", path: `/campaign/${id}/graph`, gold: true },
               { label: "Quests", path: `/campaign/${id}/quests`, gold: true },
               { label: "Quotes", path: `/campaign/${id}/quotes`, gold: true },
-              { label: "Encounter", path: `/campaign/${id}/encounter`, gold: true },
-              { label: "Tracker", path: `/campaign/${id}/tracker`, gold: true },
-              { label: "Tables", path: `/campaign/${id}/tables`, gold: true },
-              { label: "Locations", path: `/campaign/${id}/locations`, gold: true },
-              { label: "Map", path: `/campaign/${id}/graph`, gold: true },
-              { label: "Stats", path: `/campaign/${id}/stats`, gold: true },
-              { label: "Recaps", path: `/campaign/${id}/recaps`, gold: true },
+              { label: "Search", path: `/campaign/${id}/search`, gold: true },
+              { label: "Brief", action: shareBriefing, gold: true },
               { label: "Export", path: `/campaign/${id}/export`, gold: true },
               { label: "Settings", path: `/campaign/${id}/settings`, gold: false },
             ] as Array<{ label: string; path?: string; action?: () => void; gold: boolean }>
@@ -1136,9 +1114,7 @@ export default function CampaignDetailScreen() {
               key={btn.label}
               onPress={() => btn.action ? btn.action() : router.push(btn.path as Parameters<typeof router.push>[0])}
               className="mb-2 mr-2 px-4 py-2.5 border rounded-sm items-center"
-              style={{
-                borderColor: btn.gold ? "#A07A2C40" : "#8A7D6D30",
-              }}
+              style={{ borderColor: btn.gold ? "#A07A2C40" : "#8A7D6D30" }}
             >
               <Text
                 style={{
@@ -1162,6 +1138,75 @@ export default function CampaignDetailScreen() {
               Dice
             </Text>
           </Pressable>
+        </View>
+
+        {/* GM Toolbox — the utility sprawl, collapsed by default so the core
+            loop above isn't buried. In-session tools (Tracker, Encounter, Dash,
+            Clocks, Party) are also reachable from the In-Play bar during play. */}
+        <View className="mt-5">
+          <Pressable
+            onPress={() => setShowToolbox((v) => !v)}
+            style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 12 }}
+          >
+            <Text className="text-gold text-xs uppercase tracking-widest" style={{ fontFamily: "Inter_600SemiBold" }}>
+              GM Toolbox
+            </Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C60" }}>
+              {showToolbox ? "▼" : "▶"}
+            </Text>
+          </Pressable>
+          {showToolbox && (
+            <View className="flex-row flex-wrap">
+              {(
+                [
+                  { label: "Cast", path: `/campaign/${id}/cast` },
+                  { label: "Party", path: `/campaign/${id}/party` },
+                  { label: "Locations", path: `/campaign/${id}/locations` },
+                  { label: "Stats", path: `/campaign/${id}/stats` },
+                  { label: "Notes", path: `/campaign/${id}/notes` },
+                  { label: "Dash", path: `/campaign/${id}/playview` },
+                  { label: "Tracker", path: `/campaign/${id}/tracker` },
+                  { label: "Encounter", path: `/campaign/${id}/encounter` },
+                  { label: "Clocks", path: `/campaign/${id}/clocks` },
+                  { label: "Tables", path: `/campaign/${id}/tables` },
+                  { label: "Clues", path: `/campaign/${id}/clues` },
+                  { label: "Loot", path: `/campaign/${id}/loot` },
+                  { label: "Items", path: `/campaign/${id}/magic-items` },
+                  { label: "Calendar", path: `/campaign/${id}/calendar` },
+                  { label: "Downtime", path: `/campaign/${id}/downtime` },
+                  { label: "Reputation", path: `/campaign/${id}/reputation` },
+                  { label: "Spells", path: `/campaign/${id}/spell-slots` },
+                  { label: "Injuries", path: `/campaign/${id}/injury-tracker` },
+                  { label: "Reference", path: `/campaign/${id}/reference` },
+                  { label: "NPC Gen", path: `/campaign/${id}/npcgen` },
+                  { label: "Hook Gen", path: `/campaign/${id}/hookgen` },
+                  { label: "Rumours", path: `/campaign/${id}/rumours` },
+                  { label: "Tavern", path: `/campaign/${id}/tavern` },
+                  { label: "Rand Enc", path: `/campaign/${id}/random-encounter` },
+                  { label: "Room Gen", path: `/campaign/${id}/room-gen` },
+                ] as Array<{ label: string; path: string }>
+              ).map((btn) => (
+                <Pressable
+                  key={btn.label}
+                  onPress={() => router.push(btn.path as Parameters<typeof router.push>[0])}
+                  className="mb-2 mr-2 px-4 py-2.5 border rounded-sm items-center"
+                  style={{ borderColor: "#8A7D6D30" }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Inter_500Medium",
+                      fontSize: 11,
+                      color: "#5A4D3E",
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
+                    }}
+                  >
+                    {btn.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
         </View>
 
         <View className="h-20" />

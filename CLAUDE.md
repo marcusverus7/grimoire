@@ -348,6 +348,58 @@ read Part IV (build plan) before starting any phase.
   real Supabase credentials; @supabase/supabase-js installed. Version bumped to
   1.10.0.
 
+- Phase 47: TestFlight feedback polish — Campaign card "Updated X ago" relative
+  timestamp computed from most recent entity/session activity; entity detail
+  "First appeared: Session N · Last: Session M" subtitle under "Appears in
+  Sessions"; quest board status alignment (open/active/completed/failed matching
+  entity detail toggle, was rumoured/active/complete/failed — new quests default
+  to "open" not "rumoured", status labels capitalized). Version bumped to 1.10.2.
+
+- Phase 48: Product-review build-out (design/features/logic/security/monetization).
+  **Core (`packages/core`):** new `campaignData.ts` — single source of truth for
+  campaign-scoped `app_kv` namespaces (clues/clocks/bonds/timeline/loot/calendar/
+  injuries/downtime/reputation/spell-slots/magic-items/tables/scene-notes), consumed
+  by BOTH export and delete so neither can silently drop GM-tool data again;
+  `exportCampaign` now takes `gmTools` and emits `gm-tools.md` + a `gmTools` block in
+  the JSON backup (export JSON version bumped 1→2). New `entitlements.ts` (dark-
+  launched `MONETIZATION_ENABLED=false`; `can()` gates + free-tier limits; export/
+  players free forever as invariants). New `keepsake.ts` — `buildKeepsakeBook()` builds
+  print-ready HTML (parchment styling) from played sessions for the paid PDF/hardcover
+  keepsake; pure, unguarded, never touches the free export path. Core tests 50→65.
+  **Mobile:** `deleteKv` helper; campaign delete now clears all campaign+session kv
+  keys via `campaignKvKeys` (was orphaning them); export screen collects + passes
+  gmTools; auth `signIn/signUp` now FAIL LOUDLY (removed silent demo-mode fallback that
+  let wrong passwords "succeed" — `continueAsGuest` remains for offline/testing); recap
+  fetch sends `x-grimoire-app-token`; **campaign detail IA restructured** — tight core-
+  loop row (Recaps/Map/Quests/Quotes/Search/Brief/Export/Settings) + collapsed "GM
+  Toolbox" holding the other 24 utilities (was a flat ~32-button grid); `recordChange`
+  sync_log change-log helper (dark-launched `SYNC_ENABLED=false`, wired at kv chokepoints)
+  as the cloud-backup backbone; `lib/theme.ts` extended with a value-preserving flat
+  `color` token map + `withAlpha()` (inline hexes had drifted from tailwind — tokens
+  mirror the real rendered values so migration can't regress). **recap-web:** secured
+  `/api/generate-recap` (shared app-token header, per-IP in-memory rate limit, payload
+  size caps bounding Anthropic spend — safe rollout: token check skipped until
+  `GRIMOIRE_APP_TOKEN` set); recap viewer footer gained a "Keep your own campaign's
+  story — Get Grimoire" CTA; landing page rewritten from dev placeholder to a real
+  parchment-branded marketing page; new `lib/site.ts` (brand + env-driven install URLs).
+  **Ops:** `pull_testflight_feedback.py` now pulls crash logs via the crashLog
+  relationship's `attributes.logText`. FINDING: Fe's build-7 and build-9 crashes share
+  the SAME native TurboModule signature — build 9 did NOT fix her crash; needs dSYM
+  symbolication (see testflight-feedback/crashlogs/DIAGNOSIS.md).
+  **Wiring pass (no dead code):** `can("createActiveCampaign", …)` now called at campaign
+  creation in `(tabs)/index.tsx` — always allows today (MONETIZATION_ENABLED=false), but
+  the call site exists so the paid tier really is a config flip, not a refactor. Keepsake
+  wired into the export screen ("Bind Keepsake Book"): writes core's print-ready HTML via
+  expo-file-system and shares it (browser → Print → Save as PDF). Deliberately did NOT add
+  `expo-print` — adding a native module while the native launch crash is unresolved is
+  reckless, and the file+share path works on iOS/Android/web alike. Verified by rendering a
+  generated keepsake in a browser (cover, dramatis personae, chapters, quotes, colophon;
+  unplayed sessions correctly excluded). Trademark search DONE (see BRANDING-NOTES.md):
+  bare "Grimoire" is crowded in this exact niche (live competitors at ttrpg.bot and
+  dungeongrimoire.com; App Store "Grimoire Scrolls"/"The Grand Grimoire") — lead with the
+  full "The Grimoire Archive"; formal USPTO clearance still required before public listing.
+  Version bumped 1.10.2 → **1.11.0**, iOS buildNumber 9 → **10**. NOT yet built/deployed.
+
 ## What to build next
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
