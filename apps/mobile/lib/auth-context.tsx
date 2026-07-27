@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Session } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+import { supabase, isSupabaseConfigured } from './supabase';
 import { getKv, setKv } from './db';
 
 type AuthContextType = {
@@ -75,12 +75,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // caller (the login/signup screen shows the alert), never silently succeed
   // into a fake session — that hid real auth failures and let bad credentials
   // "log in". Testers who want to skip auth use continueAsGuest() instead.
+  //
+  // When no backend is configured we say so plainly rather than letting the
+  // request fail as an opaque network error.
+  const NO_BACKEND = "Accounts aren't available yet — no cloud backend is configured for this build. Use \"Continue without an account\"; everything is stored on your device.";
+
   const signUp = async (email: string, password: string) => {
+    if (!isSupabaseConfigured) throw new Error(NO_BACKEND);
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
   };
 
   const signIn = async (email: string, password: string) => {
+    if (!isSupabaseConfigured) throw new Error(NO_BACKEND);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
   };

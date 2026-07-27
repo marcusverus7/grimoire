@@ -445,6 +445,23 @@ read Part IV (build plan) before starting any phase.
   to campaign-detail button labels — use goldText for functional text.
   Version 1.11.0 → **1.12.0**, buildNumber 10 → **11**.
 
+- Phase 52: **THE SUPABASE PROJECT DOES NOT EXIST.** Verified in the dashboard:
+  `marcusverus7's Org` (only org) holds exactly Klert, Mezo, skyline — no
+  Grimoire. The ref hardcoded in `lib/supabase.ts` (`ghjkfwhrzxrjihpjrrxo`) does
+  not resolve and is not in the account. (Rigour: DNS failure alone doesn't prove
+  absence — *paused* projects also stop resolving; Klert/skyline are paused and
+  fail DNS while active Mezo resolves. The project LIST is the proof.) So Supabase
+  auth NEVER worked — the old demo-mode fallback fabricated a session and hid it —
+  and cloud backup + recap sharing could never have worked either, regardless of
+  the Phase 51 publish endpoint. Fix: Supabase config is now env-driven
+  (`EXPO_PUBLIC_SUPABASE_URL`/`EXPO_PUBLIC_SUPABASE_ANON_KEY`), dead ref deleted,
+  and `isSupabaseConfigured` gates cloud UI — login shows an "Accounts coming
+  soon" notice pointing at the guest path, backup/auth explain unavailability
+  instead of failing as opaque network errors. **To enable cloud: create a
+  Supabase project (org is Free plan — active-project cap applies), run
+  migrations 00001→00003, set the two EXPO_PUBLIC_ vars + Vercel's
+  SUPABASE_SERVICE_ROLE_KEY and GRIMOIRE_APP_TOKEN.**
+
 ## What to build next
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred

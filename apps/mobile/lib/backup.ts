@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db, getKv } from "./db";
-import { supabase } from "./supabase";
+import { supabase, isSupabaseConfigured } from "./supabase";
 import {
   schema,
   exportCampaign,
@@ -40,6 +40,12 @@ export interface BackupResult<T = undefined> {
  * friendly message rather than a server error.
  */
 async function withAuthedClient(): Promise<BackupResult<string>> {
+  if (!isSupabaseConfigured) {
+    return {
+      ok: false,
+      error: "Cloud backup isn't available yet — no cloud backend is configured for this build. Use Export for a local copy.",
+    };
+  }
   const raw = getKv("supabase_session");
   if (!raw) return { ok: false, error: "Sign in to use cloud backup." };
   let cached: { access_token?: string; refresh_token?: string; user?: { id?: string } };

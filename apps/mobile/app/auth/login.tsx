@@ -2,6 +2,7 @@ import { View, Text, TextInput, Pressable, ScrollView, Alert } from 'react-nativ
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/lib/auth-context';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { ParchmentScreen } from '@/components/ParchmentScreen';
 import { GoldRule } from '@/components/GoldRule';
 import { color, withAlpha } from '@/lib/theme';
@@ -40,6 +41,19 @@ export default function LoginScreen() {
           Campaign Memory System
         </Text>
         <GoldRule />
+
+        {!isSupabaseConfigured && (
+          <View style={{ marginTop: 20, padding: 12, borderWidth: 1, borderColor: withAlpha('gold', 0x40 / 255), borderRadius: 2, backgroundColor: withAlpha('gold', 0x0a / 255) }}>
+            <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 11, color: color.goldText, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+              Accounts coming soon
+            </Text>
+            <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, color: color.inkSoft, lineHeight: 18 }}>
+              Cloud accounts aren&apos;t switched on for this build yet. Continue
+              without an account below — every campaign is stored on your device
+              and can be exported at any time.
+            </Text>
+          </View>
+        )}
 
         <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: color.inkFaint, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, marginTop: 24 }}>
           Email
