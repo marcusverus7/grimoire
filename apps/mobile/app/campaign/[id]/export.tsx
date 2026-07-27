@@ -8,13 +8,32 @@ import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { WaxSeal } from "@/components/WaxSeal";
 import { schema } from "@grimoire/core";
-import { exportCampaign, slugify, richTextToMarkdown } from "@grimoire/core";
-import type { RichTextNode } from "@grimoire/core";
+import { exportCampaign, slugify, richTextToMarkdown, exportableCampaignNamespaces, buildKeepsakeBook } from "@grimoire/core";
+import type { RichTextNode, GmToolData } from "@grimoire/core";
+import { color, withAlpha } from "@/lib/theme";
+
+/** Read every exportable GM-tool app_kv blob for a campaign (clues, clocks, …). */
+function collectGmTools(campaignId: string): GmToolData[] {
+  const tools: GmToolData[] = [];
+  for (const ns of exportableCampaignNamespaces()) {
+    const raw = getKv(`${ns.prefix}${campaignId}`);
+    if (!raw) continue;
+    try {
+      const value = JSON.parse(raw);
+      if (value == null || (Array.isArray(value) && value.length === 0)) continue;
+      tools.push({ id: ns.id, value });
+    } catch {
+      /* skip malformed */
+    }
+  }
+  return tools;
+}
 
 export default function ExportScreen() {
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const [exporting, setExporting] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [binding, setBinding] = useState(false);
   const [result, setResult] = useState<{ fileCount: number; jsonSize: number; entityCount: number; sessionCount: number; quoteCount: number } | null>(null);
 
   const doExport = async () => {
@@ -81,6 +100,7 @@ export default function ExportScreen() {
           text: q.text,
         })),
         worldNotes: settings.worldNotes ?? null,
+        gmTools: collectGmTools(campaignId),
         includeGmOnly: true,
       });
 
@@ -147,6 +167,82 @@ export default function ExportScreen() {
     }
   };
 
+  /**
+   * Keepsake book — writes the print-ready HTML built by core and shares the
+   * file. Opening it in a browser and using "Print → Save as PDF" produces the
+   * keepsake. Deliberately avoids expo-print: adding a native module while an
+   * unresolved native launch crash is outstanding would be reckless, and this
+   * path works identically on iOS, Android and web.
+   */
+  const doKeepsake = async () => {
+    setBinding(true);
+    try {
+      const campaign = db.select().from(schema.campaigns).where(eq(schema.campaigns.id, campaignId)).get();
+      if (!campaign) {
+        Alert.alert("Error", "Campaign not found");
+        return;
+      }
+
+      const entities = db.select().from(schema.entities).where(eq(schema.entities.campaignId, campaignId)).all();
+      const sessions = db.select().from(schema.sessions).where(eq(schema.sessions.campaignId, campaignId)).all();
+      const quotesData = db.select().from(schema.quotes).where(eq(schema.quotes.campaignId, campaignId)).all();
+
+      const playedCount = sessions.filter((s) => s.status === "played").length;
+      if (playedCount === 0) {
+        Alert.alert(
+          "No played sessions yet",
+          "A keepsake book is bound from your played sessions. Play and mark a session as played first.",
+        );
+        return;
+      }
+
+      const book = buildKeepsakeBook({
+        campaign: {
+          id: campaign.id,
+          name: campaign.name,
+          systemTag: campaign.systemTag ?? undefined,
+          status: campaign.status,
+        },
+        entities: entities.map((e) => ({
+          id: e.id,
+          kind: e.kind,
+          name: e.name,
+          summary: e.summary,
+          body: e.body as RichTextNode | null,
+          attrs: e.attrs as Record<string, unknown> | null,
+          visibility: e.visibility as "gm_only" | "table",
+        })),
+        sessions: sessions.map((s) => ({
+          id: s.id,
+          number: s.number,
+          title: s.title,
+          playedOn: s.playedOn,
+          body: s.body as RichTextNode | null,
+          status: s.status as "planned" | "in_progress" | "played",
+        })),
+        quotes: quotesData.map((q) => ({ id: q.id, attribution: q.attribution, text: q.text })),
+      });
+
+      const file = new File(Paths.document, `keepsake-${slugify(campaign.name)}.html`);
+      if (!file.exists) file.create();
+      file.write(book.html);
+
+      if (Platform.OS !== "web") {
+        await Share.share({
+          title: book.title,
+          message: `${book.title} — open in a browser and choose Print → Save as PDF.`,
+          url: file.uri,
+        });
+      } else {
+        Alert.alert("Keepsake ready", `Saved ${file.uri}. Open it in a browser and choose Print → Save as PDF.`);
+      }
+    } catch (e) {
+      Alert.alert("Keepsake Failed", e instanceof Error ? e.message : "An unexpected error occurred");
+    } finally {
+      setBinding(false);
+    }
+  };
+
   const doShare = async () => {
     setSharing(true);
     try {
@@ -166,6 +262,7 @@ export default function ExportScreen() {
         sessions: sessions.map((s) => ({ id: s.id, number: s.number, title: s.title, playedOn: s.playedOn, body: s.body as RichTextNode | null, status: s.status as "planned" | "in_progress" | "played" })),
         quotes: quotesData.map((q) => ({ id: q.id, attribution: q.attribution, text: q.text })),
         worldNotes: settings.worldNotes ?? null,
+        gmTools: collectGmTools(campaignId),
         includeGmOnly: true,
       });
 
@@ -215,6 +312,12 @@ export default function ExportScreen() {
       }
       if (noteSections.length > 0) {
         text += `\n\n---\n\n# Scene Notes\n\n${noteSections.join("\n\n")}`;
+      }
+
+      // Append GM tools (clues, clocks, bonds, timeline, loot, …)
+      const gmToolsFile = exportData.files.find((f) => f.path === "gm-tools.md");
+      if (gmToolsFile) {
+        text += `\n\n---\n\n${gmToolsFile.content.replace(/^---[\s\S]*?---\n/, "")}`;
       }
 
       await Share.share({
@@ -267,6 +370,8 @@ export default function ExportScreen() {
           <BulletItem text="All sessions with notes" />
           <BulletItem text="Memorable quotes (quotes.md)" />
           <BulletItem text="World Notes (world-notes.md) if present" />
+          <BulletItem text="GM tools: clues, clocks, bonds, timeline, loot & more" />
+          <BulletItem text="Scene notes per session" />
           <BulletItem text="GM-only content included" />
           <BulletItem text="Frontmatter metadata for each file" />
           <BulletItem text="Full JSON backup (campaign.json)" />
@@ -283,7 +388,7 @@ export default function ExportScreen() {
             style={{
               fontFamily: "Inter_600SemiBold",
               fontSize: 14,
-              color: "#FAF5EA",
+              color: color.parchment,
               textTransform: "uppercase",
               letterSpacing: 1.5,
             }}
@@ -300,7 +405,7 @@ export default function ExportScreen() {
             paddingHorizontal: 24,
             paddingVertical: 12,
             borderWidth: 1,
-            borderColor: "#A07A2C50",
+            borderColor: withAlpha("gold", 0x50 / 255),
             borderRadius: 2,
           }}
         >
@@ -308,7 +413,7 @@ export default function ExportScreen() {
             style={{
               fontFamily: "Inter_500Medium",
               fontSize: 13,
-              color: "#A07A2C",
+              color: color.gold,
               textTransform: "uppercase",
               letterSpacing: 1,
               textAlign: "center",
@@ -318,15 +423,72 @@ export default function ExportScreen() {
           </Text>
         </Pressable>
 
+        {/* Keepsake book — the campaign bound as a printable volume. */}
+        <View style={{ marginTop: 28, width: "100%", paddingHorizontal: 16 }}>
+          <GoldRule />
+          <Text
+            style={{
+              fontFamily: "CormorantGaramond_700Bold",
+              fontSize: 17,
+              color: color.ink,
+              textAlign: "center",
+              marginTop: 20,
+              marginBottom: 6,
+            }}
+          >
+            Keepsake Book
+          </Text>
+          <Text
+            style={{
+              fontFamily: "Inter_400Regular",
+              fontSize: 12,
+              color: color.inkFaint,
+              textAlign: "center",
+              lineHeight: 18,
+              marginBottom: 14,
+            }}
+          >
+            Bind your played sessions into a printable volume — cover, dramatis
+            personae, chapters and quotes. Open it in a browser and choose
+            Print → Save as PDF.
+          </Text>
+          <Pressable
+            onPress={doKeepsake}
+            disabled={binding}
+            style={{
+              alignSelf: "center",
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderWidth: 1,
+              borderColor: withAlpha("oxblood", 0.4),
+              borderRadius: 2,
+              opacity: binding ? 0.6 : 1,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "Inter_500Medium",
+                fontSize: 13,
+                color: color.oxblood,
+                textTransform: "uppercase",
+                letterSpacing: 1,
+                textAlign: "center",
+              }}
+            >
+              {binding ? "Binding…" : "Bind Keepsake Book"}
+            </Text>
+          </Pressable>
+        </View>
+
         {result && (
-          <View style={{ marginTop: 24, padding: 16, borderRadius: 2, borderWidth: 1, borderColor: "#4A8060" + "40", backgroundColor: "#4A806008" }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#4A8060", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8, textAlign: "center" }}>
+          <View style={{ marginTop: 24, padding: 16, borderRadius: 2, borderWidth: 1, borderColor: withAlpha("success", 0.25), backgroundColor: withAlpha("success", 0.03) }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.success, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8, textAlign: "center" }}>
               ✓ Export Complete
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, textAlign: "center", marginBottom: 4 }}>
               {result.entityCount} entities · {result.sessionCount} sessions · {result.quoteCount} quotes
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D", textAlign: "center" }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.inkFaint, textAlign: "center" }}>
               {result.fileCount} files · {result.jsonSize} KB JSON
             </Text>
           </View>

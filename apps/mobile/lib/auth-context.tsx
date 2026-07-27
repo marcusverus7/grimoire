@@ -71,36 +71,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Fail loudly. A wrong password or a Supabase outage must surface to the
+  // caller (the login/signup screen shows the alert), never silently succeed
+  // into a fake session — that hid real auth failures and let bad credentials
+  // "log in". Testers who want to skip auth use continueAsGuest() instead.
   const signUp = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-    } catch (e: any) {
-      console.warn('Auth error (using demo mode):', e.message);
-      // Demo mode: create local session
-      const demoSession = {
-        user: { id: 'demo-' + Math.random(), email },
-        access_token: 'demo-token',
-      };
-      setSession(demoSession as any);
-      setKv('supabase_session', JSON.stringify(demoSession));
-    }
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
   };
 
   const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-    } catch (e: any) {
-      console.warn('Auth error (using demo mode):', e.message);
-      // Demo mode: create local session
-      const demoSession = {
-        user: { id: 'demo-' + Math.random(), email },
-        access_token: 'demo-token',
-      };
-      setSession(demoSession as any);
-      setKv('supabase_session', JSON.stringify(demoSession));
-    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
   };
 
   const signOut = async () => {

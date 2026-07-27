@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/lib/auth-context';
 import { ParchmentScreen } from '@/components/ParchmentScreen';
 import { GoldRule } from '@/components/GoldRule';
+import { color, withAlpha } from '@/lib/theme';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -45,64 +46,64 @@ export default function SignupScreen() {
   return (
     <ParchmentScreen>
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60, justifyContent: 'center', minHeight: '100%' }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: 'CinzelDecorative_400Regular', fontSize: 24, color: '#2C2014', textAlign: 'center', marginBottom: 4 }}>
+        <Text style={{ fontFamily: 'CinzelDecorative_400Regular', fontSize: 24, color: color.ink, textAlign: 'center', marginBottom: 4 }}>
           Grimoire
         </Text>
-        <Text style={{ fontFamily: 'CormorantGaramond_400Regular_Italic', fontSize: 14, color: '#8A7D6D', textAlign: 'center', marginBottom: 24 }}>
+        <Text style={{ fontFamily: 'CormorantGaramond_400Regular_Italic', fontSize: 14, color: color.inkFaint, textAlign: 'center', marginBottom: 24 }}>
           Create Account
         </Text>
         <GoldRule />
 
-        <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#8A7D6D', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, marginTop: 24 }}>
+        <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: color.inkFaint, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, marginTop: 24 }}>
           Email
         </Text>
         <TextInput
           value={email}
           onChangeText={setEmail}
           placeholder="your@email.com"
-          placeholderTextColor="#8A7D6D80"
+          placeholderTextColor={withAlpha('inkFaint', 0.5)}
           editable={!loading}
-          style={{ borderWidth: 1, borderColor: '#C4B49A', borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#2C2014', marginBottom: 16 }}
+          style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: color.ink, marginBottom: 16 }}
         />
 
-        <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#8A7D6D', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+        <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: color.inkFaint, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
           Password
         </Text>
         <TextInput
           value={password}
           onChangeText={setPassword}
           placeholder="••••••••"
-          placeholderTextColor="#8A7D6D80"
+          placeholderTextColor={withAlpha('inkFaint', 0.5)}
           secureTextEntry
           editable={!loading}
-          style={{ borderWidth: 1, borderColor: '#C4B49A', borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#2C2014', marginBottom: 16 }}
+          style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: color.ink, marginBottom: 16 }}
         />
 
-        <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#8A7D6D', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+        <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: color.inkFaint, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
           Confirm Password
         </Text>
         <TextInput
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           placeholder="••••••••"
-          placeholderTextColor="#8A7D6D80"
+          placeholderTextColor={withAlpha('inkFaint', 0.5)}
           secureTextEntry
           editable={!loading}
-          style={{ borderWidth: 1, borderColor: '#C4B49A', borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#2C2014', marginBottom: 24 }}
+          style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: color.ink, marginBottom: 24 }}
         />
 
         <Pressable
           onPress={handleSignUp}
           disabled={loading}
-          style={{ backgroundColor: '#2C2014', borderRadius: 2, padding: 14, alignItems: 'center', marginBottom: 12, opacity: loading ? 0.6 : 1 }}
+          style={{ backgroundColor: color.ink, borderRadius: 2, padding: 14, alignItems: 'center', marginBottom: 12, opacity: loading ? 0.6 : 1 }}
         >
-          <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#C9A24A' }}>
+          <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: color.goldBright }}>
             {loading ? 'Creating Account...' : 'Create Account'}
           </Text>
         </Pressable>
 
         <Pressable onPress={() => router.back()} disabled={loading}>
-          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 13, color: '#A07A2C', textAlign: 'center' }}>
+          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 13, color: color.gold, textAlign: 'center' }}>
             Already have an account? <Text style={{ fontFamily: 'Inter_600SemiBold' }}>Sign in</Text>
           </Text>
         </Pressable>

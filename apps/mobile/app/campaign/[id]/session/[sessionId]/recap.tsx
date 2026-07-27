@@ -133,7 +133,14 @@ export default function RecapScreen() {
 
       const res = await fetch(RECAP_API, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          // Shared app token — matches GRIMOIRE_APP_TOKEN on the server. Not a
+          // hard secret (it ships in the binary); it deters casual abuse.
+          ...(process.env.EXPO_PUBLIC_RECAP_APP_TOKEN
+            ? { "x-grimoire-app-token": process.env.EXPO_PUBLIC_RECAP_APP_TOKEN }
+            : {}),
+        },
         body: JSON.stringify(input),
       });
 

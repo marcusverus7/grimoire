@@ -11,10 +11,11 @@ import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
+import { db, deleteKv } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
-import { schema } from "@grimoire/core";
+import { schema, campaignKvKeys } from "@grimoire/core";
+import { color, withAlpha } from "@/lib/theme";
 
 type Campaign = typeof schema.campaigns.$inferSelect;
 type Status = "active" | "archived" | "ended";
@@ -111,6 +112,8 @@ export default function CampaignSettingsScreen() {
               db.delete(schema.sessions).where(eq(schema.sessions.campaignId, id)).run();
               db.delete(schema.quotes).where(eq(schema.quotes.campaignId, id)).run();
               db.delete(schema.memberships).where(eq(schema.memberships.campaignId, id)).run();
+              // GM-tool app_kv data (clues, clocks, bonds, timeline, loot, scene notes, …)
+              for (const key of campaignKvKeys(id, sessionIds)) deleteKv(key);
               db.delete(schema.campaigns).where(eq(schema.campaigns.id, id)).run();
               router.replace("/");
             } catch (e) {
@@ -161,18 +164,18 @@ export default function CampaignSettingsScreen() {
                 resizeMode="cover"
               />
               <View style={{ position: "absolute", bottom: 8, right: 8, backgroundColor: "rgba(26,20,16,0.7)", borderRadius: 3, paddingHorizontal: 8, paddingVertical: 4 }}>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#FAF5EA" }}>Change cover</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.parchment }}>Change cover</Text>
               </View>
             </View>
           ) : (
-            <View style={{ height: 80, borderWidth: 1, borderStyle: "dashed", borderColor: "#A07A2C40", borderRadius: 4, alignItems: "center", justifyContent: "center", backgroundColor: "#ECE3CF30" }}>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C80" }}>+ Add campaign cover image</Text>
+            <View style={{ height: 80, borderWidth: 1, borderStyle: "dashed", borderColor: withAlpha("gold", 0.25), borderRadius: 4, alignItems: "center", justifyContent: "center", backgroundColor: "#ECE3CF30" }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("gold", 0.5) }}>+ Add campaign cover image</Text>
             </View>
           )}
         </Pressable>
         {coverImageUri && (
           <Pressable onPress={() => setCoverImageUri(null)} style={{ marginTop: -14, marginBottom: 16, alignItems: "flex-end" }}>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D" }}>Remove cover</Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint }}>Remove cover</Text>
           </Pressable>
         )}
 
@@ -182,9 +185,9 @@ export default function CampaignSettingsScreen() {
           value={name}
           onChangeText={setName}
           placeholder="Campaign name"
-          placeholderTextColor="#2C201440"
+          placeholderTextColor={withAlpha("ink", 0.25)}
           className="border-b border-gold/20 pb-2 mb-5 text-lg"
-          style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#2C2014" }}
+          style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: color.ink }}
         />
 
         {/* System Tag */}
@@ -193,9 +196,9 @@ export default function CampaignSettingsScreen() {
           value={systemTag}
           onChangeText={setSystemTag}
           placeholder="e.g. D&D 5e, Pathfinder 2e, Blades in the Dark"
-          placeholderTextColor="#2C201440"
+          placeholderTextColor={withAlpha("ink", 0.25)}
           className="border-b border-gold/20 pb-2 mb-5"
-          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014" }}
+          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink }}
         />
 
         {/* Logline */}
@@ -204,9 +207,9 @@ export default function CampaignSettingsScreen() {
           value={logline}
           onChangeText={setLogline}
           placeholder="One-sentence hook: e.g. A band of outlaws chase a sunken treasure"
-          placeholderTextColor="#2C201440"
+          placeholderTextColor={withAlpha("ink", 0.25)}
           className="border-b border-gold/20 pb-2 mb-5"
-          style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 15, color: "#2C2014", fontStyle: "italic" }}
+          style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 15, color: color.ink, fontStyle: "italic" }}
         />
 
         {/* Status */}
@@ -226,7 +229,7 @@ export default function CampaignSettingsScreen() {
                 style={{
                   fontFamily: "Inter_500Medium",
                   fontSize: 12,
-                  color: status === s ? "#A07A2C" : "#5A4D3E",
+                  color: status === s ? color.gold : color.inkSoft,
                   textTransform: "capitalize",
                 }}
               >
@@ -242,9 +245,9 @@ export default function CampaignSettingsScreen() {
           value={nextSession}
           onChangeText={setNextSession}
           placeholder="2025-07-10"
-          placeholderTextColor="#2C201440"
+          placeholderTextColor={withAlpha("ink", 0.25)}
           className="border-b border-gold/20 pb-2 mb-5"
-          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014" }}
+          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink }}
         />
 
         {/* Campaign Notes */}
@@ -253,14 +256,14 @@ export default function CampaignSettingsScreen() {
           value={notes}
           onChangeText={setNotes}
           placeholder="House rules, lore reminders, player briefs…"
-          placeholderTextColor="#2C201440"
+          placeholderTextColor={withAlpha("ink", 0.25)}
           multiline
           numberOfLines={4}
           className="border border-gold/20 rounded-sm p-3 mb-5"
           style={{
             fontFamily: "Inter_400Regular",
             fontSize: 14,
-            color: "#2C2014",
+            color: color.ink,
             minHeight: 90,
             textAlignVertical: "top",
           }}
@@ -277,7 +280,7 @@ export default function CampaignSettingsScreen() {
             style={{
               fontFamily: "Inter_600SemiBold",
               fontSize: 14,
-              color: "#FAF5EA",
+              color: color.parchment,
               textTransform: "uppercase",
               letterSpacing: 1.5,
             }}
@@ -293,17 +296,17 @@ export default function CampaignSettingsScreen() {
         >
           <View>
             <Text
-              style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#2C2014" }}
+              style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.ink }}
             >
               Session Zero & Safety Tools
             </Text>
             <Text
-              style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80", marginTop: 2 }}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("inkSoft", 0.5), marginTop: 2 }}
             >
               X-Card, Lines & Veils, tone
             </Text>
           </View>
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C" }}>›</Text>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: color.gold }}>›</Text>
         </Pressable>
 
         {/* Story Arcs link */}
@@ -312,14 +315,14 @@ export default function CampaignSettingsScreen() {
           className="mt-4 mb-3 py-3 px-4 border border-gold/20 rounded-sm flex-row items-center justify-between"
         >
           <View>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#2C2014" }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.ink }}>
               Story Arcs
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80", marginTop: 2 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("inkSoft", 0.5), marginTop: 2 }}>
               Organize sessions into chapters
             </Text>
           </View>
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C" }}>›</Text>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: color.gold }}>›</Text>
         </Pressable>
 
         {/* Prep To-Do link */}
@@ -329,17 +332,17 @@ export default function CampaignSettingsScreen() {
         >
           <View>
             <Text
-              style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#2C2014" }}
+              style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.ink }}
             >
               Prep To-Do List
             </Text>
             <Text
-              style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80", marginTop: 2 }}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("inkSoft", 0.5), marginTop: 2 }}
             >
               Tasks to do before next session
             </Text>
           </View>
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C" }}>›</Text>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: color.gold }}>›</Text>
         </Pressable>
 
         {/* Cloud Backup */}
@@ -361,7 +364,7 @@ export default function CampaignSettingsScreen() {
               Save campaign to cloud (requires authentication)
             </Text>
           </View>
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#A07A2C" }}>›</Text>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: color.gold }}>›</Text>
         </Pressable>
 
         {/* Danger Zone */}
@@ -387,7 +390,7 @@ export default function CampaignSettingsScreen() {
               style={{
                 fontFamily: "Inter_500Medium",
                 fontSize: 12,
-                color: "#7A2418",
+                color: color.oxblood,
               }}
             >
               Delete Campaign

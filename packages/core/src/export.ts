@@ -4,6 +4,11 @@
  * straight into Obsidian, which is also the import story in reverse.
  */
 import { MENTION_NODE, type RichTextNode } from "./richtext";
+import {
+  type GmToolData,
+  exportableCampaignNamespaces,
+  renderGmToolMarkdown,
+} from "./campaignData";
 
 export interface ExportEntity {
   id: string;
@@ -135,6 +140,12 @@ export function exportCampaign(args: {
   sessions: ExportSession[];
   quotes?: ExportQuote[];
   worldNotes?: RichTextNode | null;
+  /**
+   * GM-utility data from app_kv (clues, clocks, party bonds, timeline, …),
+   * keyed by CampaignKvNamespace id with already-parsed JSON values. Included
+   * in both the JSON backup and a readable gm-tools.md. Ownership over lock-in.
+   */
+  gmTools?: GmToolData[];
   /** GM export includes gm_only records; a player export must pass false. */
   includeGmOnly?: boolean;
 }): CampaignExport {
@@ -151,6 +162,19 @@ export function exportCampaign(args: {
   const sessions = [...args.sessions].sort((a, b) => a.number - b.number);
   const quotes = args.quotes ?? [];
   const worldNotes = args.worldNotes ?? null;
+
+  // GM tools (app_kv) → keyed map for JSON + rendered sections for Markdown.
+  const gmToolsById = new Map((args.gmTools ?? []).map((t) => [t.id, t.value]));
+  const gmToolSections: string[] = [];
+  const gmToolsJson: Record<string, unknown> = {};
+  for (const ns of exportableCampaignNamespaces()) {
+    const value = gmToolsById.get(ns.id);
+    if (value == null || (Array.isArray(value) && value.length === 0)) continue;
+    gmToolsJson[ns.id] = value;
+    const section = renderGmToolMarkdown(ns.label, value);
+    if (section.trim().length > 0) gmToolSections.push(section);
+  }
+  const hasGmTools = gmToolSections.length > 0;
 
   const files: ExportFile[] = [];
 
@@ -174,9 +198,24 @@ export function exportCampaign(args: {
       ...entities.map((e) => `- [[${e.name}]] (${e.kind})`),
       ...(quotes.length > 0 ? ["", "## Quotes", `[[quotes]]`] : []),
       ...(worldNotes ? ["", "## World Notes", `[[world-notes]]`] : []),
+      ...(hasGmTools ? ["", "## GM Tools", `[[gm-tools]]`] : []),
       "",
     ].join("\n"),
   });
+
+  if (hasGmTools) {
+    files.push({
+      path: "gm-tools.md",
+      content: [
+        frontmatter({ campaign: campaign.name }),
+        `# GM Tools — ${campaign.name}`,
+        "",
+        "*Clues, clocks, party bonds, timelines, loot and other GM-utility data.*",
+        "",
+        ...gmToolSections,
+      ].join("\n"),
+    });
+  }
 
   if (worldNotes) {
     files.push({
@@ -277,11 +316,12 @@ export function exportCampaign(args: {
   const json = JSON.stringify(
     {
       format: "grimoire-export",
-      version: 1,
+      version: 2,
       campaign,
       entities,
       sessions,
       quotes,
+      gmTools: gmToolsJson,
     },
     null,
     2,

@@ -11,11 +11,17 @@ import { schema } from "@grimoire/core";
 
 type Entity = typeof schema.entities.$inferSelect;
 
-const STATUS_ORDER = ["active", "rumoured", "complete", "failed"] as const;
+const STATUS_ORDER = ["active", "open", "completed", "failed"] as const;
+const STATUS_LABELS: Record<string, string> = {
+  active: "Active",
+  open: "Open",
+  completed: "Completed",
+  failed: "Failed",
+};
 const STATUS_COLORS: Record<string, string> = {
   active: "#A07A2C",
-  rumoured: "#5A4D3E",
-  complete: "#4A7A2C",
+  open: "#5A4D3E",
+  completed: "#4A8060",
   failed: "#7A2418",
 };
 
@@ -56,7 +62,7 @@ export default function QuestsScreen() {
       kind: "quest",
       name: "New Quest",
       visibility: "table",
-      attrs: { questStatus: "rumoured" },
+      attrs: { questStatus: "open" },
       createdAt: now,
       updatedAt: now,
     }).run();
@@ -67,7 +73,7 @@ export default function QuestsScreen() {
 
   const getQuestStatus = (q: Entity): string => {
     const attrs = q.attrs as Record<string, unknown> | null;
-    return (attrs?.["questStatus"] as string) ?? "rumoured";
+    return (attrs?.["questStatus"] as string) ?? "open";
   };
 
   const grouped = STATUS_ORDER.map((status) => ({
@@ -137,7 +143,7 @@ export default function QuestsScreen() {
                     color: STATUS_COLORS[group.status] ?? "#8A7D6D",
                   }}
                 >
-                  {group.status}
+                  {STATUS_LABELS[group.status] ?? group.status}
                 </Text>
                 <Text
                   className="text-ink/30 text-xs ml-2"

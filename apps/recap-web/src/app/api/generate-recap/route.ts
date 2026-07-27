@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildAiRecapPrompt } from "@grimoire/core";
 import type { AiRecapInput } from "@grimoire/core";
+import { guardRecapRequest, checkPayloadSize } from "@/lib/api-guard";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -12,6 +13,10 @@ export async function POST(req: NextRequest) {
       { status: 503 },
     );
   }
+
+  // App token + per-IP rate limit before we touch the body or spend credits.
+  const gate = guardRecapRequest(req.headers);
+  if (gate) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
   let input: AiRecapInput;
   try {
@@ -26,6 +31,10 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
+
+  // Bound input size so one request can't inflate the prompt (and the bill).
+  const tooBig = checkPayloadSize(input);
+  if (tooBig) return NextResponse.json({ error: tooBig.error }, { status: tooBig.status });
 
   const { system, user } = buildAiRecapPrompt(input);
 

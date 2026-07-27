@@ -21,7 +21,7 @@ import { WaxSeal } from "@/components/WaxSeal";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { OnboardingModal } from "@/components/OnboardingModal";
-import { schema } from "@grimoire/core";
+import { schema, can } from "@grimoire/core";
 import { seedSampleCampaign } from "@/lib/sampleData";
 
 type CampaignRow = typeof schema.campaigns.$inferSelect & {
@@ -30,7 +30,23 @@ type CampaignRow = typeof schema.campaigns.$inferSelect & {
   quoteCount: number;
   logline?: string;
   coverImageUri?: string;
+  lastActivity?: number;
 };
+
+function timeAgo(ms: number): string {
+  const seconds = Math.floor((Date.now() - ms) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `${weeks}w ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
+}
 
 function remapMentionIds(node: unknown, idMap: Map<string, string>): unknown {
   if (node === null || typeof node !== "object") return node;
@@ -88,10 +104,36 @@ export default function CampaignsScreen() {
         .from(schema.quotes)
         .where(eq(schema.quotes.campaignId, c.id))
         .get()?.count ?? 0;
+      const lastEntityTs = db
+        .select({ updatedAt: schema.entities.updatedAt })
+        .from(schema.entities)
+        .where(eq(schema.entities.campaignId, c.id))
+        .orderBy(sql`${schema.entities.updatedAt} DESC`)
+        .limit(1)
+        .get();
+      const lastSessionTs = db
+        .select({ playedOn: schema.sessions.playedOn })
+        .from(schema.sessions)
+        .where(eq(schema.sessions.campaignId, c.id))
+        .orderBy(sql`${schema.sessions.playedOn} DESC`)
+        .limit(1)
+        .get();
+      const toMs = (v: unknown): number => {
+        if (v instanceof Date) return v.getTime();
+        if (typeof v === "number") return v;
+        if (typeof v === "string") { const d = Date.parse(v); return isNaN(d) ? 0 : d; }
+        return 0;
+      };
+      const times = [
+        toMs(c.createdAt),
+        toMs(lastEntityTs?.updatedAt),
+        toMs(lastSessionTs?.playedOn),
+      ];
+      const lastActivity = Math.max(...times);
       const settings = c.settings as { logline?: string; coverImageUri?: string } | null;
       const logline = settings?.logline;
       const coverImageUri = settings?.coverImageUri;
-      return { ...c, entityCount, sessionCount, quoteCount, logline, coverImageUri };
+      return { ...c, entityCount, sessionCount, quoteCount, logline, coverImageUri, lastActivity };
     });
     setCampaigns(enriched);
   }, []);
@@ -101,6 +143,18 @@ export default function CampaignsScreen() {
   const createCampaign = () => {
     const trimmed = newName.trim();
     if (!trimmed) return;
+
+    // Entitlement gate. Monetization is dark-launched (MONETIZATION_ENABLED is
+    // false), so this always allows today — the call site exists so enabling the
+    // paid tier is a config flip rather than a refactor of this screen.
+    const gate = can("createActiveCampaign", "free", {
+      activeCampaigns: campaigns.filter((c) => c.status === "active").length,
+      aiRecapsThisMonth: 0,
+    });
+    if (!gate.allowed) {
+      Alert.alert("Campaign limit reached", gate.reason ?? "Upgrade to create more campaigns.");
+      return;
+    }
 
     try {
       const now = Date.now();
@@ -414,6 +468,11 @@ export default function CampaignsScreen() {
                 {item.sessionCount} {item.sessionCount === 1 ? "session" : "sessions"}
                 {item.quoteCount > 0 ? ` · ${item.quoteCount} ${item.quoteCount === 1 ? "quote" : "quotes"}` : ""}
               </Text>
+              {item.lastActivity && item.lastActivity > 0 ? (
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E50", marginTop: 3 }}>
+                  Updated {timeAgo(item.lastActivity)}
+                </Text>
+              ) : null}
             </Pressable>
           )}
           ListFooterComponent={
