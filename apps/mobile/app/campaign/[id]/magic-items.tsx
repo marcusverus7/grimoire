@@ -8,6 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { db, getKv, setKv } from "@/lib/db";
 import { schema } from "@grimoire/core";
 import { randomUUID } from "expo-crypto";
+import { color, withAlpha } from "@/lib/theme";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Rarity = "Common" | "Uncommon" | "Rare" | "Very Rare" | "Legendary" | "Artifact";
@@ -24,11 +25,11 @@ type MagicItem = {
 
 const RARITIES: Rarity[] = ["Common", "Uncommon", "Rare", "Very Rare", "Legendary", "Artifact"];
 const RARITY_COLORS: Record<Rarity, string> = {
-  Common: "#8A7D6D",
-  Uncommon: "#2D7A4F",
+  Common: color.inkFaint,
+  Uncommon: color.successBright,
   Rare: "#2563EB",
   "Very Rare": "#7C3AED",
-  Legendary: "#C9A24A",
+  Legendary: color.goldBright,
   Artifact: "#7A1A1A",
 };
 
@@ -124,28 +125,28 @@ export default function MagicItemsScreen() {
     <ParchmentScreen>
       <Stack.Screen options={{ title: "Magic Items", headerBackTitle: "Campaign" }} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 4 }}>
           Magic Item Registry
         </Text>
         <GoldRule />
 
         {/* Summary bar */}
-        <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 16, backgroundColor: "#E8DCC820", borderRadius: 4, padding: 10 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 16, backgroundColor: withAlpha("parchmentEdge", 0x20 / 255), borderRadius: 4, padding: 10 }}>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: "#2C2014" }}>{items.length}</Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D" }}>Total Items</Text>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: color.ink }}>{items.length}</Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint }}>Total Items</Text>
           </View>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: "#C9A24A" }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: color.goldBright }}>
               {items.filter(it => it.rarity === "Rare" || it.rarity === "Very Rare" || it.rarity === "Legendary" || it.rarity === "Artifact").length}
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D" }}>Rare+</Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint }}>Rare+</Text>
           </View>
           <View style={{ alignItems: "center" }}>
             <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: "#7C3AED" }}>
               {items.filter(it => it.attunement).length}
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D" }}>Attuned</Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint }}>Attuned</Text>
           </View>
         </View>
 
@@ -154,17 +155,17 @@ export default function MagicItemsScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
             <Pressable
               onPress={() => setFilterHolder(null)}
-              style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, backgroundColor: filterHolder === null ? "#2C2014" : "#E8DCC8", borderWidth: 1, borderColor: filterHolder === null ? "#2C2014" : "#C4B49A" }}
+              style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, backgroundColor: filterHolder === null ? color.ink : color.parchmentEdge, borderWidth: 1, borderColor: filterHolder === null ? color.ink : color.border }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: filterHolder === null ? "#C9A24A" : "#4A3F32" }}>All</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: filterHolder === null ? color.goldBright : color.borderDark }}>All</Text>
             </Pressable>
             {pcs.map(pc => (
               <Pressable
                 key={pc.id}
                 onPress={() => setFilterHolder(filterHolder === pc.name ? null : pc.name)}
-                style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, backgroundColor: filterHolder === pc.name ? "#2C2014" : "#E8DCC8", borderWidth: 1, borderColor: filterHolder === pc.name ? "#2C2014" : "#C4B49A" }}
+                style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, backgroundColor: filterHolder === pc.name ? color.ink : color.parchmentEdge, borderWidth: 1, borderColor: filterHolder === pc.name ? color.ink : color.border }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: filterHolder === pc.name ? "#C9A24A" : "#4A3F32" }}>{pc.name}</Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: filterHolder === pc.name ? color.goldBright : color.borderDark }}>{pc.name}</Text>
               </Pressable>
             ))}
           </ScrollView>
@@ -173,23 +174,23 @@ export default function MagicItemsScreen() {
         {/* Add button */}
         <Pressable
           onPress={openAdd}
-          style={{ backgroundColor: "#2C2014", borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
+          style={{ backgroundColor: color.ink, borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
         >
-          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: "#C9A24A", letterSpacing: 1 }}>
+          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: color.goldBright, letterSpacing: 1 }}>
             + Add Magic Item
           </Text>
         </Pressable>
 
         {/* Grouped list */}
         {grouped.length === 0 && (
-          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#8A7D6D60", textAlign: "center", marginTop: 20 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("inkFaint", 0x60 / 255), textAlign: "center", marginTop: 20 }}>
             No magic items tracked yet.{"\n"}Add items to keep a registry of party loot.
           </Text>
         )}
         {grouped.map(g => (
           <View key={g.holder} style={{ marginBottom: 20 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1 }}>
                 {g.holder}
               </Text>
               {g.holder !== "Unassigned" && (
@@ -207,10 +208,10 @@ export default function MagicItemsScreen() {
 
       {/* Add/Edit Modal */}
       <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={{ flex: 1, backgroundColor: "#00000060", justifyContent: "flex-end" }}>
-          <View style={{ backgroundColor: "#F5EDD8", borderTopLeftRadius: 12, borderTopRightRadius: 12, padding: 20, maxHeight: "90%" }}>
+        <View style={{ flex: 1, backgroundColor: withAlpha("shadow", 0x60 / 255), justifyContent: "flex-end" }}>
+          <View style={{ backgroundColor: color.parchmentWarm, borderTopLeftRadius: 12, borderTopRightRadius: 12, padding: 20, maxHeight: "90%" }}>
             <ScrollView>
-              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 15, color: "#2C2014", marginBottom: 16 }}>
+              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 15, color: color.ink, marginBottom: 16 }}>
                 {editItem ? "Edit Item" : "Add Magic Item"}
               </Text>
 
@@ -218,7 +219,7 @@ export default function MagicItemsScreen() {
               <TextInput
                 value={fname} onChangeText={setFname}
                 placeholder="e.g. Flame Tongue"
-                placeholderTextColor="#8A7D6D80"
+                placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
                 style={inputStyle}
               />
 
@@ -228,18 +229,18 @@ export default function MagicItemsScreen() {
                   <Pressable
                     key={r}
                     onPress={() => setFrarity(r)}
-                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: frarity === r ? RARITY_COLORS[r] : "#C4B49A", backgroundColor: frarity === r ? RARITY_COLORS[r] + "20" : "#E8DCC8" }}
+                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: frarity === r ? RARITY_COLORS[r] : color.border, backgroundColor: frarity === r ? RARITY_COLORS[r] + "20" : color.parchmentEdge }}
                   >
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: frarity === r ? RARITY_COLORS[r] : "#4A3F32" }}>{r}</Text>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: frarity === r ? RARITY_COLORS[r] : color.borderDark }}>{r}</Text>
                   </Pressable>
                 ))}
               </ScrollView>
 
               <Pressable onPress={() => setFattune(a => !a)} style={{ flexDirection: "row", alignItems: "center", marginBottom: 12, gap: 8 }}>
-                <View style={{ width: 18, height: 18, borderRadius: 2, borderWidth: 1.5, borderColor: fattune ? "#7C3AED" : "#C4B49A", backgroundColor: fattune ? "#7C3AED20" : "transparent", alignItems: "center", justifyContent: "center" }}>
+                <View style={{ width: 18, height: 18, borderRadius: 2, borderWidth: 1.5, borderColor: fattune ? "#7C3AED" : color.border, backgroundColor: fattune ? "#7C3AED20" : "transparent", alignItems: "center", justifyContent: "center" }}>
                   {fattune && <Text style={{ fontSize: 11, color: "#7C3AED" }}>✓</Text>}
                 </View>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014" }}>Requires Attunement</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink }}>Requires Attunement</Text>
               </Pressable>
 
               <FieldLabel label="Holder" />
@@ -248,9 +249,9 @@ export default function MagicItemsScreen() {
                   <Pressable
                     key={h}
                     onPress={() => setFholder(h)}
-                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fholder === h ? "#2C2014" : "#C4B49A", backgroundColor: fholder === h ? "#2C2014" : "#E8DCC8" }}
+                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fholder === h ? color.ink : color.border, backgroundColor: fholder === h ? color.ink : color.parchmentEdge }}
                   >
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: fholder === h ? "#C9A24A" : "#4A3F32" }}>{h}</Text>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: fholder === h ? color.goldBright : color.borderDark }}>{h}</Text>
                   </Pressable>
                 ))}
               </ScrollView>
@@ -259,17 +260,17 @@ export default function MagicItemsScreen() {
               <TextInput
                 value={fnotes} onChangeText={setFnotes}
                 placeholder="Properties, charges, special effects…"
-                placeholderTextColor="#8A7D6D80"
+                placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
                 multiline numberOfLines={3}
                 style={[inputStyle, { minHeight: 72, textAlignVertical: "top" }]}
               />
 
               <View style={{ flexDirection: "row", gap: 8, marginTop: 8, marginBottom: 16 }}>
-                <Pressable onPress={() => setModalVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#4A3F32" }}>Cancel</Text>
+                <Pressable onPress={() => setModalVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
                 </Pressable>
-                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: "#2C2014", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#C9A24A" }}>
+                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>
                     {editItem ? "Save Changes" : "Add Item"}
                   </Text>
                 </Pressable>
@@ -283,34 +284,34 @@ export default function MagicItemsScreen() {
 }
 
 const inputStyle = {
-  borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10,
-  fontFamily: "Inter_400Regular" as const, fontSize: 13, color: "#2C2014",
+  borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10,
+  fontFamily: "Inter_400Regular" as const, fontSize: 13, color: color.ink,
   backgroundColor: "#FFFDF8", marginBottom: 12,
 };
 
 function FieldLabel({ label }: { label: string }) {
-  return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;
+  return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;
 }
 
 function ItemCard({ item, onEdit, onDelete }: { item: MagicItem; onEdit: () => void; onDelete: () => void }) {
-  const color = RARITY_COLORS[item.rarity];
+  const rarityColor = RARITY_COLORS[item.rarity];
   return (
-    <Pressable onPress={onEdit} onLongPress={onDelete} style={{ backgroundColor: "#E8DCC820", borderRadius: 4, borderWidth: 1, borderColor: "#C4B49A", padding: 12, marginBottom: 8 }}>
+    <Pressable onPress={onEdit} onLongPress={onDelete} style={{ backgroundColor: withAlpha("parchmentEdge", 0x20 / 255), borderRadius: 4, borderWidth: 1, borderColor: color.border, padding: 12, marginBottom: 8 }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#2C2014", flex: 1 }}>{item.name}</Text>
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.ink, flex: 1 }}>{item.name}</Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           {item.attunement && (
             <View style={{ backgroundColor: "#7C3AED20", borderRadius: 2, paddingHorizontal: 5, paddingVertical: 2 }}>
               <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#7C3AED" }}>ATTUNE</Text>
             </View>
           )}
-          <View style={{ backgroundColor: color + "20", borderRadius: 2, paddingHorizontal: 5, paddingVertical: 2 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color }}>{item.rarity.toUpperCase()}</Text>
+          <View style={{ backgroundColor: rarityColor + "20", borderRadius: 2, paddingHorizontal: 5, paddingVertical: 2 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: rarityColor }}>{item.rarity.toUpperCase()}</Text>
           </View>
         </View>
       </View>
       {item.notes ? (
-        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#4A3F32", marginTop: 4 }} numberOfLines={2}>{item.notes}</Text>
+        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.borderDark, marginTop: 4 }} numberOfLines={2}>{item.notes}</Text>
       ) : null}
     </Pressable>
   );

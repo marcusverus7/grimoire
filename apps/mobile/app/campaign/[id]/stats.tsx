@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
+import { color, withAlpha } from "@/lib/theme";
 
 type Attrs = Record<string, unknown>;
 
@@ -174,16 +175,16 @@ export default function CampaignStatsScreen() {
                 style={{
                   flex: 1,
                   minWidth: 120,
-                  backgroundColor: "#A07A2C08",
+                  backgroundColor: withAlpha("gold", 0x08 / 255),
                   borderWidth: 1,
-                  borderColor: "#A07A2C20",
+                  borderColor: withAlpha("gold", 0x20 / 255),
                   borderRadius: 3,
                   padding: 12,
                   alignItems: "center",
                 }}
               >
-                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 24, color: "#2C2014" }}>{stat.value}</Text>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 4, textAlign: "center" }}>{stat.label}</Text>
+                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 24, color: color.ink }}>{stat.value}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 0.8, marginTop: 4, textAlign: "center" }}>{stat.label}</Text>
               </View>
             ))}
           </View>
@@ -191,7 +192,7 @@ export default function CampaignStatsScreen() {
           {/* Session Rating Distribution */}
           {data.playedSessions > 0 && data.ratingDist.some((v) => v > 0) && (
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
                 Session Ratings
               </Text>
               {[5, 4, 3, 2, 1].map((star) => {
@@ -199,11 +200,11 @@ export default function CampaignStatsScreen() {
                 const pct = count / maxRating;
                 return (
                   <View key={star} style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
-                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C", width: 28 }}>{"★".repeat(star)}</Text>
-                    <View style={{ flex: 1, height: 14, backgroundColor: "#A07A2C10", borderRadius: 2, marginHorizontal: 8, overflow: "hidden" }}>
-                      <View style={{ width: `${pct * 100}%`, height: "100%", backgroundColor: "#A07A2C", borderRadius: 2 }} />
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold, width: 28 }}>{"★".repeat(star)}</Text>
+                    <View style={{ flex: 1, height: 14, backgroundColor: withAlpha("gold", 0x10 / 255), borderRadius: 2, marginHorizontal: 8, overflow: "hidden" }}>
+                      <View style={{ width: `${pct * 100}%`, height: "100%", backgroundColor: color.gold, borderRadius: 2 }} />
                     </View>
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", width: 20, textAlign: "right" }}>{count}</Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint, width: 20, textAlign: "right" }}>{count}</Text>
                   </View>
                 );
               })}
@@ -214,7 +215,7 @@ export default function CampaignStatsScreen() {
 
           {/* Entity breakdown */}
           <View style={{ marginTop: 16, marginBottom: 20 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
               Entity Breakdown
             </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
@@ -225,15 +226,15 @@ export default function CampaignStatsScreen() {
                     paddingHorizontal: 12,
                     paddingVertical: 8,
                     borderWidth: 1,
-                    borderColor: "#A07A2C25",
+                    borderColor: withAlpha("gold", 0x25 / 255),
                     borderRadius: 3,
-                    backgroundColor: "#A07A2C06",
+                    backgroundColor: withAlpha("gold", 0x06 / 255),
                     alignItems: "center",
                     minWidth: 70,
                   }}
                 >
-                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 22, color: "#2C2014" }}>{count}</Text>
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", textTransform: "capitalize" }}>{kind}s</Text>
+                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 22, color: color.ink }}>{count}</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint, textTransform: "capitalize" }}>{kind}s</Text>
                 </View>
               ))}
             </View>
@@ -242,15 +243,15 @@ export default function CampaignStatsScreen() {
           {/* Quest stats */}
           {(data.questStats.complete + data.questStats.active + data.questStats.failed + data.questStats.rumoured) > 0 && (
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
                 Quest Outcomes
               </Text>
               <View style={{ flexDirection: "row", gap: 8 }}>
                 {[
-                  { label: "Complete", count: data.questStats.complete, color: "#4A8060" },
-                  { label: "Active", count: data.questStats.active, color: "#A07A2C" },
-                  { label: "Failed", count: data.questStats.failed, color: "#7A2418" },
-                  { label: "Rumoured", count: data.questStats.rumoured, color: "#5A4D3E80" },
+                  { label: "Complete", count: data.questStats.complete, color: color.success },
+                  { label: "Active", count: data.questStats.active, color: color.gold },
+                  { label: "Failed", count: data.questStats.failed, color: color.oxblood },
+                  { label: "Rumoured", count: data.questStats.rumoured, color: withAlpha("inkSoft", 0x80 / 255) },
                 ].map((q) => (
                   <View
                     key={q.label}
@@ -275,21 +276,21 @@ export default function CampaignStatsScreen() {
           {/* Top NPCs */}
           {data.topEntities.length > 0 && (
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
                 Most Mentioned Characters
               </Text>
               {data.topEntities.map((e, i) => (
                 <Pressable
                   key={e.id}
                   onPress={() => router.push(`/campaign/${campaignId}/entity/${e.id}` as Parameters<typeof router.push>[0])}
-                  style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C12" }}
+                  style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: withAlpha("gold", 0x12 / 255) }}
                 >
-                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 16, color: "#A07A2C60", width: 24 }}>{i + 1}</Text>
+                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 16, color: withAlpha("gold", 0x60 / 255), width: 24 }}>{i + 1}</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: "#2C2014" }}>{e.name}</Text>
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase" }}>{e.kind}</Text>
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: color.ink }}>{e.name}</Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint, textTransform: "uppercase" }}>{e.kind}</Text>
                   </View>
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C" }}>{e.linkCount} mentions</Text>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold }}>{e.linkCount} mentions</Text>
                 </Pressable>
               ))}
             </View>
@@ -298,23 +299,23 @@ export default function CampaignStatsScreen() {
           {/* Arc breakdown */}
           {data.arcBreakdown.length > 1 && (
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
                 Sessions by Arc
               </Text>
               {data.arcBreakdown.map((arc) => (
                 <View
                   key={arc.arcId ?? "none"}
-                  style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C12" }}
+                  style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: withAlpha("gold", 0x12 / 255) }}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: arc.arcId ? "#2C2014" : "#5A4D3E80" }}>
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: arc.arcId ? color.ink : withAlpha("inkSoft", 0x80 / 255) }}>
                       {arc.arcName}
                     </Text>
                     {arc.playTime > 0 && (
-                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D" }}>{formatTime(arc.playTime)} play time</Text>
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint }}>{formatTime(arc.playTime)} play time</Text>
                     )}
                   </View>
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold }}>
                     {arc.count} session{arc.count !== 1 ? "s" : ""}
                   </Text>
                 </View>

@@ -19,6 +19,7 @@ import RichTextEditor from "@/components/RichTextEditor";
 import { schema, computeLinkChanges } from "@grimoire/core";
 import type { RichTextNode, EntityLinkRow } from "@grimoire/core";
 import type { EditorBridge } from "@10play/tentap-editor";
+import { color, withAlpha } from "@/lib/theme";
 
 type Entity = typeof schema.entities.$inferSelect;
 
@@ -439,20 +440,20 @@ export default function EntityFormScreen() {
             {imageUri ? (
               <Image
                 source={{ uri: imageUri }}
-                style={{ width: 88, height: 88, borderRadius: 44, borderWidth: 2, borderColor: "#A07A2C40" }}
+                style={{ width: 88, height: 88, borderRadius: 44, borderWidth: 2, borderColor: withAlpha("gold", 0x40 / 255) }}
               />
             ) : (
-              <View style={{ width: 88, height: 88, borderRadius: 44, borderWidth: 1, borderColor: "#A07A2C40", backgroundColor: "#ECE3CF60", alignItems: "center", justifyContent: "center" }}>
-                <Text style={{ fontSize: 28, color: "#A07A2C40" }}>⊕</Text>
+              <View style={{ width: 88, height: 88, borderRadius: 44, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), backgroundColor: "#ECE3CF60", alignItems: "center", justifyContent: "center" }}>
+                <Text style={{ fontSize: 28, color: withAlpha("gold", 0x40 / 255) }}>⊕</Text>
               </View>
             )}
-            <View style={{ position: "absolute", bottom: 0, right: 0, backgroundColor: "#7A2418", borderRadius: 10, width: 20, height: 20, alignItems: "center", justifyContent: "center" }}>
-              <Text style={{ color: "#FAF5EA", fontSize: 12, fontFamily: "Inter_600SemiBold" }}>✎</Text>
+            <View style={{ position: "absolute", bottom: 0, right: 0, backgroundColor: color.oxblood, borderRadius: 10, width: 20, height: 20, alignItems: "center", justifyContent: "center" }}>
+              <Text style={{ color: color.parchment, fontSize: 12, fontFamily: "Inter_600SemiBold" }}>✎</Text>
             </View>
           </Pressable>
           {imageUri && (
             <Pressable onPress={() => setImageUri(null)} style={{ marginTop: 6 }}>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D" }}>Remove image</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint }}>Remove image</Text>
             </Pressable>
           )}
         </View>
@@ -478,11 +479,11 @@ export default function EntityFormScreen() {
                     paddingVertical: 7,
                     borderRadius: 2,
                     borderWidth: 1,
-                    borderColor: role === a.role ? "#7A2418" : "#A07A2C40",
-                    backgroundColor: role === a.role ? "#7A241810" : "transparent",
+                    borderColor: role === a.role ? color.oxblood : withAlpha("gold", 0x40 / 255),
+                    backgroundColor: role === a.role ? withAlpha("oxblood", 0x10 / 255) : "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: role === a.role ? "#7A2418" : "#5A4D3E" }}>{a.label}</Text>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: role === a.role ? color.oxblood : color.inkSoft }}>{a.label}</Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -496,15 +497,15 @@ export default function EntityFormScreen() {
             value={name}
             onChangeText={setName}
             placeholder="Enter name…"
-            placeholderTextColor="#2C201440"
-            style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8 }}
+            placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+            style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: color.ink, flex: 1, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 8 }}
           />
           {(kind === "npc" || kind === "pc" || kind === "custom") && (
             <Pressable
               onPress={() => setName(randomName())}
-              style={{ marginLeft: 10, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2 }}
+              style={{ marginLeft: 10, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2 }}
             >
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C" }}>⚄ Gen</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.gold }}>⚄ Gen</Text>
             </Pressable>
           )}
         </View>
@@ -517,8 +518,8 @@ export default function EntityFormScreen() {
               value={role}
               onChangeText={setRole}
               placeholder="e.g. Village Blacksmith, Queen's Hand, Guild Master"
-              placeholderTextColor="#2C201440"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20 }}
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 8, marginBottom: 20 }}
             />
           </>
         )}
@@ -531,8 +532,8 @@ export default function EntityFormScreen() {
               value={pronouns}
               onChangeText={setPronouns}
               placeholder="e.g. she/her, they/them, he/him"
-              placeholderTextColor="#2C201440"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20 }}
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 8, marginBottom: 20 }}
             />
           </>
         )}
@@ -555,11 +556,11 @@ export default function EntityFormScreen() {
                       paddingVertical: 5,
                       borderRadius: 2,
                       borderWidth: 1,
-                      borderColor: selected ? "#7A2418" : "#2C201425",
-                      backgroundColor: selected ? "#7A241810" : "transparent",
+                      borderColor: selected ? color.oxblood : withAlpha("ink", 0x25 / 255),
+                      backgroundColor: selected ? withAlpha("oxblood", 0x10 / 255) : "transparent",
                     }}
                   >
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: selected ? "#7A2418" : "#5A4D3E60" }}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: selected ? color.oxblood : withAlpha("inkSoft", 0x60 / 255) }}>
                       {f.name}
                     </Text>
                   </Pressable>
@@ -584,7 +585,7 @@ export default function EntityFormScreen() {
                 style={{
                   fontFamily: "Inter_500Medium",
                   fontSize: 12,
-                  color: kind === k ? "#A07A2C" : "#5A4D3E",
+                  color: kind === k ? color.gold : color.inkSoft,
                 }}
               >
                 {KIND_LABELS[k]}
@@ -612,7 +613,7 @@ export default function EntityFormScreen() {
                     style={{
                       fontFamily: "Inter_500Medium",
                       fontSize: 12,
-                      color: questStatus === s ? "#A07A2C" : "#5A4D3E",
+                      color: questStatus === s ? color.gold : color.inkSoft,
                       textTransform: "capitalize",
                     }}
                   >
@@ -628,16 +629,16 @@ export default function EntityFormScreen() {
               value={questGiver}
               onChangeText={setQuestGiver}
               placeholder="Who assigned this quest?"
-              placeholderTextColor="#2C201440"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20 }}
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 8, marginBottom: 20 }}
             />
             <Label text="Reward (optional)" />
             <TextInput
               value={questReward}
               onChangeText={setQuestReward}
               placeholder="500gp, magic item, information..."
-              placeholderTextColor="#2C201440"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20 }}
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 8, marginBottom: 20 }}
             />
 
             {/* Interested Characters */}
@@ -662,11 +663,11 @@ export default function EntityFormScreen() {
                           paddingVertical: 5,
                           borderRadius: 2,
                           borderWidth: 1,
-                          borderColor: selected ? "#A07A2C" : "#2C201430",
-                          backgroundColor: selected ? "#A07A2C12" : "transparent",
+                          borderColor: selected ? color.gold : withAlpha("ink", 0x30 / 255),
+                          backgroundColor: selected ? withAlpha("gold", 0x12 / 255) : "transparent",
                         }}
                       >
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: selected ? "#A07A2C" : "#5A4D3E" }}>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: selected ? color.gold : color.inkSoft }}>
                           {c.kind === "pc" ? "★ " : ""}{c.name}
                         </Text>
                       </Pressable>
@@ -685,8 +686,8 @@ export default function EntityFormScreen() {
             <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 20 }}>
               {campaignFactions.map((f) => {
                 const rel = factionRelationships.find((r) => r.factionId === f.id);
-                const relColors: Record<string, string> = { ally: "#4A8060", enemy: "#7A2418", rival: "#A07A2C", neutral: "#5A4D3E" };
-                const color = rel ? (relColors[rel.type] ?? "#5A4D3E") : "#2C201420";
+                const relColors: Record<string, string> = { ally: color.success, enemy: color.oxblood, rival: color.gold, neutral: color.inkSoft };
+                const relColor = rel ? (relColors[rel.type] ?? color.inkSoft) : withAlpha("ink", 0x20 / 255);
                 return (
                   <Pressable
                     key={f.id}
@@ -717,11 +718,11 @@ export default function EntityFormScreen() {
                       paddingVertical: 5,
                       borderRadius: 2,
                       borderWidth: 1,
-                      borderColor: rel ? color : "#2C201425",
-                      backgroundColor: rel ? `${color}12` : "transparent",
+                      borderColor: rel ? relColor : withAlpha("ink", 0x25 / 255),
+                      backgroundColor: rel ? `${relColor}12` : "transparent",
                     }}
                   >
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: rel ? color : "#5A4D3E60" }}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: rel ? relColor : withAlpha("inkSoft", 0x60 / 255) }}>
                       {f.name}{rel ? ` · ${rel.type}` : ""}
                     </Text>
                   </Pressable>
@@ -749,11 +750,11 @@ export default function EntityFormScreen() {
                       paddingVertical: 5,
                       borderRadius: 2,
                       borderWidth: 1,
-                      borderColor: selected ? "#6A5ACD" : "#2C201425",
-                      backgroundColor: selected ? "#6A5ACD12" : "transparent",
+                      borderColor: selected ? color.arcane : withAlpha("ink", 0x25 / 255),
+                      backgroundColor: selected ? withAlpha("arcane", 0x12 / 255) : "transparent",
                     }}
                   >
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: selected ? "#6A5ACD" : "#5A4D3E60" }}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: selected ? color.arcane : withAlpha("inkSoft", 0x60 / 255) }}>
                       {pc.name}
                     </Text>
                   </Pressable>
@@ -769,41 +770,41 @@ export default function EntityFormScreen() {
             <Label text="Quick Stats (optional)" />
             <View style={{ flexDirection: "row", marginBottom: 20 }}>
               <View style={{ flex: 1, marginRight: 8 }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("gold", 0x80 / 255), marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
                   HP
                 </Text>
                 <TextInput
                   value={hp}
                   onChangeText={setHp}
                   placeholder="30"
-                  placeholderTextColor="#2C201440"
+                  placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                   keyboardType="default"
-                  style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 6, textAlign: "center" }}
+                  style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 6, textAlign: "center" }}
                 />
               </View>
               <View style={{ flex: 1, marginRight: 8 }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("gold", 0x80 / 255), marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
                   AC
                 </Text>
                 <TextInput
                   value={ac}
                   onChangeText={setAc}
                   placeholder="14"
-                  placeholderTextColor="#2C201440"
+                  placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                   keyboardType="default"
-                  style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 6, textAlign: "center" }}
+                  style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 6, textAlign: "center" }}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("gold", 0x80 / 255), marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
                   Initiative
                 </Text>
                 <TextInput
                   value={initiative}
                   onChangeText={setInitiative}
                   placeholder="+2"
-                  placeholderTextColor="#2C201440"
-                  style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 6, textAlign: "center" }}
+                  placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+                  style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 6, textAlign: "center" }}
                 />
               </View>
             </View>
@@ -816,16 +817,16 @@ export default function EntityFormScreen() {
             <Label text="Level & XP (optional)" />
             <View style={{ flexDirection: "row", marginBottom: 20 }}>
               <View style={{ flex: 1, marginRight: 8 }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#C9A24A80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>Level</Text>
-                <TextInput value={level} onChangeText={setLevel} placeholder="5" placeholderTextColor="#2C201440" keyboardType="numeric" style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#C9A24A20", paddingBottom: 6, textAlign: "center" }} />
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("goldBright", 0x80 / 255), marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>Level</Text>
+                <TextInput value={level} onChangeText={setLevel} placeholder="5" placeholderTextColor={withAlpha("ink", 0x40 / 255)} keyboardType="numeric" style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("goldBright", 0x20 / 255), paddingBottom: 6, textAlign: "center" }} />
               </View>
               <View style={{ flex: 1, marginRight: 8 }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#C9A24A80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>XP</Text>
-                <TextInput value={xp} onChangeText={setXp} placeholder="3200" placeholderTextColor="#2C201440" keyboardType="numeric" style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#C9A24A20", paddingBottom: 6, textAlign: "center" }} />
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("goldBright", 0x80 / 255), marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>XP</Text>
+                <TextInput value={xp} onChangeText={setXp} placeholder="3200" placeholderTextColor={withAlpha("ink", 0x40 / 255)} keyboardType="numeric" style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("goldBright", 0x20 / 255), paddingBottom: 6, textAlign: "center" }} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#C9A24A80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>Max XP</Text>
-                <TextInput value={maxXp} onChangeText={setMaxXp} placeholder="6500" placeholderTextColor="#2C201440" keyboardType="numeric" style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#C9A24A20", paddingBottom: 6, textAlign: "center" }} />
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("goldBright", 0x80 / 255), marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>Max XP</Text>
+                <TextInput value={maxXp} onChangeText={setMaxXp} placeholder="6500" placeholderTextColor={withAlpha("ink", 0x40 / 255)} keyboardType="numeric" style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("goldBright", 0x20 / 255), paddingBottom: 6, textAlign: "center" }} />
               </View>
             </View>
           </>
@@ -842,14 +843,14 @@ export default function EntityFormScreen() {
               { label: "Flaw", value: pcFlaw, set: setPcFlaw, placeholder: "e.g. I trust no one..." },
             ].map((f) => (
               <View key={f.label} style={{ marginBottom: 14 }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#C9A24A80", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>{f.label}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("goldBright", 0x80 / 255), marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>{f.label}</Text>
                 <TextInput
                   value={f.value}
                   onChangeText={f.set}
                   placeholder={f.placeholder}
-                  placeholderTextColor="#2C201440"
+                  placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                   multiline
-                  style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#C9A24A20", paddingBottom: 6, textAlignVertical: "top" }}
+                  style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("goldBright", 0x20 / 255), paddingBottom: 6, textAlignVertical: "top" }}
                 />
               </View>
             ))}
@@ -865,7 +866,7 @@ export default function EntityFormScreen() {
                 style={{
                   fontFamily: "Inter_400Regular",
                   fontSize: 13,
-                  color: "#8A7D6D",
+                  color: color.inkFaint,
                   fontStyle: "italic",
                   marginBottom: 20,
                 }}
@@ -881,7 +882,7 @@ export default function EntityFormScreen() {
                     alignItems: "center",
                     paddingVertical: 8,
                     borderBottomWidth: 1,
-                    borderBottomColor: "#A07A2C15",
+                    borderBottomColor: withAlpha("gold", 0x15 / 255),
                   }}
                 >
                   <View
@@ -890,8 +891,8 @@ export default function EntityFormScreen() {
                       height: 16,
                       borderRadius: 8,
                       borderWidth: 1.5,
-                      borderColor: characterProfileId === null ? "#A07A2C" : "#A07A2C40",
-                      backgroundColor: characterProfileId === null ? "#A07A2C" : "transparent",
+                      borderColor: characterProfileId === null ? color.gold : withAlpha("gold", 0x40 / 255),
+                      backgroundColor: characterProfileId === null ? color.gold : "transparent",
                       marginRight: 10,
                     }}
                   />
@@ -899,7 +900,7 @@ export default function EntityFormScreen() {
                     style={{
                       fontFamily: "Inter_400Regular",
                       fontSize: 14,
-                      color: characterProfileId === null ? "#A07A2C" : "#5A4D3E",
+                      color: characterProfileId === null ? color.gold : color.inkSoft,
                     }}
                   >
                     None
@@ -914,7 +915,7 @@ export default function EntityFormScreen() {
                       alignItems: "center",
                       paddingVertical: 8,
                       borderBottomWidth: 1,
-                      borderBottomColor: "#A07A2C15",
+                      borderBottomColor: withAlpha("gold", 0x15 / 255),
                     }}
                   >
                     <View
@@ -923,8 +924,8 @@ export default function EntityFormScreen() {
                         height: 16,
                         borderRadius: 8,
                         borderWidth: 1.5,
-                        borderColor: characterProfileId === p.id ? "#A07A2C" : "#A07A2C40",
-                        backgroundColor: characterProfileId === p.id ? "#A07A2C" : "transparent",
+                        borderColor: characterProfileId === p.id ? color.gold : withAlpha("gold", 0x40 / 255),
+                        backgroundColor: characterProfileId === p.id ? color.gold : "transparent",
                         marginRight: 10,
                       }}
                     />
@@ -932,7 +933,7 @@ export default function EntityFormScreen() {
                       style={{
                         fontFamily: "CormorantGaramond_600SemiBold",
                         fontSize: 16,
-                        color: characterProfileId === p.id ? "#A07A2C" : "#2C2014",
+                        color: characterProfileId === p.id ? color.gold : color.ink,
                       }}
                     >
                       {p.name}
@@ -950,11 +951,11 @@ export default function EntityFormScreen() {
           value={summary}
           onChangeText={setSummary}
           placeholder="Brief description…"
-          placeholderTextColor="#2C201440"
+          placeholderTextColor={withAlpha("ink", 0x40 / 255)}
           multiline
           numberOfLines={3}
           className="border border-parchment/15 rounded-sm p-3 mb-5"
-          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", textAlignVertical: "top", minHeight: 80 }}
+          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, textAlignVertical: "top", minHeight: 80 }}
         />
 
         {/* Body */}
@@ -977,11 +978,11 @@ export default function EntityFormScreen() {
                 style={{
                   marginRight: 8, paddingHorizontal: 12, paddingVertical: 6,
                   borderRadius: 2, borderWidth: 1,
-                  borderColor: parentId === null ? "#4A8060" : "#4A806040",
-                  backgroundColor: parentId === null ? "#4A806015" : "transparent",
+                  borderColor: parentId === null ? color.success : withAlpha("success", 0x40 / 255),
+                  backgroundColor: parentId === null ? withAlpha("success", 0x15 / 255) : "transparent",
                 }}
               >
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: parentId === null ? "#4A8060" : "#5A4D3E80" }}>None</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: parentId === null ? color.success : withAlpha("inkSoft", 0x80 / 255) }}>None</Text>
               </Pressable>
               {campaignLocations.map((loc) => (
                 <Pressable
@@ -990,11 +991,11 @@ export default function EntityFormScreen() {
                   style={{
                     marginRight: 8, paddingHorizontal: 12, paddingVertical: 6,
                     borderRadius: 2, borderWidth: 1,
-                    borderColor: parentId === loc.id ? "#4A8060" : "#4A806040",
-                    backgroundColor: parentId === loc.id ? "#4A806015" : "transparent",
+                    borderColor: parentId === loc.id ? color.success : withAlpha("success", 0x40 / 255),
+                    backgroundColor: parentId === loc.id ? withAlpha("success", 0x15 / 255) : "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: parentId === loc.id ? "#4A8060" : "#5A4D3E80" }}>{loc.name}</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: parentId === loc.id ? color.success : withAlpha("inkSoft", 0x80 / 255) }}>{loc.name}</Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -1010,8 +1011,8 @@ export default function EntityFormScreen() {
                 value={region}
                 onChangeText={setRegion}
                 placeholder="Northern Wastes"
-                placeholderTextColor="#2C201440"
-                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8 }}
+                placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 8 }}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -1020,8 +1021,8 @@ export default function EntityFormScreen() {
                 value={population}
                 onChangeText={setPopulation}
                 placeholder="~2,000"
-                placeholderTextColor="#2C201440"
-                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8 }}
+                placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 8 }}
               />
             </View>
           </View>
@@ -1037,11 +1038,11 @@ export default function EntityFormScreen() {
                 style={{
                   marginRight: 8, paddingHorizontal: 12, paddingVertical: 6,
                   borderRadius: 2, borderWidth: 1,
-                  borderColor: locationId === null ? "#4A8060" : "#4A806040",
-                  backgroundColor: locationId === null ? "#4A806015" : "transparent",
+                  borderColor: locationId === null ? color.success : withAlpha("success", 0x40 / 255),
+                  backgroundColor: locationId === null ? withAlpha("success", 0x15 / 255) : "transparent",
                 }}
               >
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: locationId === null ? "#4A8060" : "#5A4D3E80" }}>Nowhere</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: locationId === null ? color.success : withAlpha("inkSoft", 0x80 / 255) }}>Nowhere</Text>
               </Pressable>
               {campaignLocations.map((loc) => (
                 <Pressable
@@ -1050,11 +1051,11 @@ export default function EntityFormScreen() {
                   style={{
                     marginRight: 8, paddingHorizontal: 12, paddingVertical: 6,
                     borderRadius: 2, borderWidth: 1,
-                    borderColor: locationId === loc.id ? "#4A8060" : "#4A806040",
-                    backgroundColor: locationId === loc.id ? "#4A806015" : "transparent",
+                    borderColor: locationId === loc.id ? color.success : withAlpha("success", 0x40 / 255),
+                    backgroundColor: locationId === loc.id ? withAlpha("success", 0x15 / 255) : "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: locationId === loc.id ? "#4A8060" : "#5A4D3E80" }}>{loc.name}</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: locationId === loc.id ? color.success : withAlpha("inkSoft", 0x80 / 255) }}>{loc.name}</Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -1067,7 +1068,7 @@ export default function EntityFormScreen() {
           style={{
             fontFamily: "Inter_400Regular",
             fontSize: 11,
-            color: "#7A241860",
+            color: withAlpha("oxblood", 0x60 / 255),
             marginBottom: 6,
           }}
         >
@@ -1077,18 +1078,18 @@ export default function EntityFormScreen() {
           value={gmSecret}
           onChangeText={setGmSecret}
           placeholder="Hidden motivations, secret identity, twist…"
-          placeholderTextColor="#2C201440"
+          placeholderTextColor={withAlpha("ink", 0x40 / 255)}
           multiline
           numberOfLines={4}
           style={{
             fontFamily: "Inter_400Regular",
             fontSize: 14,
-            color: "#2C2014",
+            color: color.ink,
             minHeight: 90,
             textAlignVertical: "top",
-            backgroundColor: "#7A241806",
+            backgroundColor: withAlpha("oxblood", 0x06 / 255),
             borderWidth: 1,
-            borderColor: "#7A241825",
+            borderColor: withAlpha("oxblood", 0x25 / 255),
             borderRadius: 2,
             padding: 10,
             marginBottom: 20,
@@ -1103,18 +1104,18 @@ export default function EntityFormScreen() {
               value={attr.key}
               onChangeText={(v) => setCustomAttrs((prev) => prev.map((a, j) => j === i ? { ...a, key: v } : a))}
               placeholder="Label"
-              placeholderTextColor="#2C201440"
-              style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 4, marginRight: 8, textTransform: "uppercase", letterSpacing: 0.8 }}
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+              style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.ink, flex: 1, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 4, marginRight: 8, textTransform: "uppercase", letterSpacing: 0.8 }}
             />
             <TextInput
               value={attr.value}
               onChangeText={(v) => setCustomAttrs((prev) => prev.map((a, j) => j === i ? { ...a, value: v } : a))}
               placeholder="Value"
-              placeholderTextColor="#2C201440"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 2, borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 4, marginRight: 8 }}
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, flex: 2, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 4, marginRight: 8 }}
             />
             <Pressable onPress={() => setCustomAttrs((prev) => prev.filter((_, j) => j !== i))}>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#7A241860" }}>✕</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: withAlpha("oxblood", 0x60 / 255) }}>✕</Text>
             </Pressable>
           </View>
         ))}
@@ -1122,7 +1123,7 @@ export default function EntityFormScreen() {
           onPress={() => setCustomAttrs((prev) => [...prev, { key: "", value: "" }])}
           style={{ paddingVertical: 8, marginBottom: 20, flexDirection: "row", alignItems: "center" }}
         >
-          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C80" }}>+ Add attribute</Text>
+          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: withAlpha("gold", 0x80 / 255) }}>+ Add attribute</Text>
         </Pressable>
 
         {/* Tags */}
@@ -1139,14 +1140,14 @@ export default function EntityFormScreen() {
                 paddingVertical: 4,
                 borderRadius: 10,
                 borderWidth: 1,
-                borderColor: "#A07A2C50",
-                backgroundColor: "#A07A2C10",
+                borderColor: withAlpha("gold", 0x50 / 255),
+                backgroundColor: withAlpha("gold", 0x10 / 255),
                 flexDirection: "row",
                 alignItems: "center",
               }}
             >
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C" }}>{tag}</Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C60", marginLeft: 4 }}>✕</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.gold }}>{tag}</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("gold", 0x60 / 255), marginLeft: 4 }}>✕</Text>
             </Pressable>
           ))}
         </View>
@@ -1155,7 +1156,7 @@ export default function EntityFormScreen() {
             value={tagInput}
             onChangeText={setTagInput}
             placeholder="Add a tag…"
-            placeholderTextColor="#2C201440"
+            placeholderTextColor={withAlpha("ink", 0x40 / 255)}
             onSubmitEditing={() => {
               const trimmed = tagInput.trim().toLowerCase();
               if (trimmed && !tags.includes(trimmed)) setTags((prev) => [...prev, trimmed]);
@@ -1163,7 +1164,7 @@ export default function EntityFormScreen() {
             }}
             returnKeyType="done"
             blurOnSubmit={false}
-            style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 4 }}
+            style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, flex: 1, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 4 }}
           />
           <Pressable
             onPress={() => {
@@ -1171,9 +1172,9 @@ export default function EntityFormScreen() {
               if (trimmed && !tags.includes(trimmed)) setTags((prev) => [...prev, trimmed]);
               setTagInput("");
             }}
-            style={{ marginLeft: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2 }}
+            style={{ marginLeft: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2 }}
           >
-            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C" }}>Add</Text>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold }}>Add</Text>
           </Pressable>
         </View>
 
@@ -1192,7 +1193,7 @@ export default function EntityFormScreen() {
               style={{
                 fontFamily: "Inter_500Medium",
                 fontSize: 12,
-                color: visibility === "table" ? "#A07A2C" : "#5A4D3E",
+                color: visibility === "table" ? color.gold : color.inkSoft,
               }}
             >
               Whole Table
@@ -1210,7 +1211,7 @@ export default function EntityFormScreen() {
               style={{
                 fontFamily: "Inter_500Medium",
                 fontSize: 12,
-                color: visibility === "gm_only" ? "#7A2418" : "#5A4D3E",
+                color: visibility === "gm_only" ? color.oxblood : color.inkSoft,
               }}
             >
               GM Only
@@ -1229,7 +1230,7 @@ export default function EntityFormScreen() {
             style={{
               fontFamily: "Inter_600SemiBold",
               fontSize: 14,
-              color: "#FAF5EA",
+              color: color.parchment,
               textTransform: "uppercase",
               letterSpacing: 1.5,
             }}
@@ -1245,7 +1246,7 @@ export default function EntityFormScreen() {
               style={{
                 fontFamily: "Inter_400Regular",
                 fontSize: 12,
-                color: "#7A241880",
+                color: withAlpha("oxblood", 0x80 / 255),
               }}
             >
               Delete Entity

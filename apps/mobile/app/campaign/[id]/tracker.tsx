@@ -16,6 +16,7 @@ import { db, getKv, setKv } from "@/lib/db";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { DiceRoller } from "@/components/DiceRoller";
 import { schema } from "@grimoire/core";
+import { color, withAlpha } from "@/lib/theme";
 
 const CONDITIONS = [
   "Blinded", "Charmed", "Concentration", "Deafened", "Exhausted",
@@ -25,12 +26,12 @@ const CONDITIONS = [
 
 const CONDITION_COLORS: Record<string, string> = {
   Poisoned: "#4A7A2C",
-  Frightened: "#7A2418",
-  Paralyzed: "#6A5ACD",
-  Stunned: "#6A5ACD",
+  Frightened: color.oxblood,
+  Paralyzed: color.arcane,
+  Stunned: color.arcane,
   Unconscious: "#3A2E24",
-  Concentration: "#A07A2C",
-  Prone: "#8A7D6D",
+  Concentration: color.gold,
+  Prone: color.inkFaint,
 };
 
 const CONDITION_DESC: Record<string, string> = {
@@ -271,18 +272,18 @@ export default function TrackerScreen() {
                 onPress={() => router.push(`/campaign/${campaignId}/encounter` as Parameters<typeof router.push>[0])}
                 style={{ marginRight: 14 }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: encounterEntityIds !== null ? "#7A2418" : "#A07A2C80" }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: encounterEntityIds !== null ? color.oxblood : withAlpha("gold", 0x80 / 255) }}>
                   {encounterEntityIds !== null ? "⚔ Enc" : "⚔"}
                 </Text>
               </Pressable>
               <Pressable onPress={() => setShowDice(true)} style={{ marginRight: 14 }}>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Dice</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.gold }}>Dice</Text>
               </Pressable>
               <Pressable onPress={() => router.push(`/campaign/${campaignId}/reference` as Parameters<typeof router.push>[0])} style={{ marginRight: 14 }}>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Ref</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.gold }}>Ref</Text>
               </Pressable>
               <Pressable onPress={resetAll} style={{ marginRight: 8 }}>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Reset</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.gold }}>Reset</Text>
               </Pressable>
             </View>
           ),
@@ -291,17 +292,17 @@ export default function TrackerScreen() {
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         {entries.length === 0 ? (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
-            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014", marginBottom: 8, textAlign: "center" }}>
+            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: color.ink, marginBottom: 8, textAlign: "center" }}>
               No Combatants
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", textAlign: "center", lineHeight: 20 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, textAlign: "center", lineHeight: 20 }}>
               Add HP to NPC or PC entities to track them here. Edit any character and fill in their HP stat.
             </Text>
             <Pressable
               onPress={() => router.push(`/campaign/${campaignId}/entity/new/edit` as Parameters<typeof router.push>[0])}
-              style={{ marginTop: 20, paddingHorizontal: 20, paddingVertical: 10, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2 }}
+              style={{ marginTop: 20, paddingHorizontal: 20, paddingVertical: 10, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2 }}
             >
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold, textTransform: "uppercase", letterSpacing: 1 }}>
                 Add Entity
               </Text>
             </Pressable>
@@ -309,18 +310,18 @@ export default function TrackerScreen() {
         ) : (
           <>
             {/* Round counter + sort toggle */}
-            <View style={{ borderBottomWidth: 1, borderBottomColor: "#A07A2C15" }}>
+            <View style={{ borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x15 / 255) }}>
               {/* Round counter row */}
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: "#7A241820", backgroundColor: "#7A241806" }}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: withAlpha("oxblood", 0x20 / 255), backgroundColor: withAlpha("oxblood", 0x06 / 255) }}>
                 <Pressable onPress={() => changeRound(-1)} style={{ paddingHorizontal: 16, paddingVertical: 6 }}>
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 18, color: "#7A2418" }}>−</Text>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 18, color: color.oxblood }}>−</Text>
                 </Pressable>
                 <View style={{ alignItems: "center", minWidth: 80 }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#7A241870", textTransform: "uppercase", letterSpacing: 1.5 }}>Round</Text>
-                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 28, color: "#7A2418", lineHeight: 34 }}>{round}</Text>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: withAlpha("oxblood", 0x70 / 255), textTransform: "uppercase", letterSpacing: 1.5 }}>Round</Text>
+                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 28, color: color.oxblood, lineHeight: 34 }}>{round}</Text>
                 </View>
                 <Pressable onPress={() => changeRound(1)} style={{ paddingHorizontal: 16, paddingVertical: 6 }}>
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 18, color: "#7A2418" }}>+</Text>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 18, color: color.oxblood }}>+</Text>
                 </Pressable>
               </View>
               {/* Turn order bar */}
@@ -331,23 +332,23 @@ export default function TrackerScreen() {
                   alignItems: "center",
                   paddingHorizontal: 16,
                   paddingVertical: 9,
-                  backgroundColor: activeTurnIndex !== null ? "#7A241815" : "transparent",
+                  backgroundColor: activeTurnIndex !== null ? withAlpha("oxblood", 0x15 / 255) : "transparent",
                   borderBottomWidth: 0.5,
-                  borderBottomColor: "#7A241820",
+                  borderBottomColor: withAlpha("oxblood", 0x20 / 255),
                 }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#7A241890", textTransform: "uppercase", letterSpacing: 1.2, flex: 1 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: withAlpha("oxblood", 0x90 / 255), textTransform: "uppercase", letterSpacing: 1.2, flex: 1 }}>
                   {activeTurnIndex === null
                     ? "Tap to start turn order"
                     : `Turn: ${sorted[activeTurnIndex]?.name ?? "—"}`}
                 </Text>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#7A2418" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.oxblood }}>
                   {activeTurnIndex === null ? "▶ Start" : `Next ▶`}
                 </Text>
               </Pressable>
               {/* Sort + count row */}
               <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, gap: 8 }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D", flex: 1 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.inkFaint, flex: 1 }}>
                   {sorted.length} combatant{sorted.length !== 1 ? "s" : ""}{deadCount > 0 ? ` · ${deadCount} dead` : ""}
                 </Text>
                 {deadCount > 0 && (
@@ -355,12 +356,12 @@ export default function TrackerScreen() {
                     onPress={() => setHideDead((v) => !v)}
                     style={{
                       paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1,
-                      borderColor: hideDead ? "#7A2418" : "#7A241840",
+                      borderColor: hideDead ? color.oxblood : withAlpha("oxblood", 0x40 / 255),
                       borderRadius: 10,
-                      backgroundColor: hideDead ? "#7A241812" : "transparent",
+                      backgroundColor: hideDead ? withAlpha("oxblood", 0x12 / 255) : "transparent",
                     }}
                   >
-                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#7A2418" }}>
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.oxblood }}>
                       {hideDead ? "☠ Hidden" : "Show Dead"}
                     </Text>
                   </Pressable>
@@ -384,12 +385,12 @@ export default function TrackerScreen() {
                     paddingHorizontal: 10,
                     paddingVertical: 4,
                     borderWidth: 1,
-                    borderColor: sortByInit ? "#A07A2C" : "#A07A2C40",
+                    borderColor: sortByInit ? color.gold : withAlpha("gold", 0x40 / 255),
                     borderRadius: 10,
-                    backgroundColor: sortByInit ? "#A07A2C15" : "transparent",
+                    backgroundColor: sortByInit ? withAlpha("gold", 0x15 / 255) : "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.gold }}>
                     {sortByInit ? "Initiative Order" : "Sort by Init"}
                   </Text>
                 </Pressable>
@@ -406,7 +407,7 @@ export default function TrackerScreen() {
                 <>
                   {tempCombatants.length > 0 && (
                     <View style={{ paddingTop: 12 }}>
-                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#7A2418", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8, paddingHorizontal: 4 }}>
+                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.oxblood, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8, paddingHorizontal: 4 }}>
                         Temporary
                       </Text>
                       {tempCombatants.map((t) => (
@@ -436,17 +437,17 @@ export default function TrackerScreen() {
                         onPress={() => setShowLog((v) => !v)}
                         style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}
                       >
-                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#5A4D3E80", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: withAlpha("inkSoft", 0x80 / 255), textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
                           {showLog ? "▼" : "▶"} Combat Log ({combatLog.length})
                         </Text>
                         {showLog && (
                           <Pressable onPress={() => setCombatLog([])}>
-                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#7A241870" }}>Clear</Text>
+                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("oxblood", 0x70 / 255) }}>Clear</Text>
                           </Pressable>
                         )}
                       </Pressable>
                       {showLog && combatLog.map((entry, i) => (
-                        <Text key={i} style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: entry.includes("☠") ? "#7A2418" : "#5A4D3E", lineHeight: 18, paddingVertical: 2, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C08" }}>
+                        <Text key={i} style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: entry.includes("☠") ? color.oxblood : color.inkSoft, lineHeight: 18, paddingVertical: 2, borderBottomWidth: 0.5, borderBottomColor: withAlpha("gold", 0x08 / 255) }}>
                           {entry}
                         </Text>
                       ))}
@@ -472,18 +473,18 @@ export default function TrackerScreen() {
           onPress={() => setConditionTarget(null)}
           style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", paddingHorizontal: 24 }}
         >
-          <Pressable onPress={() => {}} style={{ backgroundColor: "#FAF5EA", borderRadius: 4, borderWidth: 1, borderColor: "#A07A2C30", padding: 20 }}>
-            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014", marginBottom: 4 }}>
+          <Pressable onPress={() => {}} style={{ backgroundColor: color.parchment, borderRadius: 4, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255), padding: 20 }}>
+            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: color.ink, marginBottom: 4 }}>
               {conditionTarget?.name}
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint, marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>
               Conditions — tap to toggle
             </Text>
             <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 240 }}>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                 {CONDITIONS.map((c) => {
                   const active = conditionTarget?.conditions.includes(c) ?? false;
-                  const color = CONDITION_COLORS[c] ?? "#5A4D3E";
+                  const condColor = CONDITION_COLORS[c] ?? color.inkSoft;
                   return (
                     <Pressable
                       key={c}
@@ -494,11 +495,11 @@ export default function TrackerScreen() {
                         paddingVertical: 6,
                         borderRadius: 2,
                         borderWidth: 1,
-                        borderColor: active ? color : "#A07A2C30",
-                        backgroundColor: active ? `${color}20` : "transparent",
+                        borderColor: active ? condColor : withAlpha("gold", 0x30 / 255),
+                        backgroundColor: active ? `${condColor}20` : "transparent",
                       }}
                     >
-                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: active ? color : "#5A4D3E" }}>
+                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: active ? condColor : color.inkSoft }}>
                         {c}
                       </Text>
                     </Pressable>
@@ -507,15 +508,15 @@ export default function TrackerScreen() {
               </View>
             </ScrollView>
             {descCondition && CONDITION_DESC[descCondition] ? (
-              <View style={{ marginTop: 12, padding: 10, backgroundColor: "#A07A2C08", borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C20" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{descCondition}</Text>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#2C2014", lineHeight: 18 }}>{CONDITION_DESC[descCondition]}</Text>
+              <View style={{ marginTop: 12, padding: 10, backgroundColor: withAlpha("gold", 0x08 / 255), borderRadius: 2, borderWidth: 1, borderColor: withAlpha("gold", 0x20 / 255) }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{descCondition}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.ink, lineHeight: 18 }}>{CONDITION_DESC[descCondition]}</Text>
               </View>
             ) : (
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D60", textAlign: "center", marginTop: 8 }}>Long press a condition for details</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkFaint", 0x60 / 255), textAlign: "center", marginTop: 8 }}>Long press a condition for details</Text>
             )}
             <Pressable onPress={() => { setConditionTarget(null); setDescCondition(null); }} style={{ marginTop: 12, paddingVertical: 10, alignItems: "center" }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>Done</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.gold, textTransform: "uppercase", letterSpacing: 1 }}>Done</Text>
             </Pressable>
           </Pressable>
         </Pressable>
@@ -546,7 +547,7 @@ function CombatantRow({
   const [editingInit, setEditingInit] = useState(false);
   const [initInput, setInitInput] = useState("");
   const pct = entry.maxHp > 0 ? entry.currentHp / entry.maxHp : 1;
-  const barColor = pct > 0.5 ? "#4A7A2C" : pct > 0.25 ? "#A07A2C" : "#7A2418";
+  const barColor = pct > 0.5 ? "#4A7A2C" : pct > 0.25 ? color.gold : color.oxblood;
   const isDead = entry.currentHp === 0;
 
   const confirmInit = () => {
@@ -558,9 +559,9 @@ function CombatantRow({
   return (
     <View
       style={{
-        backgroundColor: isActive ? "#7A241812" : isDead ? "#7A241808" : "#FAF5EA",
+        backgroundColor: isActive ? withAlpha("oxblood", 0x12 / 255) : isDead ? withAlpha("oxblood", 0x08 / 255) : color.parchment,
         borderWidth: isActive ? 2 : 1,
-        borderColor: isActive ? "#7A2418" : isDead ? "#7A241830" : "#A07A2C20",
+        borderColor: isActive ? color.oxblood : isDead ? withAlpha("oxblood", 0x30 / 255) : withAlpha("gold", 0x20 / 255),
         borderRadius: 4,
         padding: 12,
         opacity: isDead ? 0.7 : 1,
@@ -569,12 +570,12 @@ function CombatantRow({
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
         {/* Name + kind */}
         <Pressable style={{ flex: 1 }} onPress={onNavigate}>
-          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 17, color: isDead ? "#8A7D6D" : isActive ? "#7A2418" : "#2C2014" }}>
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 17, color: isDead ? color.inkFaint : isActive ? color.oxblood : color.ink }}>
             {isActive ? "▶ " : ""}{entry.name}
             {isDead ? " ✝" : ""}
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 0.8 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 0.8 }}>
               {entry.kind}{entry.ac > 0 ? ` · AC ${entry.ac}` : ""}{" · "}
             </Text>
             {editingInit ? (
@@ -586,11 +587,11 @@ function CombatantRow({
                 keyboardType="number-pad"
                 selectTextOnFocus
                 autoFocus
-                style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#A07A2C", width: 36, padding: 0 }}
+                style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: color.gold, width: 36, padding: 0 }}
               />
             ) : (
               <Pressable onPress={() => { setInitInput(entry.initiative != null ? String(entry.initiative) : ""); setEditingInit(true); }}>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: entry.initiative != null ? "#A07A2C" : "#8A7D6D50", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: entry.initiative != null ? color.gold : withAlpha("inkFaint", 0x50 / 255), textTransform: "uppercase", letterSpacing: 0.8 }}>
                   {entry.initiative != null ? `Init ${entry.initiative}` : "Init —"}
                 </Text>
               </Pressable>
@@ -603,9 +604,9 @@ function CombatantRow({
           <Pressable
             onPress={() => onAdjust(entry, -1)}
             onLongPress={() => onAdjust(entry, -5)}
-            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: "#7A241815", borderWidth: 1, borderColor: "#7A241830", alignItems: "center", justifyContent: "center" }}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: withAlpha("oxblood", 0x15 / 255), borderWidth: 1, borderColor: withAlpha("oxblood", 0x30 / 255), alignItems: "center", justifyContent: "center" }}
           >
-            <Text style={{ color: "#7A2418", fontSize: 20, lineHeight: 22 }}>−</Text>
+            <Text style={{ color: color.oxblood, fontSize: 20, lineHeight: 22 }}>−</Text>
           </Pressable>
 
           <TextInput
@@ -634,32 +635,32 @@ function CombatantRow({
       </View>
 
       {/* HP bar */}
-      <View style={{ height: 3, backgroundColor: "#A07A2C15", borderRadius: 2 }}>
+      <View style={{ height: 3, backgroundColor: withAlpha("gold", 0x15 / 255), borderRadius: 2 }}>
         <View style={{ height: 3, width: `${Math.round(pct * 100)}%`, backgroundColor: barColor, borderRadius: 2 }} />
       </View>
-      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", textAlign: "right", marginTop: 2 }}>
+      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint, textAlign: "right", marginTop: 2 }}>
         {entry.currentHp} / {entry.maxHp} HP
       </Text>
 
       {/* Conditions row */}
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 8, alignItems: "center" }}>
         {entry.conditions.map((c) => {
-          const color = CONDITION_COLORS[c] ?? "#5A4D3E";
+          const condColor = CONDITION_COLORS[c] ?? color.inkSoft;
           return (
             <Pressable
               key={c}
               onPress={() => onToggleCondition(c)}
-              style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 2, borderWidth: 1, borderColor: color, backgroundColor: `${color}18` }}
+              style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 2, borderWidth: 1, borderColor: condColor, backgroundColor: `${condColor}18` }}
             >
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color }}>{c}</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: condColor }}>{c}</Text>
             </Pressable>
           );
         })}
         <Pressable
           onPress={onOpenConditions}
-          style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C40", backgroundColor: "transparent" }}
+          style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 2, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), backgroundColor: "transparent" }}
         >
-          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#A07A2C80" }}>
+          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: withAlpha("gold", 0x80 / 255) }}>
             {entry.conditions.length === 0 ? "+ Condition" : "+"}
           </Text>
         </Pressable>
@@ -671,15 +672,15 @@ function CombatantRow({
 function TempCombatantRow({ combatant, onAdjust }: { combatant: { id: string; name: string; hp: number; ac: number }; onAdjust: (delta: number) => void }) {
   const maxHp = combatant.hp;
   const pct = maxHp > 0 ? combatant.hp / maxHp : 1;
-  const barColor = pct > 0.5 ? "#4A7A2C" : pct > 0.25 ? "#A07A2C" : "#7A2418";
+  const barColor = pct > 0.5 ? "#4A7A2C" : pct > 0.25 ? color.gold : color.oxblood;
   const isDead = combatant.hp <= 0;
 
   return (
     <View
       style={{
-        backgroundColor: isDead ? "#7A241808" : "#FAF5EA",
+        backgroundColor: isDead ? withAlpha("oxblood", 0x08 / 255) : color.parchment,
         borderWidth: 1,
-        borderColor: "#7A241830",
+        borderColor: withAlpha("oxblood", 0x30 / 255),
         borderRadius: 4,
         padding: 12,
         marginBottom: 8,
@@ -688,10 +689,10 @@ function TempCombatantRow({ combatant, onAdjust }: { combatant: { id: string; na
     >
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 17, color: isDead ? "#8A7D6D" : "#2C2014" }}>
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 17, color: isDead ? color.inkFaint : color.ink }}>
             {combatant.name}{isDead ? " ✝" : ""}
           </Text>
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 0.8 }}>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 0.8 }}>
             Temp{combatant.ac > 0 ? ` · AC ${combatant.ac}` : ""}
           </Text>
         </View>
@@ -699,9 +700,9 @@ function TempCombatantRow({ combatant, onAdjust }: { combatant: { id: string; na
           <Pressable
             onPress={() => onAdjust(-1)}
             onLongPress={() => onAdjust(-5)}
-            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: "#7A241815", borderWidth: 1, borderColor: "#7A241830", alignItems: "center", justifyContent: "center" }}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: withAlpha("oxblood", 0x15 / 255), borderWidth: 1, borderColor: withAlpha("oxblood", 0x30 / 255), alignItems: "center", justifyContent: "center" }}
           >
-            <Text style={{ color: "#7A2418", fontSize: 20, lineHeight: 22 }}>−</Text>
+            <Text style={{ color: color.oxblood, fontSize: 20, lineHeight: 22 }}>−</Text>
           </Pressable>
           <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 22, color: barColor, textAlign: "center", width: 52, marginHorizontal: 6 }}>
             {combatant.hp}

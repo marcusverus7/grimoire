@@ -5,6 +5,7 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { getKv, setKv } from "@/lib/db";
 import { randomUUID } from "expo-crypto";
+import { color, withAlpha } from "@/lib/theme";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type CalEvent = { id: string; label: string; day: number; month: number; year: number };
@@ -147,27 +148,27 @@ export default function CalendarScreen() {
     <ParchmentScreen>
       <Stack.Screen options={{ title: "In-World Calendar", headerBackTitle: "Campaign" }} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 4 }}>
           In-World Calendar
         </Text>
         <GoldRule />
 
         {/* Current date display */}
         <View style={{ alignItems: "center", marginBottom: 20 }}>
-          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
             Current Date
           </Text>
-          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 28, color: "#2C2014" }}>
+          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 28, color: color.ink }}>
             {cal.day} {cal.monthNames[cal.month]}
           </Text>
-          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: "#8A7D6D", marginTop: 2 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: color.inkFaint, marginTop: 2 }}>
             Year {cal.year}
           </Text>
         </View>
 
         {/* Advance buttons */}
         <View style={{ marginBottom: 8 }}>
-          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
+          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
             Advance Time
           </Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
@@ -186,30 +187,30 @@ export default function CalendarScreen() {
         <View style={{ flexDirection: "row", gap: 8, marginBottom: 24, marginTop: 12 }}>
           <Pressable
             onPress={() => { setInputDay(String(cal.day)); setInputMonth(String(cal.month + 1)); setInputYear(String(cal.year)); setSetDateModal(true); }}
-            style={{ flex: 1, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, padding: 10, alignItems: "center" }}
+            style={{ flex: 1, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, padding: 10, alignItems: "center" }}
           >
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C" }}>Set Date</Text>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold }}>Set Date</Text>
           </Pressable>
           <Pressable
             onPress={() => setPresetModal(true)}
-            style={{ flex: 1, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, padding: 10, alignItems: "center" }}
+            style={{ flex: 1, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, padding: 10, alignItems: "center" }}
           >
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C" }}>Calendar Preset</Text>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold }}>Calendar Preset</Text>
           </Pressable>
         </View>
 
         {/* Today's Events */}
         <View style={{ marginBottom: 20 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1 }}>
               Events Today
             </Text>
             <Pressable onPress={() => setAddEventVisible(true)}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C" }}>+ Add</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold }}>+ Add</Text>
             </Pressable>
           </View>
           {todayEvents.length === 0 && (
-            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 13, color: "#8A7D6D80", textAlign: "center", paddingVertical: 8 }}>
+            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 13, color: withAlpha("inkFaint", 0x80 / 255), textAlign: "center", paddingVertical: 8 }}>
               No events on this date.
             </Text>
           )}
@@ -221,7 +222,7 @@ export default function CalendarScreen() {
         {/* Upcoming Events */}
         {futureEvents.length > 0 && (
           <View style={{ marginBottom: 20 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
               Upcoming
             </Text>
             {futureEvents.slice(0, 10).map(ev => (
@@ -233,7 +234,7 @@ export default function CalendarScreen() {
         {/* Past Events */}
         {pastEvents.length > 0 && (
           <View style={{ marginBottom: 20 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
               Recent Past
             </Text>
             {pastEvents.map(ev => (
@@ -245,25 +246,25 @@ export default function CalendarScreen() {
 
       {/* Add Event Modal */}
       <Modal visible={addEventVisible} transparent animationType="fade">
-        <View style={{ flex: 1, backgroundColor: "#00000060", justifyContent: "center", padding: 24 }}>
-          <View style={{ backgroundColor: "#F5EDD8", borderRadius: 4, padding: 20 }}>
-            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: "#2C2014", marginBottom: 12 }}>
+        <View style={{ flex: 1, backgroundColor: withAlpha("shadow", 0x60 / 255), justifyContent: "center", padding: 24 }}>
+          <View style={{ backgroundColor: color.parchmentWarm, borderRadius: 4, padding: 20 }}>
+            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: color.ink, marginBottom: 12 }}>
               Add Event — {cal.day} {cal.monthNames[cal.month]}, Year {cal.year}
             </Text>
             <TextInput
               value={newEventText}
               onChangeText={setNewEventText}
               placeholder="Event description…"
-              placeholderTextColor="#8A7D6D80"
-              style={{ borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10, fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", marginBottom: 12 }}
+              placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
+              style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, marginBottom: 12 }}
               autoFocus
             />
             <View style={{ flexDirection: "row", gap: 8 }}>
-              <Pressable onPress={() => setAddEventVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#4A3F32" }}>Cancel</Text>
+              <Pressable onPress={() => setAddEventVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
               </Pressable>
-              <Pressable onPress={addEvent} style={{ flex: 1, backgroundColor: "#2C2014", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#C9A24A" }}>Add</Text>
+              <Pressable onPress={addEvent} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>Add</Text>
               </Pressable>
             </View>
           </View>
@@ -272,25 +273,25 @@ export default function CalendarScreen() {
 
       {/* Preset Modal */}
       <Modal visible={presetModal} transparent animationType="fade">
-        <View style={{ flex: 1, backgroundColor: "#00000060", justifyContent: "center", padding: 24 }}>
-          <View style={{ backgroundColor: "#F5EDD8", borderRadius: 4, padding: 20 }}>
-            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: "#2C2014", marginBottom: 16 }}>
+        <View style={{ flex: 1, backgroundColor: withAlpha("shadow", 0x60 / 255), justifyContent: "center", padding: 24 }}>
+          <View style={{ backgroundColor: color.parchmentWarm, borderRadius: 4, padding: 20 }}>
+            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: color.ink, marginBottom: 16 }}>
               Calendar Preset
             </Text>
             {Object.entries(PRESETS).map(([key, p]) => (
               <Pressable
                 key={key}
                 onPress={() => applyPreset(key)}
-                style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#E8DCC8" }}
+                style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: color.parchmentEdge }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#2C2014" }}>{p.label}</Text>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginTop: 2 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.ink }}>{p.label}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint, marginTop: 2 }}>
                   {p.months.slice(0, 3).join(" · ")} · … · {p.months[p.months.length - 1]} ({p.daysPerMonth} days/month)
                 </Text>
               </Pressable>
             ))}
             <Pressable onPress={() => setPresetModal(false)} style={{ marginTop: 12, padding: 10, alignItems: "center" }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#8A7D6D" }}>Cancel</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.inkFaint }}>Cancel</Text>
             </Pressable>
           </View>
         </View>
@@ -298,43 +299,43 @@ export default function CalendarScreen() {
 
       {/* Set Date Modal */}
       <Modal visible={setDateModal} transparent animationType="fade">
-        <View style={{ flex: 1, backgroundColor: "#00000060", justifyContent: "center", padding: 24 }}>
-          <View style={{ backgroundColor: "#F5EDD8", borderRadius: 4, padding: 20 }}>
-            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: "#2C2014", marginBottom: 16 }}>
+        <View style={{ flex: 1, backgroundColor: withAlpha("shadow", 0x60 / 255), justifyContent: "center", padding: 24 }}>
+          <View style={{ backgroundColor: color.parchmentWarm, borderRadius: 4, padding: 20 }}>
+            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: color.ink, marginBottom: 16 }}>
               Set Current Date
             </Text>
             <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
               <View style={{ flex: 2 }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", marginBottom: 4 }}>DAY</Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, marginBottom: 4 }}>DAY</Text>
                 <TextInput
                   value={inputDay} onChangeText={setInputDay} keyboardType="number-pad"
-                  style={{ borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 8, fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", textAlign: "center" }}
+                  style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 8, fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, textAlign: "center" }}
                 />
               </View>
               <View style={{ flex: 2 }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", marginBottom: 4 }}>MONTH</Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, marginBottom: 4 }}>MONTH</Text>
                 <TextInput
                   value={inputMonth} onChangeText={setInputMonth} keyboardType="number-pad"
-                  style={{ borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 8, fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", textAlign: "center" }}
+                  style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 8, fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, textAlign: "center" }}
                 />
               </View>
               <View style={{ flex: 3 }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", marginBottom: 4 }}>YEAR</Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, marginBottom: 4 }}>YEAR</Text>
                 <TextInput
                   value={inputYear} onChangeText={setInputYear} keyboardType="number-pad"
-                  style={{ borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 8, fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", textAlign: "center" }}
+                  style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 8, fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, textAlign: "center" }}
                 />
               </View>
             </View>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginBottom: 12 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint, marginBottom: 12 }}>
               Month 1 = {cal.monthNames[0]}, {cal.monthNames.length} months · {cal.daysPerMonth} days per month
             </Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
-              <Pressable onPress={() => setSetDateModal(false)} style={{ flex: 1, borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#4A3F32" }}>Cancel</Text>
+              <Pressable onPress={() => setSetDateModal(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
               </Pressable>
-              <Pressable onPress={applySetDate} style={{ flex: 1, backgroundColor: "#2C2014", borderRadius: 2, padding: 10, alignItems: "center" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#C9A24A" }}>Set Date</Text>
+              <Pressable onPress={applySetDate} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>Set Date</Text>
               </Pressable>
             </View>
           </View>
@@ -348,22 +349,22 @@ function AdvanceBtn({ label, onPress, dim }: { label: string; onPress: () => voi
   return (
     <Pressable
       onPress={onPress}
-      style={{ flex: 1, borderWidth: 1, borderColor: dim ? "#C4B49A60" : "#C4B49A", borderRadius: 2, padding: 8, alignItems: "center", backgroundColor: dim ? "#E8DCC808" : "#E8DCC8" }}
+      style={{ flex: 1, borderWidth: 1, borderColor: dim ? withAlpha("border", 0x60 / 255) : color.border, borderRadius: 2, padding: 8, alignItems: "center", backgroundColor: dim ? withAlpha("parchmentEdge", 0x08 / 255) : color.parchmentEdge }}
     >
-      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: dim ? "#8A7D6D" : "#2C2014" }}>{label}</Text>
+      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: dim ? color.inkFaint : color.ink }}>{label}</Text>
     </Pressable>
   );
 }
 
 function EventRow({ ev, onDelete, showDate, monthNames, dim }: { ev: CalEvent; onDelete: () => void; showDate: boolean; monthNames: string[]; dim?: boolean }) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#E8DCC8" }}>
+    <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: color.parchmentEdge }}>
       {showDate && (
-        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: dim ? "#8A7D6D" : "#A07A2C", width: 80 }}>
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: dim ? color.inkFaint : color.gold, width: 80 }}>
           {ev.day} {monthNames[ev.month]}
         </Text>
       )}
-      <Text style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 13, color: dim ? "#8A7D6D" : "#2C2014" }}>{ev.label}</Text>
+      <Text style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 13, color: dim ? color.inkFaint : color.ink }}>{ev.label}</Text>
       <Pressable
         onPress={() => {
           Alert.alert("Delete Event", `Delete "${ev.label}"?`, [
@@ -373,7 +374,7 @@ function EventRow({ ev, onDelete, showDate, monthNames, dim }: { ev: CalEvent; o
         }}
         style={{ padding: 6 }}
       >
-        <Text style={{ fontSize: 12, color: "#8A7D6D" }}>✕</Text>
+        <Text style={{ fontSize: 12, color: color.inkFaint }}>✕</Text>
       </Pressable>
     </View>
   );
