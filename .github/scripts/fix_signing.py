@@ -12,6 +12,17 @@ Usage:
   python3 fix_signing.py --cert-id 63RTDJHPA3  # reuse existing cert (avoids 2-cert limit)
 """
 
+# Windows consoles default to cp1252, which cannot encode the arrows/em-dashes
+# used in this script's progress output — that raised UnicodeEncodeError and
+# aborted the run before any real work happened. Force UTF-8 on our streams.
+import sys as _sys
+for _s in (_sys.stdout, _sys.stderr):
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+
 import json, time, base64, os, sys, tempfile, subprocess, argparse
 import urllib.request, urllib.error
 from pathlib import Path

@@ -18,6 +18,17 @@ NOT in CI, where the runner ships LibreSSL (no `-legacy`) and minting would fail
 
 Usage:  python3 .github/scripts/ship_ios.py [--max-attempts 3] [--no-provision]
 """
+
+# Windows consoles default to cp1252, which cannot encode the arrows/em-dashes
+# used in this script's progress output — that raised UnicodeEncodeError and
+# aborted the run before any real work happened. Force UTF-8 on our streams.
+import sys as _sys
+for _s in (_sys.stdout, _sys.stderr):
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import subprocess, sys, time, json, argparse, re
 from pathlib import Path
 
