@@ -445,22 +445,29 @@ read Part IV (build plan) before starting any phase.
   to campaign-detail button labels — use goldText for functional text.
   Version 1.11.0 → **1.12.0**, buildNumber 10 → **11**.
 
-- Phase 52: **THE SUPABASE PROJECT DOES NOT EXIST.** Verified in the dashboard:
-  `marcusverus7's Org` (only org) holds exactly Klert, Mezo, skyline — no
-  Grimoire. The ref hardcoded in `lib/supabase.ts` (`ghjkfwhrzxrjihpjrrxo`) does
-  not resolve and is not in the account. (Rigour: DNS failure alone doesn't prove
-  absence — *paused* projects also stop resolving; Klert/skyline are paused and
-  fail DNS while active Mezo resolves. The project LIST is the proof.) So Supabase
-  auth NEVER worked — the old demo-mode fallback fabricated a session and hid it —
-  and cloud backup + recap sharing could never have worked either, regardless of
-  the Phase 51 publish endpoint. Fix: Supabase config is now env-driven
+- Phase 52: **The Supabase project is on a SECOND account.** It is
+  `femarkloughran7@gmail.com` → org `markloughran7's Org` → project **grimoire**
+  (`ghjkfwhrzxrjihpjrrxo`, eu-central-2) alongside GigTrotter. The *other* account
+  `markloughran7@gmail.com` (GitHub `marcusverus7`) holds Klert/Mezo/skyline only.
+  The project was **paused**, which is why nothing worked — and why DNS didn't
+  resolve. **Lesson: a non-resolving `<ref>.supabase.co` does NOT mean deleted;
+  paused projects stop resolving too** (verified: paused Klert/skyline fail DNS,
+  active Mezo resolves). Always check the per-account project LIST. Claude
+  initially and wrongly concluded the project didn't exist. **Now RESUMED** and
+  REST responds. So Supabase auth never worked in practice (paused backend + the
+  old demo-mode fallback fabricating sessions to hide it), and cloud backup +
+  recap sharing were inert regardless of the Phase 51 publish endpoint.
+  Fix: Supabase config is now env-driven
   (`EXPO_PUBLIC_SUPABASE_URL`/`EXPO_PUBLIC_SUPABASE_ANON_KEY`), dead ref deleted,
   and `isSupabaseConfigured` gates cloud UI — login shows an "Accounts coming
   soon" notice pointing at the guest path, backup/auth explain unavailability
-  instead of failing as opaque network errors. **To enable cloud: create a
-  Supabase project (org is Free plan — active-project cap applies), run
-  migrations 00001→00003, set the two EXPO_PUBLIC_ vars + Vercel's
-  SUPABASE_SERVICE_ROLE_KEY and GRIMOIRE_APP_TOKEN.**
+  instead of failing as opaque network errors. **REMAINING to enable cloud (all
+  founder-gated): (1) run migrations 00001→00003 in the SQL editor — the
+  dashboard's SQL editor renders an EMPTY body under browser automation, so this
+  must be done in a normal tab; (2) set `EXPO_PUBLIC_SUPABASE_URL` +
+  `EXPO_PUBLIC_SUPABASE_ANON_KEY` (GitHub secrets for CI builds); (3) set
+  `SUPABASE_SERVICE_ROLE_KEY` + `GRIMOIRE_APP_TOKEN` in Vercel. Claude does not
+  enter API keys/tokens into fields, so 2 and 3 are yours regardless.**
 
 ## What to build next
 
