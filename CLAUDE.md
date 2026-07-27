@@ -400,6 +400,14 @@ read Part IV (build plan) before starting any phase.
   full "The Grimoire Archive"; formal USPTO clearance still required before public listing.
   Version bumped 1.10.2 → **1.11.0**, iOS buildNumber 9 → **10**. NOT yet built/deployed.
 
+- Phase 49: Android CI (parity gap closed). `.github/workflows/android-build.yml` —
+  free ubuntu runner, expo prebuild + `gradlew assembleRelease`, uploads an APK
+  artifact. Needs **no secrets**: Expo's Android template signs the release build
+  type with the generated debug keystore (fine for internal test APKs; a Play
+  Store upload would need a real upload keystore). Until this, only iOS had CI
+  despite the doctrine requiring both — every prior "parity" claim covered code,
+  not builds.
+
 ## What to build next
 
 1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred

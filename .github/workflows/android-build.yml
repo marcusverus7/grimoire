@@ -1,0 +1,96 @@
+name: Android Build → APK
+
+# Builds a release APK on a free ubuntu runner using expo prebuild + Gradle.
+# Does NOT use EAS cloud build credits.
+#
+# Deliberately needs NO secrets: Expo's Android template signs the `release`
+# build type with the generated debug keystore, which is fine for an internal
+# test APK you sideload or hand to a tester. A Play Store upload would need a
+# real upload keystore — add that only when we actually list on Play.
+#
+# Exists to satisfy the platform-parity doctrine in CLAUDE.md: any change to
+# apps/mobile must build for iOS AND Android. Before this, only iOS had CI.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/core/**'
+      - '.github/workflows/android-build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      COREPACK_INTEGRITY_KEYS: "0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Enable pnpm via corepack
+        run: corepack enable
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Symlink babel-preset-expo into apps/mobile/node_modules
+        run: |
+          # Same workaround as the iOS workflow: babel-preset-expo is a transitive
+          # dep of expo and lives only in the pnpm virtual store, so Metro's
+          # jest-worker child processes can't resolve it without a direct symlink.
+          PRESET_DIR=$(node -e "const p=require('path'),fs=require('fs');const e=p.dirname(require.resolve('expo/package.json',{paths:[p.resolve('apps/mobile')]}));const r=fs.realpathSync(e);process.stdout.write(p.dirname(require.resolve('babel-preset-expo/package.json',{paths:[r]})))")
+          echo "babel-preset-expo at: $PRESET_DIR"
+          if [ -z "$PRESET_DIR" ]; then echo "ERROR: could not locate babel-preset-expo"; exit 1; fi
+          ln -sfn "$PRESET_DIR" apps/mobile/node_modules/babel-preset-expo
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run expo prebuild (android)
+        working-directory: apps/mobile
+        run: npx expo prebuild --platform android --clean --non-interactive --no-install
+
+      - name: Build release APK
+        working-directory: apps/mobile/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: Locate APK
+        id: apk
+        run: |
+          APK=$(find apps/mobile/android/app/build/outputs/apk/release -name '*.apk' | head -1)
+          if [ -z "$APK" ]; then echo "ERROR: no APK produced"; exit 1; fi
+          echo "Found APK: $APK ($(du -h "$APK" | cut -f1))"
+          echo "path=$APK" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: grimoire-android-apk
+          path: ${{ steps.apk.outputs.path }}
+          if-no-files-found: error
+          retention-days: 30
