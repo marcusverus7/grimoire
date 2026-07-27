@@ -398,7 +398,19 @@ read Part IV (build plan) before starting any phase.
   bare "Grimoire" is crowded in this exact niche (live competitors at ttrpg.bot and
   dungeongrimoire.com; App Store "Grimoire Scrolls"/"The Grand Grimoire") — lead with the
   full "The Grimoire Archive"; formal USPTO clearance still required before public listing.
-  Version bumped 1.10.2 → **1.11.0**, iOS buildNumber 9 → **10**. NOT yet built/deployed.
+  Version bumped 1.10.2 → **1.11.0**, iOS buildNumber 9 → **10**. SHIPPED: iOS run
+  30291869349 success → TestFlight build 10; Android run 30291637878 success → 42MB
+  APK artifact. NOTE: the RN patch is proven to COMPILE, not yet proven to FIX Fe's
+  crash — that needs her to open build 10 on iOS 26.5. If it still crashes, the patch
+  makes the offending module log its NSException name+reason via RCTLogError instead
+  of aborting, so the detail the crash report was missing becomes visible.
+  Build gotchas hit on the way: (1) first merge build failed on `Signing certificate
+  is invalid` — the shared-cert revocation; fixed by `python .github/scripts/ship_ios.py`
+  (provisioned fresh cert 432VD8436P; only 1 cert existed so no other app's cert was
+  revoked). (2) ship_ios.py itself crashed instantly on Windows cp1252 encoding of its
+  "→" progress character — all 5 ASC scripts now force UTF-8 on stdout/stderr.
+  (3) Scripts-only follow-ups must use `[skip ci]`, or the iOS path filter rebuilds and
+  fails uploading a duplicate buildNumber to TestFlight.
 
 - Phase 49: Android CI (parity gap closed). `.github/workflows/android-build.yml` —
   free ubuntu runner, expo prebuild + `gradlew assembleRelease`, uploads an APK
