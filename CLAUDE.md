@@ -471,11 +471,26 @@ read Part IV (build plan) before starting any phase.
 
 ## What to build next
 
-1. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
+1. **Dark mode ("candlelit").** Unblocked by the completed token sweep, BUT read
+   this first or it ships half-broken: colours reach the screen through TWO
+   independent systems. (a) ~683 inline `color.<token>` / `withAlpha()` usages
+   resolving through `lib/theme.ts`, and (b) **209 NativeWind className usages**
+   (`text-ink` ×36, `border-gold/…` ×27, `bg-parchment` ×20, …) resolving through
+   `tailwind.config.ts`. Swapping only the runtime `color` object leaves every
+   className-styled surface stuck in light mode. Do BOTH: drive the tailwind
+   palette from CSS variables (NativeWind v4 `vars()` / colorScheme) and have
+   `theme.ts` read the same variables, so one switch moves both. Also swap the
+   parchment texture used by `ParchmentScreen`/backgrounds — a light paper
+   texture under dark ink looks broken. Keep light mode byte-identical.
+2. Player invites & roles — the real multi-device story (needs the Supabase
+   project wired; cloud backup already built the auth/snapshot groundwork).
+3. Restore-from-backup (push exists; restore is deliberately deferred and the
+   backup screen says so).
+4. Font scaling / Dynamic Type audit — fixed `fontSize` numbers throughout risk
+   clipped labels at larger accessibility text sizes.
+5. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
-2. Backup to Supabase (cloud snapshot push — needs auth).
-3. Player invites & roles (needs auth).
-4. Voice quick-capture (speech-to-text → transcribed note, @-linked — deferred
+6. Voice quick-capture (speech-to-text → transcribed note, @-linked — deferred
    until expo-speech-recognition confirms Expo 54 / SDK 54 compatibility).
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch
