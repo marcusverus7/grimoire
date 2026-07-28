@@ -511,8 +511,12 @@ read Part IV (build plan) before starting any phase.
    project wired; cloud backup already built the auth/snapshot groundwork).
 2. Restore-from-backup (push exists; restore is deliberately deferred and the
    backup screen says so).
-3. Font scaling / Dynamic Type audit — fixed `fontSize` numbers throughout risk
-   clipped labels at larger accessibility text sizes.
+3. Font scaling / Dynamic Type — **audit done, fixes not applied**: see
+   `ACCESSIBILITY-AUDIT.md`. Headline: nothing opts out of scaling and RN
+   scales `lineHeight` with `fontSize` on BOTH platforms (verified in the
+   pinned 0.81.5 source), so the app degrades gracefully. Real exposure is
+   narrow — 3 fixed-size glyph badges that clip, and 244 sub-10pt ornamental
+   labels that need `maxFontSizeMultiplier` (not `allowFontScaling={false}`).
 4. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
 5. Voice quick-capture (speech-to-text → transcribed note, @-linked — deferred
