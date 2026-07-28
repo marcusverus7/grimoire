@@ -242,7 +242,7 @@ export default function DowntimeScreen() {
                     value={fpc} onChangeText={setFpc}
                     placeholder="PC name"
                     placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
-                    style={inputStyle}
+                    style={inputStyle()}
                   />
                 )}
               </ScrollView>
@@ -276,7 +276,7 @@ export default function DowntimeScreen() {
                     value={fcustom} onChangeText={setFcustom}
                     placeholder="e.g. Building a Safe House"
                     placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
-                    style={inputStyle}
+                    style={inputStyle()}
                   />
                 </>
               )}
@@ -286,14 +286,14 @@ export default function DowntimeScreen() {
                   <FL label="Days Spent" />
                   <TextInput
                     value={fdays} onChangeText={setFdays} keyboardType="number-pad"
-                    style={[inputStyle, { textAlign: "center", marginBottom: 0 }]}
+                    style={[inputStyle(), { textAlign: "center", marginBottom: 0 }]}
                   />
                 </View>
                 <View style={{ flex: 1 }}>
                   <FL label="Days Required" />
                   <TextInput
                     value={frequired} onChangeText={setFrequired} keyboardType="number-pad"
-                    style={[inputStyle, { textAlign: "center", marginBottom: 0 }]}
+                    style={[inputStyle(), { textAlign: "center", marginBottom: 0 }]}
                   />
                 </View>
               </View>
@@ -304,7 +304,7 @@ export default function DowntimeScreen() {
                 placeholder="Outcome, cost, complications…"
                 placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
                 multiline numberOfLines={2}
-                style={[inputStyle, { minHeight: 60, textAlignVertical: "top" }]}
+                style={[inputStyle(), { minHeight: 60, textAlignVertical: "top" }]}
               />
 
               <View style={{ flexDirection: "row", gap: 8, marginTop: 4, marginBottom: 16 }}>
@@ -325,10 +325,13 @@ export default function DowntimeScreen() {
   );
 }
 
-const inputStyle = {
-  borderWidth: 1, get borderColor() { return color.border; }, borderRadius: 2, padding: 10,
-  fontFamily: "Inter_400Regular" as const, fontSize: 13, get color() { return color.ink; },
-  get backgroundColor() { return color.paperBrightWarm; }, marginBottom: 12};
+function inputStyle() {
+  return {
+    borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10,
+    fontFamily: "Inter_400Regular" as const, fontSize: 13, color: color.ink,
+    backgroundColor: color.paperBrightWarm, marginBottom: 12,
+  };
+}
 
 function FL({ label }: { label: string }) {
   return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;

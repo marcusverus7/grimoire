@@ -72,7 +72,8 @@ const CATEGORY_COLORS: Record<RumourCategory, string> = {
   get world() { return color.blueDeep; },
   get local() { return color.success; },
   get dark() { return color.oxblood; },
-  get hook() { return color.gold; }};
+  get hook() { return color.gold; },
+};
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)] ?? arr[0]!;

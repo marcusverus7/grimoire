@@ -24,7 +24,8 @@ const REL_COLORS: Record<RelType, string> = {
   get ally() { return color.success; },
   get enemy() { return color.oxblood; },
   get rival() { return color.gold; },
-  get neutral() { return color.inkFaint; }};
+  get neutral() { return color.inkFaint; },
+};
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const GRAPH_W = SCREEN_WIDTH - 32;
@@ -38,7 +39,8 @@ const KIND_COLORS: Record<string, string> = {
   get faction() { return color.oxblood; },
   get item() { return color.arcane; },
   get quest() { return color.goldPale; },
-  get custom() { return color.borderDark; }};
+  get custom() { return color.borderDark; },
+};
 
 interface LayoutNode extends GraphNode {
   x: number;

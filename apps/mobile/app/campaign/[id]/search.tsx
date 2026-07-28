@@ -22,7 +22,8 @@ interface SearchResult {
 const RESULT_COLORS: Record<ResultKind, string> = {
   get entity() { return color.gold; },
   get session() { return color.oxblood; },
-  get quote() { return color.borderDark; }};
+  get quote() { return color.borderDark; },
+};
 
 const ENTITY_KIND_COLORS: Record<string, string> = {
   get npc() { return color.gold; },
@@ -32,7 +33,8 @@ const ENTITY_KIND_COLORS: Record<string, string> = {
   get item() { return color.arcane; },
   get quest() { return color.goldPale; },
   get custom() { return color.borderDark; },
-  get secret() { return color.oxblood; }};
+  get secret() { return color.oxblood; },
+};
 
 type StatusFilter = "all" | "dead" | "missing";
 

@@ -30,7 +30,8 @@ const RARITY_COLORS: Record<Rarity, string> = {
   get Rare() { return color.blue; },
   get "Very Rare"() { return color.violet; },
   get Legendary() { return color.goldBright; },
-  get Artifact() { return color.crimson; }};
+  get Artifact() { return color.crimson; },
+};
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function MagicItemsScreen() {
@@ -220,7 +221,7 @@ export default function MagicItemsScreen() {
                 value={fname} onChangeText={setFname}
                 placeholder="e.g. Flame Tongue"
                 placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
-                style={inputStyle}
+                style={inputStyle()}
               />
 
               <FieldLabel label="Rarity" />
@@ -262,7 +263,7 @@ export default function MagicItemsScreen() {
                 placeholder="Properties, charges, special effects…"
                 placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
                 multiline numberOfLines={3}
-                style={[inputStyle, { minHeight: 72, textAlignVertical: "top" }]}
+                style={[inputStyle(), { minHeight: 72, textAlignVertical: "top" }]}
               />
 
               <View style={{ flexDirection: "row", gap: 8, marginTop: 8, marginBottom: 16 }}>
@@ -283,10 +284,13 @@ export default function MagicItemsScreen() {
   );
 }
 
-const inputStyle = {
-  borderWidth: 1, get borderColor() { return color.border; }, borderRadius: 2, padding: 10,
-  fontFamily: "Inter_400Regular" as const, fontSize: 13, get color() { return color.ink; },
-  get backgroundColor() { return color.paperBrightWarm; }, marginBottom: 12};
+function inputStyle() {
+  return {
+    borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10,
+    fontFamily: "Inter_400Regular" as const, fontSize: 13, color: color.ink,
+    backgroundColor: color.paperBrightWarm, marginBottom: 12,
+  };
+}
 
 function FieldLabel({ label }: { label: string }) {
   return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;

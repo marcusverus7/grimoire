@@ -65,7 +65,8 @@ const SEVERITY_COLORS: Record<Severity, string> = {
   get Minor() { return color.successBright; },
   get Major() { return color.goldDark; },
   get Severe() { return color.crimsonDark; },
-  get Permanent() { return color.crimsonDeep; }};
+  get Permanent() { return color.crimsonDeep; },
+};
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function InjuryTrackerScreen() {
@@ -267,18 +268,18 @@ export default function InjuryTrackerScreen() {
               <FL label="Injury Description" />
               <TextInput value={fDesc} onChangeText={setFDesc} placeholder="e.g. Deep stab wound to the shoulder"
                 placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
-                style={inputStyle} />
+                style={inputStyle()} />
 
               <FL label="Mechanical Effect" />
               <TextInput value={fEffect} onChangeText={setFEffect} placeholder="e.g. Disadvantage on Str checks"
                 placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
-                style={inputStyle} />
+                style={inputStyle()} />
 
               {fSeverity !== "Permanent" && (
                 <>
                   <FL label="Days to Heal" />
                   <TextInput value={fDays} onChangeText={setFDays} keyboardType="number-pad"
-                    style={[inputStyle, { textAlign: "center" }]} />
+                    style={[inputStyle(), { textAlign: "center" }]} />
                 </>
               )}
 
@@ -298,10 +299,13 @@ export default function InjuryTrackerScreen() {
   );
 }
 
-const inputStyle = {
-  borderWidth: 1, get borderColor() { return color.border; }, borderRadius: 2, padding: 10,
-  fontFamily: "Inter_400Regular" as const, fontSize: 13, get color() { return color.ink; },
-  get backgroundColor() { return color.paperBrightWarm; }, marginBottom: 12};
+function inputStyle() {
+  return {
+    borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10,
+    fontFamily: "Inter_400Regular" as const, fontSize: 13, color: color.ink,
+    backgroundColor: color.paperBrightWarm, marginBottom: 12,
+  };
+}
 
 function FL({ label }: { label: string }) {
   return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;

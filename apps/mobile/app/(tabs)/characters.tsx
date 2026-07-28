@@ -31,7 +31,8 @@ const STATUS_LABELS: Record<string, string> = {
 const STATUS_COLORS: Record<string, string> = {
   get active() { return color.success; },
   get retired() { return color.gold; },
-  get archived() { return color.inkSoft; }};
+  get archived() { return color.inkSoft; },
+};
 
 function getOrCreateGmId(): string {
   const existing = db

@@ -23,7 +23,8 @@ const STATUS_COLORS: Record<string, string> = {
   get active() { return color.gold; },
   get open() { return color.inkSoft; },
   get completed() { return color.success; },
-  get failed() { return color.oxblood; }};
+  get failed() { return color.oxblood; },
+};
 
 export default function QuestsScreen() {
   useThemeTick();

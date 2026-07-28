@@ -25,7 +25,8 @@ type AttendanceStatus = "yes" | "no" | "maybe";
 type AttendeeRecord = { entityId: string; name: string; status: AttendanceStatus };
 
 const ATTEND_LABELS: Record<AttendanceStatus, string> = { yes: "✓", no: "✗", maybe: "?" };
-const ATTEND_COLORS: Record<AttendanceStatus, string> = { get yes() { return color.success; }, get no() { return color.oxblood; }, get maybe() { return color.gold; }};
+const ATTEND_COLORS: Record<AttendanceStatus, string> = { get yes() { return color.success; }, get no() { return color.oxblood; }, get maybe() { return color.gold; },
+};
 
 export default function SessionFormScreen() {
   useThemeTick();

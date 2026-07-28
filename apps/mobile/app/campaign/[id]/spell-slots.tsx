@@ -283,7 +283,7 @@ export default function SpellSlotsScreen() {
               Add Caster
             </Text>
 
-            <Text style={labelStyle}>Character</Text>
+            <Text style={labelStyle()}>Character</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
               {allPcs.map(pc => (
                 <Pressable
@@ -304,7 +304,7 @@ export default function SpellSlotsScreen() {
               )}
             </ScrollView>
 
-            <Text style={labelStyle}>Level</Text>
+            <Text style={labelStyle()}>Level</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
               {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(l => (
                 <Pressable
@@ -317,7 +317,7 @@ export default function SpellSlotsScreen() {
               ))}
             </ScrollView>
 
-            <Text style={labelStyle}>Caster Type</Text>
+            <Text style={labelStyle()}>Caster Type</Text>
             <View style={{ flexDirection: "row", gap: 6, marginBottom: 16 }}>
               {(["Full", "Half", "Warlock"] as CasterType[]).map(t => (
                 <Pressable
@@ -345,4 +345,6 @@ export default function SpellSlotsScreen() {
   );
 }
 
-const labelStyle = { fontFamily: "Inter_600SemiBold" as const, fontSize: 10, get color() { return color.inkFaint; }, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 4 };
+function labelStyle() {
+  return { fontFamily: "Inter_600SemiBold" as const, fontSize: 10, color: color.inkFaint, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 4 };
+}

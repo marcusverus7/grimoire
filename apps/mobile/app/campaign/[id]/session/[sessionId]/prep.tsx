@@ -22,7 +22,8 @@ const STATUS_COLORS: Record<string, string> = {
   get active() { return color.gold; },
   get rumoured() { return color.inkSoft; },
   get complete() { return color.green; },
-  get failed() { return color.oxblood; }};
+  get failed() { return color.oxblood; },
+};
 
 export default function SessionPrepScreen() {
   useThemeTick();

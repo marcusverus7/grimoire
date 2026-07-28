@@ -46,7 +46,8 @@ const KIND_COLORS: Record<string, string> = {
   get faction() { return color.oxblood; },
   get item() { return color.arcane; },
   get quest() { return color.goldPale; },
-  get custom() { return color.borderDark; }};
+  get custom() { return color.borderDark; },
+};
 
 function fmtDuration(ms: number): string {
   const h = Math.floor(ms / 3600000);

@@ -31,7 +31,8 @@ const CONDITION_COLORS: Record<string, string> = {
   get Stunned() { return color.arcane; },
   get Unconscious() { return color.inkBark; },
   get Concentration() { return color.gold; },
-  get Prone() { return color.inkFaint; }};
+  get Prone() { return color.inkFaint; },
+};
 
 const CONDITION_DESC: Record<string, string> = {
   Blinded: "Auto-fail sight checks. Attack rolls have disadvantage; attacks against have advantage.",
