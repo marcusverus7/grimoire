@@ -497,7 +497,19 @@ read Part IV (build plan) before starting any phase.
   vignette. Light mode proven unchanged, not assumed: a verifier resolves every
   colour expression in HEAD and in the working tree back to a literal hex using
   the light palette and diffs the sequences — identical for every automated file.
-  Version 1.12.1 → **1.13.0**, buildNumber 12 → **13**.
+  Version 1.12.1 → **1.13.0**, buildNumber 12 → **13**; a follow-up fix (module-
+  level style objects handed to `style={x}` keep a stable reference, so React's
+  prop diff skips them and getters never re-run — made them functions) shipped
+  as **1.13.1 / build 14**. SHIPPED: build 13 iOS run 30320180531 success +
+  Android 30320180532 success; build 14 Android 30321182633 success, iOS
+  30321182631 FAILED on the shared-cert issue then 30321747513 success after
+  re-provisioning.
+  **Shared-cert nuance worth keeping:** the fix is `provision_ios.py`, and it is
+  only safe because it revokes *at the 2-cert limit* — check the count first.
+  Here exactly ONE distribution cert existed (a sibling app had already taken
+  Grimoire's), so provisioning CREATED a second rather than revoking anyone
+  else's. If two already exist, provisioning revokes the oldest and can silently
+  break a sibling app — do not run it blind.
   Known rough edges: `app/(tabs)/design.tsx` (hidden palette showcase) is
   deliberately excluded — its hexes are *data*, not styling; `RichTextEditor`'s
   WebView was already candlelit so it is untouched; room-gen's mode tabs lose
