@@ -5,7 +5,7 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { getKv, setKv } from "@/lib/db";
 import { randomUUID } from "expo-crypto";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type CalEvent = { id: string; label: string; day: number; month: number; year: number };
@@ -60,6 +60,7 @@ function dateKey(d: number, m: number, y: number) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function CalendarScreen() {
+  useThemeTick();
   const { id } = useLocalSearchParams<{ id: string }>();
   const storageKey = `calendar_${id}`;
 
@@ -263,7 +264,7 @@ export default function CalendarScreen() {
               <Pressable onPress={() => setAddEventVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
                 <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
               </Pressable>
-              <Pressable onPress={addEvent} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+              <Pressable onPress={addEvent} style={{ flex: 1, backgroundColor: color.panelInk, borderRadius: 2, padding: 10, alignItems: "center" }}>
                 <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>Add</Text>
               </Pressable>
             </View>
@@ -334,7 +335,7 @@ export default function CalendarScreen() {
               <Pressable onPress={() => setSetDateModal(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
                 <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
               </Pressable>
-              <Pressable onPress={applySetDate} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+              <Pressable onPress={applySetDate} style={{ flex: 1, backgroundColor: color.panelInk, borderRadius: 2, padding: 10, alignItems: "center" }}>
                 <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>Set Date</Text>
               </Pressable>
             </View>

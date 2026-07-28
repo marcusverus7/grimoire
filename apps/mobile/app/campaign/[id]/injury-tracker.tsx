@@ -8,7 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { db, getKv, setKv } from "@/lib/db";
 import { schema } from "@grimoire/core";
 import { randomUUID } from "expo-crypto";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Severity = "Minor" | "Major" | "Severe" | "Permanent";
@@ -62,14 +62,14 @@ const INJURY_PRESETS: Record<Severity, Array<{ description: string; effect: stri
 };
 
 const SEVERITY_COLORS: Record<Severity, string> = {
-  Minor: color.successBright,
-  Major: "#8A5C1A",
-  Severe: "#8A1A1A",
-  Permanent: "#3A0A0A",
-};
+  get Minor() { return color.successBright; },
+  get Major() { return color.goldDark; },
+  get Severe() { return color.crimsonDark; },
+  get Permanent() { return color.crimsonDeep; }};
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function InjuryTrackerScreen() {
+  useThemeTick();
   const { id } = useLocalSearchParams<{ id: string }>();
   const storageKey = `injuries_${id}`;
 
@@ -187,7 +187,7 @@ export default function InjuryTrackerScreen() {
 
         <Pressable
           onPress={openAdd}
-          style={{ backgroundColor: color.ink, borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
+          style={{ backgroundColor: color.panelInk, borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
         >
           <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: color.goldBright, letterSpacing: 1 }}>
             + Record Injury
@@ -232,7 +232,7 @@ export default function InjuryTrackerScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
                 {entities.map(e => (
                   <Pressable key={e.id} onPress={() => { setFEntityId(e.id); setFEntityName(e.name); }}
-                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fEntityId === e.id ? color.ink : color.border, backgroundColor: fEntityId === e.id ? color.ink : color.parchmentEdge }}>
+                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fEntityId === e.id ? color.ink : color.border, backgroundColor: fEntityId === e.id ? color.panelInk : color.parchmentEdge }}>
                     <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: fEntityId === e.id ? color.goldBright : color.borderDark }}>{e.name}</Text>
                   </Pressable>
                 ))}
@@ -286,7 +286,7 @@ export default function InjuryTrackerScreen() {
                 <Pressable onPress={() => setModalVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
                   <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
                 </Pressable>
-                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: color.panelInk, borderRadius: 2, padding: 10, alignItems: "center" }}>
                   <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>{editInjury ? "Save" : "Record"}</Text>
                 </Pressable>
               </View>
@@ -299,10 +299,9 @@ export default function InjuryTrackerScreen() {
 }
 
 const inputStyle = {
-  borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10,
-  fontFamily: "Inter_400Regular" as const, fontSize: 13, color: color.ink,
-  backgroundColor: "#FFFDF8", marginBottom: 12,
-};
+  borderWidth: 1, get borderColor() { return color.border; }, borderRadius: 2, padding: 10,
+  fontFamily: "Inter_400Regular" as const, fontSize: 13, get color() { return color.ink; },
+  get backgroundColor() { return color.paperBrightWarm; }, marginBottom: 12};
 
 function FL({ label }: { label: string }) {
   return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;

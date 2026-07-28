@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type RumourCategory = "world" | "local" | "dark" | "hook";
 
@@ -68,11 +69,10 @@ const CATEGORY_LABELS: Record<RumourCategory, string> = {
 };
 
 const CATEGORY_COLORS: Record<RumourCategory, string> = {
-  world: "#2A4080",
-  local: "#4A8060",
-  dark: "#7A2418",
-  hook: "#A07A2C",
-};
+  get world() { return color.blueDeep; },
+  get local() { return color.success; },
+  get dark() { return color.oxblood; },
+  get hook() { return color.gold; }};
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)] ?? arr[0]!;
@@ -87,6 +87,7 @@ function generateRumours(count = 5): { category: RumourCategory; text: string }[
 }
 
 export default function RumoursScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const [rumours, setRumours] = useState(() => generateRumours());
   const [filter, setFilter] = useState<RumourCategory | "all">("all");
@@ -108,7 +109,7 @@ export default function RumoursScreen() {
       <Stack.Screen options={{ title: "Rumour Mill" }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         <ScrollView contentContainerStyle={{ padding: 24 }}>
-          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 2, marginBottom: 6 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: color.gold, textTransform: "uppercase", letterSpacing: 2, marginBottom: 6 }}>
             Rumour Mill
           </Text>
           <GoldRule />
@@ -121,11 +122,11 @@ export default function RumoursScreen() {
                 onPress={() => setFilter(c)}
                 style={{
                   paddingHorizontal: 10, paddingVertical: 5, borderRadius: 2, borderWidth: 1,
-                  borderColor: filter === c ? (c === "all" ? "#A07A2C" : CATEGORY_COLORS[c]) : "#A07A2C30",
-                  backgroundColor: filter === c ? (c === "all" ? "#A07A2C12" : `${CATEGORY_COLORS[c]}10`) : "transparent",
+                  borderColor: filter === c ? (c === "all" ? color.gold : CATEGORY_COLORS[c]) : withAlpha("gold", 0x30 / 255),
+                  backgroundColor: filter === c ? (c === "all" ? withAlpha("gold", 0x12 / 255) : `${CATEGORY_COLORS[c]}10`) : "transparent",
                 }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: filter === c ? (c === "all" ? "#A07A2C" : CATEGORY_COLORS[c]) : "#5A4D3E80" }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: filter === c ? (c === "all" ? color.gold : CATEGORY_COLORS[c]) : withAlpha("inkSoft", 0x80 / 255) }}>
                   {c === "all" ? "All" : CATEGORY_LABELS[c]}
                 </Text>
               </Pressable>
@@ -154,7 +155,7 @@ export default function RumoursScreen() {
                     <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: CATEGORY_COLORS[r.category] }}>Save</Text>
                   </Pressable>
                 </View>
-                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: "#2C2014", lineHeight: 25 }}>
+                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: color.ink, lineHeight: 25 }}>
                   "{r.text}"
                 </Text>
               </View>
@@ -164,9 +165,9 @@ export default function RumoursScreen() {
           <View style={{ marginTop: 20, gap: 10 }}>
             <Pressable
               onPress={() => setRumours(generateRumours())}
-              style={{ paddingVertical: 13, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, alignItems: "center" }}
+              style={{ paddingVertical: 13, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, alignItems: "center" }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5 }}>
                 ⚄ Generate New Rumours
               </Text>
             </Pressable>

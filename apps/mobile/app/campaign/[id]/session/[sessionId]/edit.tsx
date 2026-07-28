@@ -17,6 +17,7 @@ import RichTextEditor from "@/components/RichTextEditor";
 import { schema, computeLinkChanges } from "@grimoire/core";
 import type { RichTextNode, EntityLinkRow } from "@grimoire/core";
 import type { EditorBridge } from "@10play/tentap-editor";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Session = typeof schema.sessions.$inferSelect;
 type Entity = typeof schema.entities.$inferSelect;
@@ -24,9 +25,10 @@ type AttendanceStatus = "yes" | "no" | "maybe";
 type AttendeeRecord = { entityId: string; name: string; status: AttendanceStatus };
 
 const ATTEND_LABELS: Record<AttendanceStatus, string> = { yes: "✓", no: "✗", maybe: "?" };
-const ATTEND_COLORS: Record<AttendanceStatus, string> = { yes: "#4A8060", no: "#7A2418", maybe: "#A07A2C" };
+const ATTEND_COLORS: Record<AttendanceStatus, string> = { get yes() { return color.success; }, get no() { return color.oxblood; }, get maybe() { return color.gold; }};
 
 export default function SessionFormScreen() {
+  useThemeTick();
   const { id: campaignId, sessionId } = useLocalSearchParams<{
     id: string;
     sessionId: string;
@@ -196,7 +198,7 @@ export default function SessionFormScreen() {
       />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-parchment"
+        className="flex-1 bg-parchment dark:bg-night-bg"
         contentContainerStyle={{ padding: 16 }}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
@@ -204,7 +206,7 @@ export default function SessionFormScreen() {
         {/* Session number (read-only) */}
         <Label text="Session Number" />
         <Text
-          className="text-ink text-xl mb-5"
+          className="text-ink dark:text-night-ink text-xl mb-5"
           style={{ fontFamily: "CormorantGaramond_700Bold" }}
         >
           {number}
@@ -216,9 +218,9 @@ export default function SessionFormScreen() {
           value={title}
           onChangeText={setTitle}
           placeholder="e.g. The Siege of Ashford"
-          placeholderTextColor="#2C201440"
-          className="border-b border-gold/20 pb-2 mb-5 text-lg"
-          style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: "#2C2014" }}
+          placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+          className="border-b border-gold/20 dark:border-night-gold/20 pb-2 mb-5 text-lg"
+          style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: color.ink }}
         />
 
         {/* Summary */}
@@ -227,10 +229,10 @@ export default function SessionFormScreen() {
           value={summary}
           onChangeText={setSummary}
           placeholder="One-line summary of what happened..."
-          placeholderTextColor="#2C201440"
+          placeholderTextColor={withAlpha("ink", 0x40 / 255)}
           multiline
           numberOfLines={2}
-          style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8, marginBottom: 20, textAlignVertical: "top" }}
+          style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 8, marginBottom: 20, textAlignVertical: "top" }}
         />
 
         {/* Played on */}
@@ -239,8 +241,8 @@ export default function SessionFormScreen() {
           value={playedOn}
           onChangeText={setPlayedOn}
           placeholder="2025-06-10"
-          placeholderTextColor="#2C201440"
-          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C20", paddingBottom: 8 }}
+          placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+          style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x20 / 255), paddingBottom: 8 }}
         />
         <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 10, marginBottom: 20 }}>
           {([
@@ -259,9 +261,9 @@ export default function SessionFormScreen() {
                 const da = String(d.getDate()).padStart(2, "0");
                 setPlayedOn(`${y}-${mo}-${da}`);
               }}
-              style={{ marginRight: 8, marginBottom: 8, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2 }}
+              style={{ marginRight: 8, marginBottom: 8, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2 }}
             >
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C" }}>{chip.label}</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.gold }}>{chip.label}</Text>
             </Pressable>
           ))}
         </View>
@@ -279,15 +281,15 @@ export default function SessionFormScreen() {
                 paddingVertical: 7,
                 borderRadius: 2,
                 borderWidth: 1,
-                borderColor: status === s ? "#A07A2C" : "#A07A2C25",
-                backgroundColor: status === s ? "#A07A2C15" : "transparent",
+                borderColor: status === s ? color.gold : withAlpha("gold", 0x25 / 255),
+                backgroundColor: status === s ? withAlpha("gold", 0x15 / 255) : "transparent",
               }}
             >
               <Text
                 style={{
                   fontFamily: "Inter_500Medium",
                   fontSize: 12,
-                  color: status === s ? "#A07A2C" : "#5A4D3E",
+                  color: status === s ? color.gold : color.inkSoft,
                   textTransform: "capitalize",
                 }}
               >
@@ -302,11 +304,11 @@ export default function SessionFormScreen() {
           <Label text="Session Type (optional)" />
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {[
-              { key: "combat", label: "⚔ Combat", color: "#8B2020" },
-              { key: "roleplay", label: "💬 Roleplay", color: "#1E6B6B" },
-              { key: "exploration", label: "🗺 Exploration", color: "#3A6830" },
-              { key: "downtime", label: "🏠 Downtime", color: "#5A3A7A" },
-              { key: "travel", label: "🚶 Travel", color: "#2A4080" },
+              { key: "combat", label: "⚔ Combat", color: color.crimsonBright },
+              { key: "roleplay", label: "💬 Roleplay", color: color.teal },
+              { key: "exploration", label: "🗺 Exploration", color: color.greenDark },
+              { key: "downtime", label: "🏠 Downtime", color: color.purpleDeep },
+              { key: "travel", label: "🚶 Travel", color: color.blueDeep },
             ].map((t) => {
               const active = sessionType === t.key;
               return (
@@ -318,11 +320,11 @@ export default function SessionFormScreen() {
                     paddingVertical: 6,
                     borderRadius: 2,
                     borderWidth: 1,
-                    borderColor: active ? t.color : "#A07A2C25",
+                    borderColor: active ? t.color : withAlpha("gold", 0x25 / 255),
                     backgroundColor: active ? `${t.color}15` : "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: active ? t.color : "#5A4D3E" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: active ? t.color : color.inkSoft }}>
                     {t.label}
                   </Text>
                 </Pressable>
@@ -343,11 +345,11 @@ export default function SessionFormScreen() {
                   paddingVertical: 6,
                   borderRadius: 2,
                   borderWidth: 1,
-                  borderColor: arcId === null ? "#A07A2C" : "#A07A2C25",
-                  backgroundColor: arcId === null ? "#A07A2C15" : "transparent",
+                  borderColor: arcId === null ? color.gold : withAlpha("gold", 0x25 / 255),
+                  backgroundColor: arcId === null ? withAlpha("gold", 0x15 / 255) : "transparent",
                 }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: arcId === null ? "#A07A2C" : "#5A4D3E" }}>None</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: arcId === null ? color.gold : color.inkSoft }}>None</Text>
               </Pressable>
               {arcs.map((arc) => (
                 <Pressable
@@ -358,11 +360,11 @@ export default function SessionFormScreen() {
                     paddingVertical: 6,
                     borderRadius: 2,
                     borderWidth: 1,
-                    borderColor: arcId === arc.id ? "#A07A2C" : "#A07A2C25",
-                    backgroundColor: arcId === arc.id ? "#A07A2C15" : "transparent",
+                    borderColor: arcId === arc.id ? color.gold : withAlpha("gold", 0x25 / 255),
+                    backgroundColor: arcId === arc.id ? withAlpha("gold", 0x15 / 255) : "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: arcId === arc.id ? "#A07A2C" : "#5A4D3E" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: arcId === arc.id ? color.gold : color.inkSoft }}>
                     {arc.name}
                   </Text>
                 </Pressable>
@@ -378,7 +380,7 @@ export default function SessionFormScreen() {
             <View style={{ flexDirection: "row", gap: 8 }}>
               {[1, 2, 3, 4, 5].map((star) => (
                 <Pressable key={star} onPress={() => setRating(rating === star ? 0 : star)}>
-                  <Text style={{ fontSize: 24, color: star <= rating ? "#A07A2C" : "#A07A2C30" }}>★</Text>
+                  <Text style={{ fontSize: 24, color: star <= rating ? color.gold : withAlpha("gold", 0x30 / 255) }}>★</Text>
                 </Pressable>
               ))}
             </View>
@@ -391,7 +393,7 @@ export default function SessionFormScreen() {
             <Label text="Attendance" />
             {attendance.map((rec) => (
               <View key={rec.entityId} style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 1 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, flex: 1 }}>
                   {rec.name}
                 </Text>
                 <View style={{ flexDirection: "row", gap: 6 }}>
@@ -402,11 +404,11 @@ export default function SessionFormScreen() {
                       style={{
                         width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center",
                         borderWidth: 1.5,
-                        borderColor: rec.status === s ? ATTEND_COLORS[s] : "#A07A2C20",
+                        borderColor: rec.status === s ? ATTEND_COLORS[s] : withAlpha("gold", 0x20 / 255),
                         backgroundColor: rec.status === s ? ATTEND_COLORS[s] + "20" : "transparent",
                       }}
                     >
-                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: rec.status === s ? ATTEND_COLORS[s] : "#A07A2C50" }}>
+                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: rec.status === s ? ATTEND_COLORS[s] : withAlpha("gold", 0x50 / 255) }}>
                         {ATTEND_LABELS[s]}
                       </Text>
                     </Pressable>
@@ -432,13 +434,13 @@ export default function SessionFormScreen() {
         {/* Save */}
         <Pressable
           onPress={save}
-          className="mt-5 bg-oxblood py-3 rounded-sm border border-gold/30 items-center"
+          className="mt-5 bg-oxblood dark:bg-night-oxblood py-3 rounded-sm border border-gold/30 dark:border-night-gold/30 items-center"
         >
           <Text
             style={{
               fontFamily: "Inter_600SemiBold",
               fontSize: 14,
-              color: "#FAF5EA",
+              color: color.onAccent,
               textTransform: "uppercase",
               letterSpacing: 1.5,
             }}
@@ -453,7 +455,7 @@ export default function SessionFormScreen() {
             style={{
               fontFamily: "Inter_400Regular",
               fontSize: 12,
-              color: "#7A241880",
+              color: withAlpha("oxblood", 0x80 / 255),
             }}
           >
             Delete Session
@@ -470,7 +472,7 @@ export default function SessionFormScreen() {
 function Label({ text }: { text: string }) {
   return (
     <Text
-      className="text-gold/70 text-xs uppercase tracking-wider mb-2"
+      className="text-gold/70 dark:text-night-gold/70 text-xs uppercase tracking-wider mb-2"
       style={{ fontFamily: "Inter_600SemiBold" }}
     >
       {text}

@@ -14,17 +14,17 @@ import {
   type GraphEntity,
 } from "@grimoire/core";
 import type { EntityLinkRow } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type EdgeKind = "direct" | "co_mention" | "faction_member" | "faction_rel";
 type RelType = "ally" | "enemy" | "rival" | "neutral";
 type ExtEdge = { fromId: string; toId: string; kind: EdgeKind; relType?: RelType; weight: number };
 
 const REL_COLORS: Record<RelType, string> = {
-  ally: "#4A8060",
-  enemy: "#7A2418",
-  rival: "#A07A2C",
-  neutral: "#8A7D6D",
-};
+  get ally() { return color.success; },
+  get enemy() { return color.oxblood; },
+  get rival() { return color.gold; },
+  get neutral() { return color.inkFaint; }};
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const GRAPH_W = SCREEN_WIDTH - 32;
@@ -32,14 +32,13 @@ const GRAPH_H = 400;
 const NODE_R = 20;
 
 const KIND_COLORS: Record<string, string> = {
-  npc: "#A07A2C",
-  pc: "#C9A24A",
-  location: "#4A8060",
-  faction: "#7A2418",
-  item: "#6A5ACD",
-  quest: "#D4A843",
-  custom: "#4A3F32",
-};
+  get npc() { return color.gold; },
+  get pc() { return color.goldBright; },
+  get location() { return color.success; },
+  get faction() { return color.oxblood; },
+  get item() { return color.arcane; },
+  get quest() { return color.goldPale; },
+  get custom() { return color.borderDark; }};
 
 interface LayoutNode extends GraphNode {
   x: number;
@@ -126,6 +125,7 @@ function layoutGraph(
 type GraphMode = "all" | "mentions" | "factions";
 
 export default function GraphScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
@@ -223,7 +223,7 @@ export default function GraphScreen() {
         {nodes.length === 0 ? (
           <View style={{ paddingTop: 80, alignItems: "center" }}>
             <Text
-              className="text-ink/50 text-sm text-center"
+              className="text-ink/50 dark:text-night-ink/50 text-sm text-center"
               style={{ fontFamily: "Inter_400Regular" }}
             >
               No entities yet — add NPCs, locations, and factions to see their
@@ -243,11 +243,11 @@ export default function GraphScreen() {
                     paddingVertical: 5,
                     borderRadius: 2,
                     borderWidth: 1,
-                    borderColor: graphMode === mode ? "#A07A2C" : "#A07A2C40",
-                    backgroundColor: graphMode === mode ? "#A07A2C15" : "transparent",
+                    borderColor: graphMode === mode ? color.gold : withAlpha("gold", 0x40 / 255),
+                    backgroundColor: graphMode === mode ? withAlpha("gold", 0x15 / 255) : "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: graphMode === mode ? "#A07A2C" : "#A07A2C80", textTransform: "capitalize" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: graphMode === mode ? color.gold : withAlpha("gold", 0x80 / 255), textTransform: "capitalize" }}>
                     {mode === "all" ? "All" : mode === "mentions" ? "Mentions" : "Factions"}
                   </Text>
                 </Pressable>
@@ -262,8 +262,8 @@ export default function GraphScreen() {
                 const stroke = edge.kind === "faction_rel" && edge.relType
                   ? REL_COLORS[edge.relType]
                   : edge.kind === "faction_member"
-                  ? "#7A241840"
-                  : edge.kind === "direct" ? "#A07A2C" : "#A07A2C40";
+                  ? withAlpha("oxblood", 0x40 / 255)
+                  : edge.kind === "direct" ? color.gold : withAlpha("gold", 0x40 / 255);
                 const dashArray = edge.kind === "co_mention" ? "4,4" : edge.kind === "faction_member" ? "3,3" : undefined;
                 return (
                   <Line
@@ -295,15 +295,15 @@ export default function GraphScreen() {
                     cx={node.x}
                     cy={node.y}
                     r={NODE_R}
-                    fill={KIND_COLORS[node.kind] ?? "#4A3F32"}
+                    fill={KIND_COLORS[node.kind] ?? color.borderDark}
                     opacity={0.85}
-                    stroke="#2C2014"
+                    stroke={color.ink}
                     strokeWidth={1}
                   />
                   <SvgText
                     x={node.x}
                     y={node.y + NODE_R + 14}
-                    fill="#2C2014"
+                    fill={color.ink}
                     fontSize={10}
                     fontFamily="Inter_500Medium"
                     textAnchor="middle"
@@ -318,7 +318,7 @@ export default function GraphScreen() {
 
             {/* Kind legend */}
             <View className="mt-4 flex-row flex-wrap justify-center">
-              {Object.entries(KIND_COLORS).map(([kind, color]) => {
+              {Object.entries(KIND_COLORS).map(([kind, swatch]) => {
                 const hasKind = visibleNodes.some((n) => n.kind === kind);
                 if (!hasKind) return null;
                 return (
@@ -328,7 +328,7 @@ export default function GraphScreen() {
                         width: 10,
                         height: 10,
                         borderRadius: 5,
-                        backgroundColor: color,
+                        backgroundColor: swatch,
                         marginRight: 4,
                       }}
                     />
@@ -336,7 +336,7 @@ export default function GraphScreen() {
                       style={{
                         fontFamily: "Inter_400Regular",
                         fontSize: 10,
-                        color: "#5A4D3E",
+                        color: color.inkSoft,
                         textTransform: "capitalize",
                       }}
                     >
@@ -352,12 +352,12 @@ export default function GraphScreen() {
               {(graphMode === "all" || graphMode === "mentions") && (
                 <>
                   <View className="flex-row items-center mr-4 mb-1">
-                    <View style={{ width: 16, height: 2, backgroundColor: "#A07A2C", marginRight: 4 }} />
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#2C201460" }}>Direct mention</Text>
+                    <View style={{ width: 16, height: 2, backgroundColor: color.gold, marginRight: 4 }} />
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("ink", 0x60 / 255) }}>Direct mention</Text>
                   </View>
                   <View className="flex-row items-center mr-4 mb-1">
-                    <View style={{ width: 16, height: 2, backgroundColor: "#A07A2C40", marginRight: 4, borderStyle: "dashed", borderWidth: 1, borderColor: "#A07A2C40" }} />
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#2C201460" }}>Co-mention</Text>
+                    <View style={{ width: 16, height: 2, backgroundColor: withAlpha("gold", 0x40 / 255), marginRight: 4, borderStyle: "dashed", borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255) }} />
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("ink", 0x60 / 255) }}>Co-mention</Text>
                   </View>
                 </>
               )}
@@ -366,12 +366,12 @@ export default function GraphScreen() {
                   {(["ally", "enemy", "rival", "neutral"] as RelType[]).map((rt) => (
                     <View key={rt} className="flex-row items-center mr-4 mb-1">
                       <View style={{ width: 16, height: 2, backgroundColor: REL_COLORS[rt], marginRight: 4 }} />
-                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#2C201460", textTransform: "capitalize" }}>{rt}</Text>
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("ink", 0x60 / 255), textTransform: "capitalize" }}>{rt}</Text>
                     </View>
                   ))}
                   <View className="flex-row items-center mr-4 mb-1">
-                    <View style={{ width: 16, height: 2, backgroundColor: "#7A241840", marginRight: 4, borderStyle: "dashed", borderWidth: 1, borderColor: "#7A241840" }} />
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#2C201460" }}>Member</Text>
+                    <View style={{ width: 16, height: 2, backgroundColor: withAlpha("oxblood", 0x40 / 255), marginRight: 4, borderStyle: "dashed", borderWidth: 1, borderColor: withAlpha("oxblood", 0x40 / 255) }} />
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("ink", 0x60 / 255) }}>Member</Text>
                   </View>
                 </>
               )}

@@ -7,11 +7,12 @@ import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Attrs = Record<string, unknown>;
 
 export default function CampaignStatsScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 

@@ -10,7 +10,7 @@ import { WaxSeal } from "@/components/WaxSeal";
 import { schema } from "@grimoire/core";
 import { exportCampaign, slugify, richTextToMarkdown, exportableCampaignNamespaces, buildKeepsakeBook, can } from "@grimoire/core";
 import type { RichTextNode, GmToolData } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 /** Read every exportable GM-tool app_kv blob for a campaign (clues, clocks, …). */
 function collectGmTools(campaignId: string): GmToolData[] {
@@ -30,6 +30,7 @@ function collectGmTools(campaignId: string): GmToolData[] {
 }
 
 export default function ExportScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const [exporting, setExporting] = useState(false);
   const [sharing, setSharing] = useState(false);
@@ -344,7 +345,7 @@ export default function ExportScreen() {
       <Stack.Screen options={{ title: "Export" }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-parchment"
+        className="flex-1 bg-parchment dark:bg-night-bg"
         contentContainerStyle={{ padding: 20, alignItems: "center" }}
       >
         <View className="mt-8 mb-6">
@@ -352,13 +353,13 @@ export default function ExportScreen() {
         </View>
 
         <Text
-          className="text-ink text-xl text-center mb-2"
+          className="text-ink dark:text-night-ink text-xl text-center mb-2"
           style={{ fontFamily: "CormorantGaramond_700Bold" }}
         >
           Export Your Campaign
         </Text>
         <Text
-          className="text-ink-soft text-sm text-center mb-8 px-4 leading-5"
+          className="text-ink-soft dark:text-night-ink-soft text-sm text-center mb-8 px-4 leading-5"
           style={{ fontFamily: "Inter_400Regular" }}
         >
           Export as Markdown files with [[wiki-links]] (Obsidian-compatible) and
@@ -369,7 +370,7 @@ export default function ExportScreen() {
 
         <View className="mt-6 w-full px-4">
           <Text
-            className="text-gold/70 text-xs uppercase tracking-wider mb-3"
+            className="text-gold/70 dark:text-night-gold/70 text-xs uppercase tracking-wider mb-3"
             style={{ fontFamily: "Inter_600SemiBold" }}
           >
             Includes
@@ -389,14 +390,14 @@ export default function ExportScreen() {
           onPress={doExport}
           disabled={exporting}
           className={`mt-8 px-10 py-3.5 rounded-sm border border-gold/30 ${
-            exporting ? "bg-oxblood/50" : "bg-oxblood"
+            exporting ? "bg-oxblood/50 dark:bg-night-oxblood/50" : "bg-oxblood dark:bg-night-oxblood"
           }`}
         >
           <Text
             style={{
               fontFamily: "Inter_600SemiBold",
               fontSize: 14,
-              color: color.parchment,
+              color: color.onAccent,
               textTransform: "uppercase",
               letterSpacing: 1.5,
             }}
@@ -512,11 +513,11 @@ export default function ExportScreen() {
 function BulletItem({ text }: { text: string }) {
   return (
     <View className="flex-row mb-2">
-      <Text className="text-gold mr-2" style={{ fontFamily: "Inter_400Regular", fontSize: 12 }}>
+      <Text className="text-gold dark:text-night-gold mr-2" style={{ fontFamily: "Inter_400Regular", fontSize: 12 }}>
         •
       </Text>
       <Text
-        className="text-ink-soft text-sm flex-1"
+        className="text-ink-soft dark:text-night-ink-soft text-sm flex-1"
         style={{ fontFamily: "Inter_400Regular" }}
       >
         {text}

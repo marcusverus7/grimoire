@@ -11,11 +11,19 @@ import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { eq } from "drizzle-orm";
-import { db, deleteKv } from "@/lib/db";
+import { db, deleteKv, setKv } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema, campaignKvKeys } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import {
+  applyScheme,
+  color,
+  SCHEME_LABEL,
+  useThemeTick,
+  withAlpha,
+  THEME_KV_KEY,
+} from "@/lib/theme";
+import type { Scheme } from "@/lib/theme";
 
 type Campaign = typeof schema.campaigns.$inferSelect;
 type Status = "active" | "archived" | "ended";
@@ -24,6 +32,12 @@ type CampaignSettings = { notes?: string; nextSession?: string; logline?: string
 const STATUSES: Status[] = ["active", "archived", "ended"];
 
 export default function CampaignSettingsScreen() {
+  const scheme = useThemeTick();
+
+  const chooseScheme = (next: Scheme) => {
+    applyScheme(next);
+    setKv(THEME_KV_KEY, next);
+  };
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
@@ -149,7 +163,7 @@ export default function CampaignSettingsScreen() {
       <Stack.Screen options={{ title: "Settings" }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-parchment"
+        className="flex-1 bg-parchment dark:bg-night-bg"
         contentContainerStyle={{ padding: 16 }}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
@@ -164,11 +178,11 @@ export default function CampaignSettingsScreen() {
                 resizeMode="cover"
               />
               <View style={{ position: "absolute", bottom: 8, right: 8, backgroundColor: "rgba(26,20,16,0.7)", borderRadius: 3, paddingHorizontal: 8, paddingVertical: 4 }}>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.parchment }}>Change cover</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.onAccent }}>Change cover</Text>
               </View>
             </View>
           ) : (
-            <View style={{ height: 80, borderWidth: 1, borderStyle: "dashed", borderColor: withAlpha("gold", 0.25), borderRadius: 4, alignItems: "center", justifyContent: "center", backgroundColor: "#ECE3CF30" }}>
+            <View style={{ height: 80, borderWidth: 1, borderStyle: "dashed", borderColor: withAlpha("gold", 0.25), borderRadius: 4, alignItems: "center", justifyContent: "center", backgroundColor: withAlpha("parchmentCard", 0x30 / 255) }}>
               <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("gold", 0.5) }}>+ Add campaign cover image</Text>
             </View>
           )}
@@ -186,7 +200,7 @@ export default function CampaignSettingsScreen() {
           onChangeText={setName}
           placeholder="Campaign name"
           placeholderTextColor={withAlpha("ink", 0.25)}
-          className="border-b border-gold/20 pb-2 mb-5 text-lg"
+          className="border-b border-gold/20 dark:border-night-gold/20 pb-2 mb-5 text-lg"
           style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 20, color: color.ink }}
         />
 
@@ -197,7 +211,7 @@ export default function CampaignSettingsScreen() {
           onChangeText={setSystemTag}
           placeholder="e.g. D&D 5e, Pathfinder 2e, Blades in the Dark"
           placeholderTextColor={withAlpha("ink", 0.25)}
-          className="border-b border-gold/20 pb-2 mb-5"
+          className="border-b border-gold/20 dark:border-night-gold/20 pb-2 mb-5"
           style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink }}
         />
 
@@ -208,7 +222,7 @@ export default function CampaignSettingsScreen() {
           onChangeText={setLogline}
           placeholder="One-sentence hook: e.g. A band of outlaws chase a sunken treasure"
           placeholderTextColor={withAlpha("ink", 0.25)}
-          className="border-b border-gold/20 pb-2 mb-5"
+          className="border-b border-gold/20 dark:border-night-gold/20 pb-2 mb-5"
           style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 15, color: color.ink, fontStyle: "italic" }}
         />
 
@@ -221,8 +235,8 @@ export default function CampaignSettingsScreen() {
               onPress={() => setStatus(s)}
               className={`mr-2 mb-2 px-4 py-2 rounded-sm border ${
                 status === s
-                  ? "border-gold bg-gold/10"
-                  : "border-ink/20"
+                  ? "border-gold dark:border-night-gold bg-gold/10 dark:bg-night-gold/10"
+                  : "border-ink/20 dark:border-night-ink/20"
               }`}
             >
               <Text
@@ -246,7 +260,7 @@ export default function CampaignSettingsScreen() {
           onChangeText={setNextSession}
           placeholder="2025-07-10"
           placeholderTextColor={withAlpha("ink", 0.25)}
-          className="border-b border-gold/20 pb-2 mb-5"
+          className="border-b border-gold/20 dark:border-night-gold/20 pb-2 mb-5"
           style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink }}
         />
 
@@ -259,7 +273,7 @@ export default function CampaignSettingsScreen() {
           placeholderTextColor={withAlpha("ink", 0.25)}
           multiline
           numberOfLines={4}
-          className="border border-gold/20 rounded-sm p-3 mb-5"
+          className="border border-gold/20 dark:border-night-gold/20 rounded-sm p-3 mb-5"
           style={{
             fontFamily: "Inter_400Regular",
             fontSize: 14,
@@ -274,13 +288,13 @@ export default function CampaignSettingsScreen() {
         {/* Save */}
         <Pressable
           onPress={save}
-          className="mt-5 bg-oxblood py-3 rounded-sm border border-gold/30 items-center"
+          className="mt-5 bg-oxblood dark:bg-night-oxblood py-3 rounded-sm border border-gold/30 dark:border-night-gold/30 items-center"
         >
           <Text
             style={{
               fontFamily: "Inter_600SemiBold",
               fontSize: 14,
-              color: color.parchment,
+              color: color.onAccent,
               textTransform: "uppercase",
               letterSpacing: 1.5,
             }}
@@ -289,10 +303,55 @@ export default function CampaignSettingsScreen() {
           </Text>
         </Pressable>
 
+        {/* Appearance — app-wide, not per-campaign */}
+        <View className="mt-6 mb-3 py-3 px-4 border border-gold/20 dark:border-night-gold/20 rounded-sm">
+          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.ink }}>
+            Appearance
+          </Text>
+          <Text
+            style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("inkSoft", 0.5), marginTop: 2, marginBottom: 10 }}
+          >
+            Applies to the whole app, not just this campaign
+          </Text>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            {(["parchment", "candlelit"] as Scheme[]).map((s) => {
+              const active = scheme === s;
+              return (
+                <Pressable
+                  key={s}
+                  onPress={() => chooseScheme(s)}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 10,
+                    borderRadius: 2,
+                    borderWidth: 1,
+                    alignItems: "center",
+                    borderColor: active ? color.gold : withAlpha("gold", 0x40 / 255),
+                    backgroundColor: active ? withAlpha("gold", 0x18 / 255) : "transparent",
+                  }}
+                >
+                  <Text style={{ fontSize: 16, marginBottom: 3 }}>{s === "parchment" ? "☀" : "🕯"}</Text>
+                  <Text
+                    style={{
+                      fontFamily: "Inter_600SemiBold",
+                      fontSize: 11,
+                      color: active ? color.goldText : color.inkFaint,
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
+                    }}
+                  >
+                    {SCHEME_LABEL[s]}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
         {/* Session Zero link */}
         <Pressable
           onPress={() => router.push(`/campaign/${id}/session-zero`)}
-          className="mt-4 mb-3 py-3 px-4 border border-gold/20 rounded-sm flex-row items-center justify-between"
+          className="mt-4 mb-3 py-3 px-4 border border-gold/20 dark:border-night-gold/20 rounded-sm flex-row items-center justify-between"
         >
           <View>
             <Text
@@ -312,7 +371,7 @@ export default function CampaignSettingsScreen() {
         {/* Story Arcs link */}
         <Pressable
           onPress={() => router.push(`/campaign/${id}/arcs` as Parameters<typeof router.push>[0])}
-          className="mt-4 mb-3 py-3 px-4 border border-gold/20 rounded-sm flex-row items-center justify-between"
+          className="mt-4 mb-3 py-3 px-4 border border-gold/20 dark:border-night-gold/20 rounded-sm flex-row items-center justify-between"
         >
           <View>
             <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.ink }}>
@@ -328,7 +387,7 @@ export default function CampaignSettingsScreen() {
         {/* Prep To-Do link */}
         <Pressable
           onPress={() => router.push(`/campaign/${id}/todos` as Parameters<typeof router.push>[0])}
-          className="mb-6 py-3 px-4 border border-gold/20 rounded-sm flex-row items-center justify-between"
+          className="mb-6 py-3 px-4 border border-gold/20 dark:border-night-gold/20 rounded-sm flex-row items-center justify-between"
         >
           <View>
             <Text
@@ -348,17 +407,17 @@ export default function CampaignSettingsScreen() {
         {/* Cloud Backup */}
         <Pressable
           onPress={() => router.push(`/campaign/${id}/backup`)}
-          className="flex-row items-center justify-between border-b border-gold/20 py-4 mb-6"
+          className="flex-row items-center justify-between border-b border-gold/20 dark:border-night-gold/20 py-4 mb-6"
         >
           <View>
             <Text
-              className="text-ink text-sm mb-1"
+              className="text-ink dark:text-night-ink text-sm mb-1"
               style={{ fontFamily: "Inter_500Medium" }}
             >
               Cloud Backup
             </Text>
             <Text
-              className="text-ink-faint text-xs"
+              className="text-ink-faint dark:text-night-ink-faint text-xs"
               style={{ fontFamily: "Inter_400Regular" }}
             >
               Save campaign to cloud (requires authentication)
@@ -368,15 +427,15 @@ export default function CampaignSettingsScreen() {
         </Pressable>
 
         {/* Danger Zone */}
-        <View className="mt-4 p-4 border border-oxblood/30 rounded-sm">
+        <View className="mt-4 p-4 border border-oxblood/30 dark:border-night-oxblood/30 rounded-sm">
           <Text
-            className="text-oxblood text-xs uppercase tracking-wider mb-3"
+            className="text-oxblood dark:text-night-oxblood text-xs uppercase tracking-wider mb-3"
             style={{ fontFamily: "Inter_600SemiBold" }}
           >
             Danger Zone
           </Text>
           <Text
-            className="text-ink-faint text-xs mb-4 leading-4"
+            className="text-ink-faint dark:text-night-ink-faint text-xs mb-4 leading-4"
             style={{ fontFamily: "Inter_400Regular" }}
           >
             Deleting a campaign removes all entities, sessions, links, and
@@ -384,7 +443,7 @@ export default function CampaignSettingsScreen() {
           </Text>
           <Pressable
             onPress={deleteCampaign}
-            className="py-2.5 border border-oxblood/40 rounded-sm items-center"
+            className="py-2.5 border border-oxblood/40 dark:border-night-oxblood/40 rounded-sm items-center"
           >
             <Text
               style={{
@@ -408,7 +467,7 @@ export default function CampaignSettingsScreen() {
 function Label({ text }: { text: string }) {
   return (
     <Text
-      className="text-gold/70 text-xs uppercase tracking-wider mb-2"
+      className="text-gold/70 dark:text-night-gold/70 text-xs uppercase tracking-wider mb-2"
       style={{ fontFamily: "Inter_600SemiBold" }}
     >
       {text}

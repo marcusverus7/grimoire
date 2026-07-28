@@ -13,6 +13,7 @@ import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type CampaignSettings = {
   notes?: string;
@@ -29,6 +30,7 @@ type CampaignSettings = {
 const TONES = ["Light-hearted", "Balanced", "Gritty", "Horror"] as const;
 
 export default function SessionZeroScreen() {
+  useThemeTick();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
@@ -100,7 +102,7 @@ export default function SessionZeroScreen() {
             style={{
               fontFamily: "CormorantGaramond_700Bold",
               fontSize: 22,
-              color: "#2C2014",
+              color: color.ink,
               marginBottom: 6,
             }}
           >
@@ -110,7 +112,7 @@ export default function SessionZeroScreen() {
             style={{
               fontFamily: "Inter_400Regular",
               fontSize: 13,
-              color: "#5A4D3E",
+              color: color.inkSoft,
               lineHeight: 20,
               marginBottom: 20,
             }}
@@ -128,7 +130,7 @@ export default function SessionZeroScreen() {
               style={{
                 fontFamily: "Inter_400Regular",
                 fontSize: 12,
-                color: "#5A4D3E80",
+                color: withAlpha("inkSoft", 0x80 / 255),
                 lineHeight: 18,
                 marginBottom: 10,
               }}
@@ -145,9 +147,9 @@ export default function SessionZeroScreen() {
                 paddingVertical: 10,
                 paddingHorizontal: 14,
                 borderWidth: 1,
-                borderColor: xCard ? "#A07A2C" : "#5A4D3E30",
+                borderColor: xCard ? color.gold : withAlpha("inkSoft", 0x30 / 255),
                 borderRadius: 2,
-                backgroundColor: xCard ? "#A07A2C10" : "transparent",
+                backgroundColor: xCard ? withAlpha("gold", 0x10 / 255) : "transparent",
               }}
             >
               <View
@@ -155,16 +157,16 @@ export default function SessionZeroScreen() {
                   width: 18,
                   height: 18,
                   borderWidth: 1.5,
-                  borderColor: xCard ? "#A07A2C" : "#5A4D3E50",
+                  borderColor: xCard ? color.gold : withAlpha("inkSoft", 0x50 / 255),
                   borderRadius: 2,
-                  backgroundColor: xCard ? "#A07A2C" : "transparent",
+                  backgroundColor: xCard ? color.gold : "transparent",
                   marginRight: 10,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
                 {xCard ? (
-                  <Text style={{ color: "#FAF5EA", fontSize: 12, fontFamily: "Inter_700Bold" }}>
+                  <Text style={{ color: color.onAccent, fontSize: 12, fontFamily: "Inter_700Bold" }}>
                     ✓
                   </Text>
                 ) : null}
@@ -173,7 +175,7 @@ export default function SessionZeroScreen() {
                 style={{
                   fontFamily: "Inter_500Medium",
                   fontSize: 13,
-                  color: xCard ? "#A07A2C" : "#5A4D3E",
+                  color: xCard ? color.gold : color.inkSoft,
                 }}
               >
                 X-Card confirmed with group
@@ -194,16 +196,16 @@ export default function SessionZeroScreen() {
                   paddingHorizontal: 14,
                   paddingVertical: 8,
                   borderWidth: 1,
-                  borderColor: tone === t ? "#A07A2C" : "#5A4D3E30",
+                  borderColor: tone === t ? color.gold : withAlpha("inkSoft", 0x30 / 255),
                   borderRadius: 2,
-                  backgroundColor: tone === t ? "#A07A2C10" : "transparent",
+                  backgroundColor: tone === t ? withAlpha("gold", 0x10 / 255) : "transparent",
                 }}
               >
                 <Text
                   style={{
                     fontFamily: "Inter_500Medium",
                     fontSize: 12,
-                    color: tone === t ? "#A07A2C" : "#5A4D3E",
+                    color: tone === t ? color.gold : color.inkSoft,
                   }}
                 >
                   {t}
@@ -218,15 +220,15 @@ export default function SessionZeroScreen() {
             value={lines}
             onChangeText={setLines}
             placeholder="e.g. Sexual violence, harm to children"
-            placeholderTextColor="#2C201440"
+            placeholderTextColor={withAlpha("ink", 0x40 / 255)}
             multiline
             numberOfLines={3}
             style={{
               fontFamily: "Inter_400Regular",
               fontSize: 14,
-              color: "#2C2014",
+              color: color.ink,
               borderWidth: 1,
-              borderColor: "#A07A2C20",
+              borderColor: withAlpha("gold", 0x20 / 255),
               borderRadius: 2,
               padding: 10,
               minHeight: 72,
@@ -241,15 +243,15 @@ export default function SessionZeroScreen() {
             value={veils}
             onChangeText={setVeils}
             placeholder="e.g. Graphic torture, explicit romance"
-            placeholderTextColor="#2C201440"
+            placeholderTextColor={withAlpha("ink", 0x40 / 255)}
             multiline
             numberOfLines={3}
             style={{
               fontFamily: "Inter_400Regular",
               fontSize: 14,
-              color: "#2C2014",
+              color: color.ink,
               borderWidth: 1,
-              borderColor: "#A07A2C20",
+              borderColor: withAlpha("gold", 0x20 / 255),
               borderRadius: 2,
               padding: 10,
               minHeight: 72,
@@ -264,15 +266,15 @@ export default function SessionZeroScreen() {
             value={safetyNotes}
             onChangeText={setSafetyNotes}
             placeholder="Calibration tools, player expectations, house rules…"
-            placeholderTextColor="#2C201440"
+            placeholderTextColor={withAlpha("ink", 0x40 / 255)}
             multiline
             numberOfLines={4}
             style={{
               fontFamily: "Inter_400Regular",
               fontSize: 14,
-              color: "#2C2014",
+              color: color.ink,
               borderWidth: 1,
-              borderColor: "#A07A2C20",
+              borderColor: withAlpha("gold", 0x20 / 255),
               borderRadius: 2,
               padding: 10,
               minHeight: 90,
@@ -287,11 +289,11 @@ export default function SessionZeroScreen() {
             onPress={save}
             style={{
               marginTop: 20,
-              backgroundColor: "#7A2418",
+              backgroundColor: color.oxblood,
               paddingVertical: 12,
               borderRadius: 2,
               borderWidth: 1,
-              borderColor: "#A07A2C40",
+              borderColor: withAlpha("gold", 0x40 / 255),
               alignItems: "center",
             }}
           >
@@ -299,7 +301,7 @@ export default function SessionZeroScreen() {
               style={{
                 fontFamily: "Inter_600SemiBold",
                 fontSize: 14,
-                color: "#FAF5EA",
+                color: color.onAccent,
                 textTransform: "uppercase",
                 letterSpacing: 1.5,
               }}
@@ -321,7 +323,7 @@ function Label({ text }: { text: string }) {
       style={{
         fontFamily: "Inter_600SemiBold",
         fontSize: 10,
-        color: "#A07A2C",
+        color: color.gold,
         textTransform: "uppercase",
         letterSpacing: 1.2,
         marginBottom: 8,

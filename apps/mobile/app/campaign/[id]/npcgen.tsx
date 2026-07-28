@@ -7,6 +7,7 @@ import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 const GIVEN = ["Aldric","Mirra","Tavorn","Sela","Karath","Vessa","Dunn","Orwyn","Thessa","Bren","Isolde","Maren","Cael","Rynn","Doreth","Lira","Oswin","Thal","Vera","Grim","Nessa","Ulrik","Petra","Corvin","Sira","Halek","Mira","Fenwick","Aella","Rudgar","Tyra","Caspian","Lysa","Darak","Solene"];
 const FAMILY = ["Stone","Mire","Ashford","Vale","Crowe","Blackwood","Wren","Fell","Marsh","Dunmore","Hollowell","Crag","Thorn","Greaves","Harwick","Moon","Dusk","Ivry","Colm","Steele","Vane","Holt","Brooke","Sallow","Fenn"];
@@ -170,6 +171,7 @@ function generateNpc() {
 type NpcDraft = ReturnType<typeof generateNpc>;
 
 export default function NpcGenScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [mode, setMode] = useState<"npc" | "location" | "faction">("npc");
@@ -230,9 +232,9 @@ export default function NpcGenScreen() {
               <Pressable
                 key={m}
                 onPress={() => setMode(m)}
-                style={{ flex: 1, paddingVertical: 7, borderRadius: 2, borderWidth: 1, alignItems: "center", borderColor: mode === m ? "#7A2418" : "#A07A2C30", backgroundColor: mode === m ? "#7A241810" : "transparent" }}
+                style={{ flex: 1, paddingVertical: 7, borderRadius: 2, borderWidth: 1, alignItems: "center", borderColor: mode === m ? color.oxblood : withAlpha("gold", 0x30 / 255), backgroundColor: mode === m ? withAlpha("oxblood", 0x10 / 255) : "transparent" }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: mode === m ? "#7A2418" : "#5A4D3E80", textTransform: "capitalize", letterSpacing: 0.8 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: mode === m ? color.oxblood : withAlpha("inkSoft", 0x80 / 255), textTransform: "capitalize", letterSpacing: 0.8 }}>
                   {m === "npc" ? "NPC" : m.charAt(0).toUpperCase() + m.slice(1)}
                 </Text>
               </Pressable>
@@ -241,14 +243,14 @@ export default function NpcGenScreen() {
 
           {mode !== "npc" && (
             <>
-              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 2, marginBottom: 6 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: color.gold, textTransform: "uppercase", letterSpacing: 2, marginBottom: 6 }}>
                 {mode === "location" ? "Location Names" : "Faction Names"}
               </Text>
               <GoldRule />
               <View style={{ marginTop: 16, gap: 8 }}>
                 {(mode === "location" ? locNames : factionNames).map((n, i) => (
-                  <View key={i} style={{ flexDirection: "row", alignItems: "center", paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: "#A07A2C20", borderRadius: 2 }}>
-                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: "#2C2014", flex: 1 }}>{n}</Text>
+                  <View key={i} style={{ flexDirection: "row", alignItems: "center", paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: withAlpha("gold", 0x20 / 255), borderRadius: 2 }}>
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 18, color: color.ink, flex: 1 }}>{n}</Text>
                     <Pressable
                       onPress={() => {
                         if (mode === "location") {
@@ -261,13 +263,13 @@ export default function NpcGenScreen() {
                       }}
                       style={{ padding: 6 }}
                     >
-                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C60" }}>⚄</Text>
+                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: withAlpha("gold", 0x60 / 255) }}>⚄</Text>
                     </Pressable>
                     <Pressable
                       onPress={() => mode === "location" ? saveLocation(n) : saveFaction(n)}
-                      style={{ marginLeft: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 2, borderWidth: 1, borderColor: "#7A241830", backgroundColor: "#7A241806" }}
+                      style={{ marginLeft: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 2, borderWidth: 1, borderColor: withAlpha("oxblood", 0x30 / 255), backgroundColor: withAlpha("oxblood", 0x06 / 255) }}
                     >
-                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#7A2418" }}>+ Use</Text>
+                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: color.oxblood }}>+ Use</Text>
                     </Pressable>
                   </View>
                 ))}
@@ -278,9 +280,9 @@ export default function NpcGenScreen() {
                     if (mode === "location") setLocNames(Array.from({ length: 6 }, generateLocationName));
                     else setFactionNames(Array.from({ length: 6 }, generateFactionName));
                   }}
-                  style={{ paddingVertical: 14, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, alignItems: "center" }}
+                  style={{ paddingVertical: 14, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, alignItems: "center" }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5 }}>
                     ⚄ Generate New Set
                   </Text>
                 </Pressable>
@@ -291,29 +293,29 @@ export default function NpcGenScreen() {
 
           {mode === "npc" && (
           <>
-          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: color.gold, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
             Quick NPC
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 30, color: "#2C2014", flex: 1 }}>
+            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 30, color: color.ink, flex: 1 }}>
               {npc.name}
             </Text>
             <Pressable onPress={() => setNpc((n) => ({ ...n, name: `${pick(GIVEN)} ${pick(FAMILY)}` }))} style={{ padding: 6 }}>
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C60" }}>⚄</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: withAlpha("gold", 0x60 / 255) }}>⚄</Text>
             </Pressable>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 14, color: "#5A4D3E", flex: 1 }}>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 14, color: color.inkSoft, flex: 1 }}>
               {npc.role}
             </Text>
             <Pressable onPress={() => setNpc((n) => ({ ...n, role: pick(ROLES) }))} style={{ padding: 6 }}>
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C60" }}>⚄</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: withAlpha("gold", 0x60 / 255) }}>⚄</Text>
             </Pressable>
           </View>
 
           {/* CR Quick Stats */}
           <View style={{ marginBottom: 18 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 8, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>CR (optional — sets HP &amp; AC on save)</Text>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 8, color: withAlpha("gold", 0x80 / 255), textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>CR (optional — sets HP &amp; AC on save)</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={{ flexDirection: "row", gap: 6 }}>
                 {CR_LIST.map((cr) => {
@@ -323,11 +325,11 @@ export default function NpcGenScreen() {
                     <Pressable
                       key={cr}
                       onPress={() => setSelectedCr(active ? null : cr)}
-                      style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 2, borderWidth: 1, borderColor: active ? "#7A2418" : "#A07A2C25", backgroundColor: active ? "#7A241812" : "transparent" }}
+                      style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 2, borderWidth: 1, borderColor: active ? color.oxblood : withAlpha("gold", 0x25 / 255), backgroundColor: active ? withAlpha("oxblood", 0x12 / 255) : "transparent" }}
                     >
-                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: active ? "#7A2418" : "#5A4D3E80" }}>CR {cr}</Text>
+                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: active ? color.oxblood : withAlpha("inkSoft", 0x80 / 255) }}>CR {cr}</Text>
                       {stats && active ? (
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "#7A241890", textAlign: "center" }}>{stats.hp}HP · AC{stats.ac}</Text>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: withAlpha("oxblood", 0x90 / 255), textAlign: "center" }}>{stats.hp}HP · AC{stats.ac}</Text>
                       ) : null}
                     </Pressable>
                   );
@@ -353,18 +355,18 @@ export default function NpcGenScreen() {
           <View style={{ marginTop: 24, gap: 12 }}>
             <Pressable
               onPress={() => setNpc(generateNpc())}
-              style={{ paddingVertical: 14, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, alignItems: "center" }}
+              style={{ paddingVertical: 14, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, alignItems: "center" }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5 }}>
                 ⚄ Generate Another
               </Text>
             </Pressable>
 
             <Pressable
               onPress={save}
-              style={{ paddingVertical: 14, backgroundColor: "#7A2418", borderWidth: 1, borderColor: "#C9A24A40", borderRadius: 2, alignItems: "center" }}
+              style={{ paddingVertical: 14, backgroundColor: color.oxblood, borderWidth: 1, borderColor: withAlpha("goldBright", 0x40 / 255), borderRadius: 2, alignItems: "center" }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1.5 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1.5 }}>
                 Add to Campaign
               </Text>
             </Pressable>
@@ -381,18 +383,18 @@ export default function NpcGenScreen() {
 
 function FieldRow({ label, value, oxblood = false, onReroll }: { label: string; value: string; oxblood?: boolean; onReroll?: () => void }) {
   return (
-    <View style={{ padding: 12, backgroundColor: oxblood ? "#7A241808" : "#A07A2C06", borderWidth: 1, borderColor: oxblood ? "#7A241825" : "#A07A2C20", borderRadius: 2 }}>
+    <View style={{ padding: 12, backgroundColor: oxblood ? withAlpha("oxblood", 0x08 / 255) : withAlpha("gold", 0x06 / 255), borderWidth: 1, borderColor: oxblood ? withAlpha("oxblood", 0x25 / 255) : withAlpha("gold", 0x20 / 255), borderRadius: 2 }}>
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
-        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: oxblood ? "#7A2418" : "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: oxblood ? color.oxblood : color.gold, textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
           {label}
         </Text>
         {onReroll ? (
           <Pressable onPress={onReroll}>
-            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: oxblood ? "#7A241860" : "#A07A2C60" }}>⚄</Text>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: oxblood ? withAlpha("oxblood", 0x60 / 255) : withAlpha("gold", 0x60 / 255) }}>⚄</Text>
           </Pressable>
         ) : null}
       </View>
-      <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: "#2C2014", lineHeight: 24 }}>
+      <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: color.ink, lineHeight: 24 }}>
         {value}
       </Text>
     </View>

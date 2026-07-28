@@ -8,7 +8,7 @@ import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Entity = typeof schema.entities.$inferSelect;
 type Attrs = Record<string, unknown>;
@@ -36,6 +36,7 @@ function loadBonds(campaignId: string): Bond[] {
 }
 
 export default function PartyScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [party, setParty] = useState<PCEntry[]>([]);
@@ -261,7 +262,7 @@ export default function PartyScreen() {
                                 {res.current}<Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkSoft", 0x50 / 255) }}>/{res.max}</Text>
                               </Text>
                             </View>
-                            <View style={{ height: 3, backgroundColor: withAlpha("ink", 0x15 / 255), borderRadius: 2, overflow: "hidden" }}>
+                            <View style={{ height: 3, backgroundColor: withAlpha("panelInk", 0x15 / 255), borderRadius: 2, overflow: "hidden" }}>
                               <View style={{ height: 3, backgroundColor: barColor, borderRadius: 2, width: `${Math.round(pct * 100)}%` as `${number}%` }} />
                             </View>
                           </View>
@@ -341,7 +342,7 @@ export default function PartyScreen() {
                   <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.inkFaint }}>Cancel</Text>
                 </Pressable>
                 <Pressable onPress={addBond} style={{ flex: 1, paddingVertical: 10, backgroundColor: color.oxblood, borderRadius: 2, alignItems: "center" }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.parchment }}>Save Bond</Text>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.onAccent }}>Save Bond</Text>
                 </Pressable>
               </View>
             </Pressable>

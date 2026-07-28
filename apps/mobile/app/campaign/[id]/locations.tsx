@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type LocationNode = {
   id: string;
@@ -36,6 +37,7 @@ function buildTree(
 }
 
 export default function LocationsScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [tree, setTree] = useState<LocationNode[]>([]);
@@ -82,20 +84,20 @@ export default function LocationsScreen() {
         <ScrollView contentContainerStyle={{ padding: 20 }}>
           {total === 0 ? (
             <View style={{ paddingTop: 40, alignItems: "center" }}>
-              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014", marginBottom: 8 }}>No locations yet</Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", textAlign: "center", lineHeight: 20 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: color.ink, marginBottom: 8 }}>No locations yet</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, textAlign: "center", lineHeight: 20 }}>
                 Add entities of kind "Location" to build your world map.
               </Text>
               <Pressable
                 onPress={() => router.push(`/campaign/${campaignId}/entity/new/edit` as Parameters<typeof router.push>[0])}
-                style={{ marginTop: 20, paddingHorizontal: 20, paddingVertical: 10, backgroundColor: "#7A2418", borderRadius: 2, borderWidth: 1, borderColor: "#C9A24A40" }}
+                style={{ marginTop: 20, paddingHorizontal: 20, paddingVertical: 10, backgroundColor: color.oxblood, borderRadius: 2, borderWidth: 1, borderColor: withAlpha("goldBright", 0x40 / 255) }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1 }}>Add Location</Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1 }}>Add Location</Text>
               </Pressable>
             </View>
           ) : (
             <>
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>
                 {total} Location{total !== 1 ? "s" : ""}
               </Text>
               {tree.map((node) => (
@@ -132,49 +134,49 @@ function LocationTreeNode({
           paddingVertical: 10,
           paddingLeft: indent,
           borderBottomWidth: 0.5,
-          borderBottomColor: "#4A806018",
+          borderBottomColor: withAlpha("success", 0x18 / 255),
         }}
       >
         {depth > 0 ? (
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#4A806050", marginRight: 8, marginTop: 3 }}>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("success", 0x50 / 255), marginRight: 8, marginTop: 3 }}>
             {"└ "}
           </Text>
         ) : (
-          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#4A8060", marginRight: 10, marginTop: 5 }} />
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color.success, marginRight: 10, marginTop: 5 }} />
         )}
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 17, color: "#2C2014", flex: 1 }}>
+            <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 17, color: color.ink, flex: 1 }}>
               {node.name}
             </Text>
             {node.visibility === "gm_only" ? (
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: "#7A2418", marginLeft: 6 }}>GM</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: color.oxblood, marginLeft: 6 }}>GM</Text>
             ) : null}
             {node.children.length > 0 ? (
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#4A806060", marginLeft: 6 }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("success", 0x60 / 255), marginLeft: 6 }}>
                 {node.children.length} sub
               </Text>
             ) : null}
           </View>
           {node.summary ? (
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80", marginTop: 2 }} numberOfLines={1}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("inkSoft", 0x80 / 255), marginTop: 2 }} numberOfLines={1}>
               {node.summary}
             </Text>
           ) : null}
           {node.residents.length > 0 ? (
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
               {node.residents.slice(0, 4).map((r) => (
-                <View key={r.id} style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, backgroundColor: "#4A806012", borderWidth: 1, borderColor: "#4A806030" }}>
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#4A8060" }}>{r.name}</Text>
+                <View key={r.id} style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, backgroundColor: withAlpha("success", 0x12 / 255), borderWidth: 1, borderColor: withAlpha("success", 0x30 / 255) }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.success }}>{r.name}</Text>
                 </View>
               ))}
               {node.residents.length > 4 ? (
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#4A806060", alignSelf: "center" }}>+{node.residents.length - 4}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("success", 0x60 / 255), alignSelf: "center" }}>+{node.residents.length - 4}</Text>
               ) : null}
             </View>
           ) : null}
         </View>
-        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#4A8060", marginLeft: 8, marginTop: 2 }}>›</Text>
+        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.success, marginLeft: 8, marginTop: 2 }}>›</Text>
       </Pressable>
       {node.children.map((child) => (
         <LocationTreeNode key={child.id} node={child} depth={depth + 1} campaignId={campaignId} router={router} />

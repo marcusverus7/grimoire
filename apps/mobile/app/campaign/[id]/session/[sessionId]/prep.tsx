@@ -8,7 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema, nodeText } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Session = typeof schema.sessions.$inferSelect;
 type Entity = typeof schema.entities.$inferSelect;
@@ -19,13 +19,13 @@ const WEATHER_WINDS = ["Calm", "Gentle", "Brisk", "Strong", "Howling gale"];
 const WEATHER_MOODS = ["The air feels electric with tension", "An eerie stillness hangs over everything", "The world feels tired and grey", "Spirits are high despite the elements", "Something feels wrong about the sky", "Nature seems indifferent to mortal concerns", "A strange smell drifts on the wind", "The weather mirrors the party's mood"];
 
 const STATUS_COLORS: Record<string, string> = {
-  active: color.gold,
-  rumoured: color.inkSoft,
-  complete: "#4A7A2C",
-  failed: color.oxblood,
-};
+  get active() { return color.gold; },
+  get rumoured() { return color.inkSoft; },
+  get complete() { return color.green; },
+  get failed() { return color.oxblood; }};
 
 export default function SessionPrepScreen() {
+  useThemeTick();
   const { id: campaignId, sessionId } = useLocalSearchParams<{
     id: string;
     sessionId: string;
@@ -178,8 +178,8 @@ export default function SessionPrepScreen() {
 
   if (!session) {
     return (
-      <View className="flex-1 bg-parchment items-center justify-center">
-        <Text className="text-ink/50 font-inter text-sm">Session not found</Text>
+      <View className="flex-1 bg-parchment dark:bg-night-bg items-center justify-center">
+        <Text className="text-ink/50 dark:text-night-ink/50 font-inter text-sm">Session not found</Text>
       </View>
     );
   }
@@ -204,7 +204,7 @@ export default function SessionPrepScreen() {
       />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         <ScrollView
-          className="flex-1 bg-parchment"
+          className="flex-1 bg-parchment dark:bg-night-bg"
           contentContainerStyle={{ padding: 20 }}
         >
           {/* Session Header */}
@@ -231,7 +231,7 @@ export default function SessionPrepScreen() {
                 </Text>
                 {prevBodyText ? (
                   <Text
-                    style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: "#3A2E24", lineHeight: 26 }}
+                    style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: color.inkBark, lineHeight: 26 }}
                     numberOfLines={8}
                   >
                     {prevBodyText}
@@ -355,7 +355,7 @@ export default function SessionPrepScreen() {
                         width: 6,
                         height: 6,
                         borderRadius: 3,
-                        backgroundColor: STATUS_COLORS[qStatus] ?? color.inkFaint,
+                        backgroundColor: STATUS_COLORS[qStatus] ?? color.panelInkFaint,
                         marginTop: 6,
                         marginRight: 10,
                       }}
@@ -483,7 +483,7 @@ export default function SessionPrepScreen() {
               marginBottom: 40,
             }}
           >
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.parchment, textTransform: "uppercase", letterSpacing: 2 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.onAccent, textTransform: "uppercase", letterSpacing: 2 }}>
               Begin Session {session.number}
             </Text>
           </Pressable>

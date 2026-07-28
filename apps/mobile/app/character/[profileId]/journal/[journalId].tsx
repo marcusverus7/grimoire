@@ -8,6 +8,7 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { RichTextRenderer } from "@/components/RichTextRenderer";
 import { schema } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
+import { withAlpha, useThemeTick } from "@/lib/theme";
 
 type Journal = typeof schema.journals.$inferSelect;
 
@@ -18,6 +19,7 @@ function formatDate(d: Date | null | undefined): string {
 }
 
 export default function JournalEntryScreen() {
+  useThemeTick();
   const { profileId, journalId } = useLocalSearchParams<{ profileId: string; journalId: string }>();
   const router = useRouter();
   const [journal, setJournal] = useState<Journal | null>(null);
@@ -50,7 +52,7 @@ export default function JournalEntryScreen() {
   if (!journal) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#5A4D3E80" }}>Entry not found</Text>
+        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: withAlpha("inkSoft", 0x80 / 255) }}>Entry not found</Text>
       </View>
     );
   }
@@ -62,20 +64,20 @@ export default function JournalEntryScreen() {
           title: "Journal Entry",
           headerRight: () => (
             <Pressable onPress={handleDelete} style={{ marginRight: 8 }}>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#7A241880" }}>Delete</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: withAlpha("oxblood", 0x80 / 255) }}>Delete</Text>
             </Pressable>
           ),
         }}
       />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         <ScrollView contentContainerStyle={{ padding: 20 }}>
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C80", marginBottom: 16, textAlign: "center", textTransform: "uppercase", letterSpacing: 1 }}>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("gold", 0x80 / 255), marginBottom: 16, textAlign: "center", textTransform: "uppercase", letterSpacing: 1 }}>
             {formatDate(journal.createdAt)}
           </Text>
           {journal.body ? (
             <RichTextRenderer body={journal.body as RichTextNode} />
           ) : (
-            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: "#5A4D3E60", textAlign: "center" }}>
+            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: withAlpha("inkSoft", 0x60 / 255), textAlign: "center" }}>
               (empty entry)
             </Text>
           )}

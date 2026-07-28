@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Attrs = Record<string, unknown>;
 type Resource = { name: string; max: number; current: number };
@@ -21,6 +22,7 @@ type PCEntry = {
 type QuestEntry = { id: string; name: string; status: string };
 
 export default function SessionWrapScreen() {
+  useThemeTick();
   const { id: campaignId, sessionId } = useLocalSearchParams<{ id: string; sessionId: string }>();
   const router = useRouter();
   const [pcs, setPcs] = useState<PCEntry[]>([]);
@@ -175,7 +177,7 @@ export default function SessionWrapScreen() {
   };
 
   const QUEST_STATUSES = ["rumoured", "active", "complete", "failed"] as const;
-  const STATUS_COLORS: Record<string, string> = { rumoured: "#5A4D3E", active: "#A07A2C", complete: "#4A8060", failed: "#7A2418" };
+  const STATUS_COLORS: Record<string, string> = { rumoured: color.inkSoft, active: color.gold, complete: color.success, failed: color.oxblood };
 
   return (
     <>
@@ -187,10 +189,10 @@ export default function SessionWrapScreen() {
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 22, color: "#2C2014", marginBottom: 4 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 22, color: color.ink, marginBottom: 4 }}>
             End of Session
           </Text>
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", marginBottom: 20, lineHeight: 19 }}>
+          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, marginBottom: 20, lineHeight: 19 }}>
             Update HP, quest progress, and distribute XP before closing out.
           </Text>
 
@@ -198,7 +200,7 @@ export default function SessionWrapScreen() {
 
           {/* XP section */}
           <View style={{ marginTop: 16, marginBottom: 20 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#C9A24A", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.goldBright, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>
               XP Gained This Session
             </Text>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -206,21 +208,21 @@ export default function SessionWrapScreen() {
                 value={xpGained}
                 onChangeText={setXpGained}
                 placeholder="0"
-                placeholderTextColor="#2C201440"
+                placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                 keyboardType="numeric"
                 style={{
                   fontFamily: "CormorantGaramond_700Bold",
                   fontSize: 24,
-                  color: "#C9A24A",
+                  color: color.goldBright,
                   borderBottomWidth: 1,
-                  borderBottomColor: "#C9A24A30",
+                  borderBottomColor: withAlpha("goldBright", 0x30 / 255),
                   paddingBottom: 4,
                   width: 80,
                   textAlign: "center",
                   marginRight: 12,
                 }}
               />
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#5A4D3E80" }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: withAlpha("inkSoft", 0x80 / 255) }}>
                 XP → added to each PC
               </Text>
             </View>
@@ -231,17 +233,17 @@ export default function SessionWrapScreen() {
             <>
               <GoldRule />
               <View style={{ marginTop: 16, marginBottom: 20 }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
                   End-of-Session HP
                 </Text>
                 {pcs.map((pc) => {
                   const pct = pc.maxHp && pc.maxHp > 0 && pc.currentHp ? parseInt(pc.currentHp, 10) / pc.maxHp : null;
-                  const barColor = pct == null ? "#A07A2C" : pct === 0 ? "#7A2418" : pct < 0.5 ? "#A07A2C" : "#4A8060";
+                  const barColor = pct == null ? color.gold : pct === 0 ? color.oxblood : pct < 0.5 ? color.gold : color.success;
                   return (
                     <View key={pc.id} style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", flex: 1 }}>{pc.name}</Text>
+                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: color.ink, flex: 1 }}>{pc.name}</Text>
                       {pc.maxHp != null ? (
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60", marginRight: 8 }}>/ {pc.maxHp}</Text>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x60 / 255), marginRight: 8 }}>/ {pc.maxHp}</Text>
                       ) : null}
                       <TextInput
                         value={pc.currentHp}
@@ -271,15 +273,15 @@ export default function SessionWrapScreen() {
             <>
               <GoldRule />
               <View style={{ marginTop: 16, marginBottom: 20 }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#6A5ACD", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.arcane, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
                   Resource Reset
                 </Text>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D", marginBottom: 12 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.inkFaint, marginBottom: 12 }}>
                   Select resources to restore (e.g. long rest).
                 </Text>
                 {pcsWithResources.map((pc) => (
                   <View key={pc.id} style={{ marginBottom: 14 }}>
-                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 14, color: "#2C2014", marginBottom: 8 }}>{pc.name}</Text>
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 14, color: color.ink, marginBottom: 8 }}>{pc.name}</Text>
                     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
                       {pc.resources.map((res, i) => {
                         const checked = resourceResets[pc.id]?.[i] ?? true;
@@ -294,17 +296,17 @@ export default function SessionWrapScreen() {
                               paddingVertical: 6,
                               borderRadius: 2,
                               borderWidth: 1,
-                              borderColor: checked ? "#6A5ACD60" : "#5A4D3E30",
-                              backgroundColor: checked ? "#6A5ACD12" : "transparent",
+                              borderColor: checked ? withAlpha("arcane", 0x60 / 255) : withAlpha("inkSoft", 0x30 / 255),
+                              backgroundColor: checked ? withAlpha("arcane", 0x12 / 255) : "transparent",
                             }}
                           >
-                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: checked ? "#6A5ACD" : "#5A4D3E60", marginRight: 6 }}>
+                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: checked ? color.arcane : withAlpha("inkSoft", 0x60 / 255), marginRight: 6 }}>
                               {checked ? "✓" : "○"}
                             </Text>
-                            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: checked ? "#2C2014" : "#8A7D6D" }}>
+                            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: checked ? color.ink : color.inkFaint }}>
                               {res.name}
                             </Text>
-                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60", marginLeft: 4 }}>
+                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x60 / 255), marginLeft: 4 }}>
                               → {res.max}
                             </Text>
                           </Pressable>
@@ -322,15 +324,15 @@ export default function SessionWrapScreen() {
             <>
               <GoldRule />
               <View style={{ marginTop: 16, marginBottom: 20 }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#D4A843", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.goldPale, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
                   Quest Progress
                 </Text>
                 {quests.map((q) => (
                   <View key={q.id} style={{ marginBottom: 14 }}>
-                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: "#2C2014", marginBottom: 8 }}>{q.name}</Text>
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: color.ink, marginBottom: 8 }}>{q.name}</Text>
                     <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap" }}>
                       {QUEST_STATUSES.map((s) => {
-                        const color = STATUS_COLORS[s] ?? "#5A4D3E";
+                        const swatch = STATUS_COLORS[s] ?? color.inkSoft;
                         const active = q.status === s;
                         return (
                           <Pressable
@@ -341,11 +343,11 @@ export default function SessionWrapScreen() {
                               paddingVertical: 5,
                               borderRadius: 2,
                               borderWidth: 1,
-                              borderColor: active ? color : `${color}40`,
-                              backgroundColor: active ? `${color}15` : "transparent",
+                              borderColor: active ? swatch : `${swatch}40`,
+                              backgroundColor: active ? `${swatch}15` : "transparent",
                             }}
                           >
-                            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: active ? color : `${color}80`, textTransform: "capitalize" }}>
+                            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: active ? swatch : `${swatch}80`, textTransform: "capitalize" }}>
                               {s}
                             </Text>
                           </Pressable>
@@ -365,16 +367,16 @@ export default function SessionWrapScreen() {
             onPress={wrap}
             style={{
               marginTop: 20,
-              backgroundColor: "#7A2418",
+              backgroundColor: color.oxblood,
               borderWidth: 1,
-              borderColor: "#C9A24A40",
+              borderColor: withAlpha("goldBright", 0x40 / 255),
               borderRadius: 2,
               paddingVertical: 16,
               alignItems: "center",
               marginBottom: 40,
             }}
           >
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 2 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.onAccent, textTransform: "uppercase", letterSpacing: 2 }}>
               Wrap Session {sessionNumber}
             </Text>
           </Pressable>

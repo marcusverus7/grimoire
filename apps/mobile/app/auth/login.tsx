@@ -5,9 +5,10 @@ import { useAuth } from '@/lib/auth-context';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { ParchmentScreen } from '@/components/ParchmentScreen';
 import { GoldRule } from '@/components/GoldRule';
-import { color, withAlpha } from '@/lib/theme';
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 export default function LoginScreen() {
+  useThemeTick();
   const router = useRouter();
   const { signIn, continueAsGuest } = useAuth();
   const [email, setEmail] = useState('');
@@ -89,7 +90,7 @@ export default function LoginScreen() {
         <Pressable
           onPress={handleSignIn}
           disabled={loading}
-          style={{ backgroundColor: color.ink, borderRadius: 2, padding: 14, alignItems: 'center', marginBottom: 12, opacity: loading ? 0.6 : 1 }}
+          style={{ backgroundColor: color.panelInk, borderRadius: 2, padding: 14, alignItems: 'center', marginBottom: 12, opacity: loading ? 0.6 : 1 }}
         >
           <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: color.goldBright }}>
             {loading ? 'Signing In...' : 'Sign In'}

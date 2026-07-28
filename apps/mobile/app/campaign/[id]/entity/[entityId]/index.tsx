@@ -11,7 +11,7 @@ import { schema } from "@grimoire/core";
 import { backlinksFor, richTextToMarkdown, type EntityLinkRow } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
 import { RichTextRenderer } from "@/components/RichTextRenderer";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Entity = typeof schema.entities.$inferSelect;
 
@@ -26,6 +26,7 @@ const KIND_LABELS: Record<string, string> = {
 };
 
 export default function EntityDetailScreen() {
+  useThemeTick();
   const { id: campaignId, entityId } = useLocalSearchParams<{
     id: string;
     entityId: string;
@@ -180,8 +181,8 @@ export default function EntityDetailScreen() {
 
   if (!entity) {
     return (
-      <View className="flex-1 bg-parchment items-center justify-center">
-        <Text className="text-ink/50 font-inter text-sm">
+      <View className="flex-1 bg-parchment dark:bg-night-bg items-center justify-center">
+        <Text className="text-ink/50 dark:text-night-ink/50 font-inter text-sm">
           Entity not found
         </Text>
       </View>
@@ -310,14 +311,14 @@ export default function EntityDetailScreen() {
           </View>
         )}
         <Text
-          className="text-ink text-2xl mb-1"
+          className="text-ink dark:text-night-ink text-2xl mb-1"
           style={{ fontFamily: "CormorantGaramond_700Bold" }}
         >
           {entity.name}
         </Text>
         <View className="flex-row items-center flex-wrap mb-4">
           <Text
-            className="text-ink-soft text-xs uppercase tracking-wider"
+            className="text-ink-soft dark:text-night-ink-soft text-xs uppercase tracking-wider"
             style={{ fontFamily: "Inter_500Medium" }}
           >
             {KIND_LABELS[entity.kind] ?? entity.kind}
@@ -630,7 +631,7 @@ export default function EntityDetailScreen() {
             style={{
               flexDirection: "row",
               marginBottom: 16,
-              backgroundColor: withAlpha("ink", 0x0A / 255),
+              backgroundColor: withAlpha("panelInk", 0x0A / 255),
               borderRadius: 2,
               paddingHorizontal: 12,
               paddingVertical: 10,
@@ -750,7 +751,7 @@ export default function EntityDetailScreen() {
         {/* Summary */}
         {entity.summary ? (
           <Text
-            className="text-ink/80 text-base mb-4 leading-6"
+            className="text-ink/80 dark:text-night-ink/80 text-base mb-4 leading-6"
             style={{ fontFamily: "CormorantGaramond_400Regular_Italic" }}
           >
             {entity.summary}
@@ -824,7 +825,7 @@ export default function EntityDetailScreen() {
                         onPress={() => router.push(`/campaign/${campaignId}/entity/${bl.fromId}` as Parameters<typeof router.push>[0])}
                         style={{ flexDirection: "row", alignItems: "center", paddingVertical: 7, paddingHorizontal: 4, marginBottom: 2 }}
                       >
-                        <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: withAlpha("borderDark", 0x60 / 255), marginRight: 10 }} />
+                        <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: withAlpha("panelBorderDark", 0x60 / 255), marginRight: 10 }} />
                         <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 15, color: color.ink, flex: 1 }}>
                           {bl.name}
                         </Text>
@@ -1004,7 +1005,7 @@ export default function EntityDetailScreen() {
                         <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: withAlpha("oxblood", 0x40 / 255) }}>×</Text>
                       </Pressable>
                     </View>
-                    <View style={{ height: 3, backgroundColor: withAlpha("ink", 0x15 / 255), borderRadius: 2, overflow: "hidden" }}>
+                    <View style={{ height: 3, backgroundColor: withAlpha("panelInk", 0x15 / 255), borderRadius: 2, overflow: "hidden" }}>
                       <View style={{ height: 3, backgroundColor: barColor, borderRadius: 2, width: `${Math.round(pct * 100)}%` as `${number}%` }} />
                     </View>
                   </View>
@@ -1101,7 +1102,7 @@ export default function EntityDetailScreen() {
                 placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                 multiline
                 autoFocus
-                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, minHeight: 80, borderWidth: 1, borderColor: withAlpha("goldBright", 0x30 / 255), borderRadius: 2, padding: 10, backgroundColor: "#FFFDF7", marginBottom: 16, lineHeight: 20 }}
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, minHeight: 80, borderWidth: 1, borderColor: withAlpha("goldBright", 0x30 / 255), borderRadius: 2, padding: 10, backgroundColor: color.paperBright, marginBottom: 16, lineHeight: 20 }}
               />
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 {typeof attrs?.["sessionNote"] === "string" && attrs["sessionNote"] ? (
@@ -1131,7 +1132,7 @@ export default function EntityDetailScreen() {
                     }}
                     style={{ paddingHorizontal: 20, paddingVertical: 10, backgroundColor: color.goldBright, borderRadius: 2 }}
                   >
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.parchment, textTransform: "uppercase", letterSpacing: 1 }}>Save</Text>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1 }}>Save</Text>
                   </Pressable>
                 </View>
               </View>
@@ -1160,7 +1161,7 @@ export default function EntityDetailScreen() {
                 placeholder="e.g. Spell Slots (3rd), Rage"
                 placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                 autoFocus
-                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderWidth: 1, borderColor: withAlpha("goldBright", 0x30 / 255), borderRadius: 2, padding: 10, backgroundColor: "#FFFDF7", marginBottom: 12 }}
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderWidth: 1, borderColor: withAlpha("goldBright", 0x30 / 255), borderRadius: 2, padding: 10, backgroundColor: color.paperBright, marginBottom: 12 }}
               />
               <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
                 Maximum
@@ -1171,7 +1172,7 @@ export default function EntityDetailScreen() {
                 placeholder="e.g. 3"
                 placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                 keyboardType="number-pad"
-                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderWidth: 1, borderColor: withAlpha("goldBright", 0x30 / 255), borderRadius: 2, padding: 10, backgroundColor: "#FFFDF7", marginBottom: 16 }}
+                style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderWidth: 1, borderColor: withAlpha("goldBright", 0x30 / 255), borderRadius: 2, padding: 10, backgroundColor: color.paperBright, marginBottom: 16 }}
               />
               <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 12 }}>
                 <Pressable onPress={() => setShowResourceModal(false)} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
@@ -1181,7 +1182,7 @@ export default function EntityDetailScreen() {
                   onPress={saveNewResource}
                   style={{ paddingHorizontal: 20, paddingVertical: 10, backgroundColor: color.goldBright, borderRadius: 2 }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.parchment, textTransform: "uppercase", letterSpacing: 1 }}>Add</Text>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1 }}>Add</Text>
                 </Pressable>
               </View>
             </Pressable>

@@ -469,28 +469,53 @@ read Part IV (build plan) before starting any phase.
   `SUPABASE_SERVICE_ROLE_KEY` + `GRIMOIRE_APP_TOKEN` in Vercel. Claude does not
   enter API keys/tokens into fields, so 2 and 3 are yours regardless.**
 
+- Phase 55: **Dark mode ("candlelit") — shipped.** Both colour systems now move
+  together off one switch. `lib/theme.ts` holds two palettes keyed identically;
+  `applyScheme()` mutates the exported `color`/`colors` objects in place, calls
+  NativeWind's `colorScheme.set()` (tailwind is `darkMode: "class"`), then wakes
+  every subscriber. Components subscribe with **`useThemeTick()`** — one call at
+  the top of each of the 65 colour-using components; without it React has no
+  reason to re-run a component when a plain object mutates. Choice persists via
+  `setKv(THEME_KV_KEY)` and is re-applied in `app/_layout.tsx` before first
+  paint. Toggle lives in campaign Settings → Appearance (labelled app-wide).
+  **The load-bearing idea: a theme switch is NOT a global invert.** The same hex
+  plays different roles — `#2C2014` is body text on most screens but the
+  *background* of the dice sheet; `#FAF5EA` is the page on most screens but the
+  *label* on an oxblood button. Inverting both breaks one. So tokens are grouped
+  by role and only two groups flip: `fg` (ink → light) and `surface` (paper →
+  dark). `panel*` (deliberately dark surfaces) and `onAccent*` (text on dark
+  accents) never flip; accents keep their hue and brighten. When adding colour,
+  **pick the token by role, not by which hex matches.**
+  Mechanics: 790 remaining raw hexes converted to tokens by a role-aware codemod
+  (role read from the owning style property, ternaries included), 59 already-
+  tokenised sites remapped to their role-correct token, 177 className strings
+  given `dark:` counterparts against a new `night` palette in tailwind.config.ts.
+  17 module-level `const X = {…color.y…}` maps became **getters** — they were
+  snapshotting the palette at import time and would never have followed a theme
+  change. `ParchmentScreen` drops the light paper texture to 0.05 opacity over
+  dark leather (a lit page under dark ink reads as broken) and branches its edge
+  vignette. Light mode proven unchanged, not assumed: a verifier resolves every
+  colour expression in HEAD and in the working tree back to a literal hex using
+  the light palette and diffs the sequences — identical for every automated file.
+  Version 1.12.1 → **1.13.0**, buildNumber 12 → **13**.
+  Known rough edges: `app/(tabs)/design.tsx` (hidden palette showcase) is
+  deliberately excluded — its hexes are *data*, not styling; `RichTextEditor`'s
+  WebView was already candlelit so it is untouched; room-gen's mode tabs lose
+  some selected/unselected contrast in candlelit (gold label still marks it);
+  `bg-gold/8` in recap.tsx was already a dead class (tailwind 3 has no /8 step)
+  and its `dark:` twin is equally inert.
+
 ## What to build next
 
-1. **Dark mode ("candlelit").** Unblocked by the completed token sweep, BUT read
-   this first or it ships half-broken: colours reach the screen through TWO
-   independent systems. (a) ~683 inline `color.<token>` / `withAlpha()` usages
-   resolving through `lib/theme.ts`, and (b) **209 NativeWind className usages**
-   (`text-ink` ×36, `border-gold/…` ×27, `bg-parchment` ×20, …) resolving through
-   `tailwind.config.ts`. Swapping only the runtime `color` object leaves every
-   className-styled surface stuck in light mode. Do BOTH: drive the tailwind
-   palette from CSS variables (NativeWind v4 `vars()` / colorScheme) and have
-   `theme.ts` read the same variables, so one switch moves both. Also swap the
-   parchment texture used by `ParchmentScreen`/backgrounds — a light paper
-   texture under dark ink looks broken. Keep light mode byte-identical.
-2. Player invites & roles — the real multi-device story (needs the Supabase
+1. Player invites & roles — the real multi-device story (needs the Supabase
    project wired; cloud backup already built the auth/snapshot groundwork).
-3. Restore-from-backup (push exists; restore is deliberately deferred and the
+2. Restore-from-backup (push exists; restore is deliberately deferred and the
    backup screen says so).
-4. Font scaling / Dynamic Type audit — fixed `fontSize` numbers throughout risk
+3. Font scaling / Dynamic Type audit — fixed `fontSize` numbers throughout risk
    clipped labels at larger accessibility text sizes.
-5. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
+4. @-mention autocomplete (requires tentap-editor customSource HTML — deferred
    until tentap-editor 1.x is worklets-compatible with Expo 55+).
-6. Voice quick-capture (speech-to-text → transcribed note, @-linked — deferred
+5. Voice quick-capture (speech-to-text → transcribed note, @-linked — deferred
    until expo-speech-recognition confirms Expo 54 / SDK 54 compatibility).
 
 When generating ids use UUIDs (`expo-crypto` randomUUID). Timestamps are epoch

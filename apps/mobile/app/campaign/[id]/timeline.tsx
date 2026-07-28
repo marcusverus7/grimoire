@@ -8,6 +8,7 @@ import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Session = typeof schema.sessions.$inferSelect;
 type SessionRow = Session & { mentions: { id: string; name: string; kind: string }[] };
@@ -27,6 +28,7 @@ function fmtDuration(ms: number): string {
 }
 
 export default function TimelineScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -124,21 +126,21 @@ export default function TimelineScreen() {
       <Stack.Screen options={{ title: "Timeline" }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-parchment"
+        className="flex-1 bg-parchment dark:bg-night-bg"
         contentContainerStyle={{ padding: 20 }}
       >
         <Text
-          className="text-ink text-xl mb-1"
+          className="text-ink dark:text-night-ink text-xl mb-1"
           style={{ fontFamily: "CormorantGaramond_700Bold" }}
         >
           {campaignName}
         </Text>
         <View style={{ flexDirection: "row", gap: 16, marginBottom: 4 }}>
-          <Text className="text-ink-faint text-xs" style={{ fontFamily: "Inter_400Regular" }}>
+          <Text className="text-ink-faint dark:text-night-ink-faint text-xs" style={{ fontFamily: "Inter_400Regular" }}>
             {playedCount}/{sessions.length} played
           </Text>
           {totalPlayMs > 0 && (
-            <Text className="text-ink-faint text-xs" style={{ fontFamily: "Inter_400Regular" }}>
+            <Text className="text-ink-faint dark:text-night-ink-faint text-xs" style={{ fontFamily: "Inter_400Regular" }}>
               ⏱ {fmtDuration(totalPlayMs)} total
             </Text>
           )}
@@ -149,7 +151,7 @@ export default function TimelineScreen() {
         {sessions.length === 0 ? (
           <View className="mt-6 items-center">
             <Text
-              className="text-ink/50 text-sm text-center"
+              className="text-ink/50 dark:text-night-ink/50 text-sm text-center"
               style={{ fontFamily: "Inter_400Regular" }}
             >
               No sessions yet. Create your first session to begin the timeline.
@@ -161,7 +163,7 @@ export default function TimelineScreen() {
               const isLast = i === sessions.length - 1;
               const isPlayed = s.status === "played";
               const isActive = s.status === "in_progress";
-              const dotColor = isActive ? "#7A2418" : isPlayed ? "#A07A2C" : "#8A7D6D";
+              const dotColor = isActive ? color.oxblood : isPlayed ? color.gold : color.inkFaint;
               const dotFill = isActive || isPlayed;
               const sessionAttrs = (s.attrs ?? {}) as { startedAt?: number; endedAt?: number };
               const durationMs = sessionAttrs.startedAt && sessionAttrs.endedAt
@@ -191,7 +193,7 @@ export default function TimelineScreen() {
                         style={{
                           width: 2,
                           flex: 1,
-                          backgroundColor: "#E8DBBF",
+                          backgroundColor: color.parchmentDeep,
                           minHeight: 40,
                         }}
                       />
@@ -201,7 +203,7 @@ export default function TimelineScreen() {
                   {/* Content */}
                   <View className="flex-1 pb-6">
                     <Text
-                      className="text-ink text-base"
+                      className="text-ink dark:text-night-ink text-base"
                       style={{ fontFamily: "CormorantGaramond_700Bold" }}
                     >
                       Session {s.number}
@@ -215,12 +217,12 @@ export default function TimelineScreen() {
                         {s.status}
                       </Text>
                       {s.playedOn ? (
-                        <Text className="text-ink/30 text-xs ml-2" style={{ fontFamily: "Inter_400Regular" }}>
+                        <Text className="text-ink/30 dark:text-night-ink/30 text-xs ml-2" style={{ fontFamily: "Inter_400Regular" }}>
                           {s.playedOn}
                         </Text>
                       ) : null}
                       {durationMs !== null ? (
-                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E50", marginLeft: 8 }}>
+                        <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkSoft", 0x50 / 255), marginLeft: 8 }}>
                           ⏱ {fmtDuration(durationMs)}
                         </Text>
                       ) : null}
@@ -240,17 +242,17 @@ export default function TimelineScreen() {
                               paddingVertical: 2,
                               borderRadius: 2,
                               borderWidth: 1,
-                              borderColor: e.kind === "pc" ? "#C9A24A50" : "#A07A2C30",
-                              backgroundColor: e.kind === "pc" ? "#C9A24A08" : "#A07A2C06",
+                              borderColor: e.kind === "pc" ? withAlpha("goldBright", 0x50 / 255) : withAlpha("gold", 0x30 / 255),
+                              backgroundColor: e.kind === "pc" ? withAlpha("goldBright", 0x08 / 255) : withAlpha("gold", 0x06 / 255),
                             }}
                           >
-                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: e.kind === "pc" ? "#C9A24A" : "#A07A2C90" }}>
+                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: e.kind === "pc" ? color.goldBright : withAlpha("gold", 0x90 / 255) }}>
                               {e.kind === "pc" ? "★ " : ""}{e.name}
                             </Text>
                           </Pressable>
                         ))}
                         {s.mentions.length > 6 ? (
-                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D", alignSelf: "center" }}>
+                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint, alignSelf: "center" }}>
                             +{s.mentions.length - 6}
                           </Text>
                         ) : null}
@@ -270,11 +272,11 @@ export default function TimelineScreen() {
               <GoldRule />
             </View>
             <View style={{ marginTop: 14, flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
                 World Events
               </Text>
               <Pressable onPress={() => { setEventAfter(sessions.length > 0 ? sessions[sessions.length - 1]!.number : 0); setShowAddEvent((v) => !v); }}>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C" }}>+ Add</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold }}>+ Add</Text>
               </Pressable>
             </View>
             {showAddEvent && (
@@ -283,33 +285,33 @@ export default function TimelineScreen() {
                   value={eventInput}
                   onChangeText={setEventInput}
                   placeholder="World event, lore beat, or off-screen moment…"
-                  placeholderTextColor="#8A7D6D60"
-                  style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 6 }}
+                  placeholderTextColor={withAlpha("inkFaint", 0x60 / 255)}
+                  style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 6 }}
                   autoFocus
                   onSubmitEditing={addEvent}
                 />
                 <View style={{ flexDirection: "row", gap: 8 }}>
-                  <Pressable onPress={addEvent} style={{ flex: 1, paddingVertical: 8, backgroundColor: "#7A2418", borderRadius: 2, alignItems: "center" }}>
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#FAF5EA" }}>Add Event</Text>
+                  <Pressable onPress={addEvent} style={{ flex: 1, paddingVertical: 8, backgroundColor: color.oxblood, borderRadius: 2, alignItems: "center" }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.onAccent }}>Add Event</Text>
                   </Pressable>
-                  <Pressable onPress={() => setShowAddEvent(false)} style={{ paddingVertical: 8, paddingHorizontal: 16, borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C20" }}>
-                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#8A7D6D" }}>Cancel</Text>
+                  <Pressable onPress={() => setShowAddEvent(false)} style={{ paddingVertical: 8, paddingHorizontal: 16, borderRadius: 2, borderWidth: 1, borderColor: withAlpha("gold", 0x20 / 255) }}>
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.inkFaint }}>Cancel</Text>
                   </Pressable>
                 </View>
               </View>
             )}
             {events.length === 0 ? (
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D80", fontStyle: "italic" }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: withAlpha("inkFaint", 0x80 / 255), fontStyle: "italic" }}>
                 Record off-screen events, lore beats, and world changes here.
               </Text>
             ) : (
               events.sort((a, b) => a.afterSession - b.afterSession || a.ts - b.ts).map((ev) => (
-                <Pressable key={ev.id} onLongPress={() => deleteEvent(ev.id)} style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C12" }}>
-                  <View style={{ width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: "#5A4D3E60", marginTop: 4, marginRight: 10 }} />
+                <Pressable key={ev.id} onLongPress={() => deleteEvent(ev.id)} style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: withAlpha("gold", 0x12 / 255) }}>
+                  <View style={{ width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: withAlpha("inkSoft", 0x60 / 255), marginTop: 4, marginRight: 10 }} />
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", lineHeight: 20 }}>{ev.text}</Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, lineHeight: 20 }}>{ev.text}</Text>
                     {ev.afterSession > 0 && (
-                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#8A7D6D80", marginTop: 1 }}>after Session {ev.afterSession}</Text>
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkFaint", 0x80 / 255), marginTop: 1 }}>after Session {ev.afterSession}</Text>
                     )}
                   </View>
                 </Pressable>

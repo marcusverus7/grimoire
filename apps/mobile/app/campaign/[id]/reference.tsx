@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { useState } from "react";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type RefTab = "actions" | "conditions" | "dcs";
 
@@ -53,6 +54,7 @@ const DC_REFERENCE = [
 ];
 
 export default function ReferenceScreen() {
+  useThemeTick();
   const [tab, setTab] = useState<RefTab>("actions");
 
   return (
@@ -60,7 +62,7 @@ export default function ReferenceScreen() {
       <Stack.Screen options={{ title: "Quick Reference" }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         <ScrollView contentContainerStyle={{ padding: 20 }}>
-          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 2, marginBottom: 6 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: color.gold, textTransform: "uppercase", letterSpacing: 2, marginBottom: 6 }}>
             Quick Reference
           </Text>
           <GoldRule />
@@ -71,9 +73,9 @@ export default function ReferenceScreen() {
               <Pressable
                 key={t}
                 onPress={() => setTab(t)}
-                style={{ flex: 1, paddingVertical: 7, borderRadius: 2, borderWidth: 1, alignItems: "center", borderColor: tab === t ? "#7A2418" : "#A07A2C30", backgroundColor: tab === t ? "#7A241810" : "transparent" }}
+                style={{ flex: 1, paddingVertical: 7, borderRadius: 2, borderWidth: 1, alignItems: "center", borderColor: tab === t ? color.oxblood : withAlpha("gold", 0x30 / 255), backgroundColor: tab === t ? withAlpha("oxblood", 0x10 / 255) : "transparent" }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, textTransform: "uppercase", letterSpacing: 0.8, color: tab === t ? "#7A2418" : "#5A4D3E80" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, textTransform: "uppercase", letterSpacing: 0.8, color: tab === t ? color.oxblood : withAlpha("inkSoft", 0x80 / 255) }}>
                   {t === "actions" ? "Actions" : t === "conditions" ? "Conditions" : "DCs"}
                 </Text>
               </Pressable>
@@ -83,16 +85,16 @@ export default function ReferenceScreen() {
           {tab === "actions" && (
             <View style={{ gap: 8 }}>
               {ACTIONS.map((a) => (
-                <View key={a.name} style={{ padding: 12, borderWidth: 1, borderColor: "#A07A2C15", borderRadius: 2, backgroundColor: a.type === "Reaction" ? "#5A3A7A06" : a.type === "Bonus Action" ? "#4A806006" : "#A07A2C04" }}>
+                <View key={a.name} style={{ padding: 12, borderWidth: 1, borderColor: withAlpha("gold", 0x15 / 255), borderRadius: 2, backgroundColor: a.type === "Reaction" ? withAlpha("purpleDeep", 0x06 / 255) : a.type === "Bonus Action" ? withAlpha("success", 0x06 / 255) : withAlpha("gold", 0x04 / 255) }}>
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#2C2014", flex: 1 }}>{a.name}</Text>
-                    <View style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, borderWidth: 1, borderColor: a.type === "Reaction" ? "#5A3A7A30" : a.type === "Bonus Action" ? "#4A806030" : "#A07A2C25", backgroundColor: "transparent" }}>
-                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 8, textTransform: "uppercase", letterSpacing: 1, color: a.type === "Reaction" ? "#5A3A7A" : a.type === "Bonus Action" ? "#4A8060" : "#A07A2C" }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.ink, flex: 1 }}>{a.name}</Text>
+                    <View style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, borderWidth: 1, borderColor: a.type === "Reaction" ? withAlpha("purpleDeep", 0x30 / 255) : a.type === "Bonus Action" ? withAlpha("success", 0x30 / 255) : withAlpha("gold", 0x25 / 255), backgroundColor: "transparent" }}>
+                      <Text style={{ fontFamily: "Inter_500Medium", fontSize: 8, textTransform: "uppercase", letterSpacing: 1, color: a.type === "Reaction" ? color.purpleDeep : a.type === "Bonus Action" ? color.success : color.gold }}>
                         {a.type}
                       </Text>
                     </View>
                   </View>
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#3A2E24", lineHeight: 18 }}>{a.rule}</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.inkBark, lineHeight: 18 }}>{a.rule}</Text>
                 </View>
               ))}
             </View>
@@ -101,9 +103,9 @@ export default function ReferenceScreen() {
           {tab === "conditions" && (
             <View style={{ gap: 6 }}>
               {CONDITIONS_SUMMARY.map((c) => (
-                <View key={c.name} style={{ padding: 12, borderWidth: 1, borderColor: "#7A241815", borderRadius: 2, backgroundColor: "#7A241804" }}>
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#7A2418", marginBottom: 3 }}>{c.name}</Text>
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#3A2E24", lineHeight: 18 }}>{c.effect}</Text>
+                <View key={c.name} style={{ padding: 12, borderWidth: 1, borderColor: withAlpha("oxblood", 0x15 / 255), borderRadius: 2, backgroundColor: withAlpha("oxblood", 0x04 / 255) }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.oxblood, marginBottom: 3 }}>{c.name}</Text>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.inkBark, lineHeight: 18 }}>{c.effect}</Text>
                 </View>
               ))}
             </View>
@@ -112,23 +114,23 @@ export default function ReferenceScreen() {
           {tab === "dcs" && (
             <View style={{ gap: 6 }}>
               {DC_REFERENCE.map((d) => (
-                <View key={d.dc} style={{ flexDirection: "row", alignItems: "flex-start", padding: 12, borderWidth: 1, borderColor: "#A07A2C15", borderRadius: 2 }}>
+                <View key={d.dc} style={{ flexDirection: "row", alignItems: "flex-start", padding: 12, borderWidth: 1, borderColor: withAlpha("gold", 0x15 / 255), borderRadius: 2 }}>
                   <View style={{ width: 36, alignItems: "center", marginRight: 12 }}>
-                    <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 22, color: "#7A2418", lineHeight: 26 }}>{d.dc}</Text>
+                    <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 22, color: color.oxblood, lineHeight: 26 }}>{d.dc}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#2C2014", marginBottom: 2 }}>{d.label}</Text>
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E80", lineHeight: 16 }}>{d.example}</Text>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.ink, marginBottom: 2 }}>{d.label}</Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x80 / 255), lineHeight: 16 }}>{d.example}</Text>
                   </View>
                 </View>
               ))}
 
-              <View style={{ marginTop: 12, padding: 12, borderWidth: 1, borderColor: "#A07A2C20", borderRadius: 2, backgroundColor: "#A07A2C08" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Ability Check Bonuses</Text>
+              <View style={{ marginTop: 12, padding: 12, borderWidth: 1, borderColor: withAlpha("gold", 0x20 / 255), borderRadius: 2, backgroundColor: withAlpha("gold", 0x08 / 255) }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Ability Check Bonuses</Text>
                 {[["Proficiency (Level 1–4)", "+2"], ["Proficiency (Level 5–8)", "+3"], ["Proficiency (Level 9–12)", "+4"], ["Proficiency (Level 13–16)", "+5"], ["Proficiency (Level 17–20)", "+6"], ["Expertise", "×2 proficiency"]].map(([label, val]) => (
                   <View key={label} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#3A2E24" }}>{label}</Text>
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#A07A2C" }}>{val}</Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkBark }}>{label}</Text>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.gold }}>{val}</Text>
                   </View>
                 ))}
               </View>

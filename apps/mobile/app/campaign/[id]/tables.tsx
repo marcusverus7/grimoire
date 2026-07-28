@@ -16,7 +16,7 @@ import { getKv, setKv } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type RandTable = { id: string; name: string; items: string[] };
 
@@ -31,6 +31,7 @@ function saveTables(campaignId: string, tables: RandTable[]): void {
 }
 
 export default function TablesScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const [tables, setTables] = useState<RandTable[]>([]);
   const [lastRoll, setLastRoll] = useState<{ tableName: string; result: string } | null>(null);
@@ -171,7 +172,7 @@ export default function TablesScreen() {
                   {table.items.slice(0, 6).map((item, j) => (
                     <View key={j} style={{ flexDirection: "row", paddingVertical: 3, borderBottomWidth: j < Math.min(table.items.length, 6) - 1 ? 0.5 : 0, borderBottomColor: withAlpha("gold", 0x12 / 255) }}>
                       <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint, width: 24 }}>{j + 1}.</Text>
-                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#3A2E24", flex: 1 }}>{item}</Text>
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkBark, flex: 1 }}>{item}</Text>
                     </View>
                   ))}
                   {table.items.length > 6 ? (
@@ -194,7 +195,7 @@ export default function TablesScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.parchment, textTransform: "uppercase", letterSpacing: 1.5 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1.5 }}>
                     Roll d{table.items.length}
                   </Text>
                 </Pressable>
@@ -281,7 +282,7 @@ export default function TablesScreen() {
                     borderColor: withAlpha("gold", 0x30 / 255),
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: formName.trim() ? color.parchment : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: formName.trim() ? color.onAccent : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
                     Save
                   </Text>
                 </Pressable>

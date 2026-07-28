@@ -19,7 +19,7 @@ import RichTextEditor from "@/components/RichTextEditor";
 import { schema, computeLinkChanges } from "@grimoire/core";
 import type { RichTextNode, EntityLinkRow } from "@grimoire/core";
 import type { EditorBridge } from "@10play/tentap-editor";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Entity = typeof schema.entities.$inferSelect;
 
@@ -57,6 +57,7 @@ const NPC_ARCHETYPES: NpcArchetype[] = [
 ];
 
 export default function EntityFormScreen() {
+  useThemeTick();
   const { id: campaignId, entityId } = useLocalSearchParams<{
     id: string;
     entityId: string;
@@ -429,7 +430,7 @@ export default function EntityFormScreen() {
       />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-parchment"
+        className="flex-1 bg-parchment dark:bg-night-bg"
         contentContainerStyle={{ padding: 16 }}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
@@ -443,12 +444,12 @@ export default function EntityFormScreen() {
                 style={{ width: 88, height: 88, borderRadius: 44, borderWidth: 2, borderColor: withAlpha("gold", 0x40 / 255) }}
               />
             ) : (
-              <View style={{ width: 88, height: 88, borderRadius: 44, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), backgroundColor: "#ECE3CF60", alignItems: "center", justifyContent: "center" }}>
+              <View style={{ width: 88, height: 88, borderRadius: 44, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), backgroundColor: withAlpha("parchmentCard", 0x60 / 255), alignItems: "center", justifyContent: "center" }}>
                 <Text style={{ fontSize: 28, color: withAlpha("gold", 0x40 / 255) }}>⊕</Text>
               </View>
             )}
             <View style={{ position: "absolute", bottom: 0, right: 0, backgroundColor: color.oxblood, borderRadius: 10, width: 20, height: 20, alignItems: "center", justifyContent: "center" }}>
-              <Text style={{ color: color.parchment, fontSize: 12, fontFamily: "Inter_600SemiBold" }}>✎</Text>
+              <Text style={{ color: color.onAccent, fontSize: 12, fontFamily: "Inter_600SemiBold" }}>✎</Text>
             </View>
           </Pressable>
           {imageUri && (
@@ -578,7 +579,7 @@ export default function EntityFormScreen() {
               key={k}
               onPress={() => setKind(k)}
               className={`mr-2 mb-2 px-3 py-1.5 rounded-sm border ${
-                kind === k ? "border-gold bg-gold/10" : "border-ink/20"
+                kind === k ? "border-gold dark:border-night-gold bg-gold/10 dark:bg-night-gold/10" : "border-ink/20 dark:border-night-ink/20"
               }`}
             >
               <Text
@@ -605,8 +606,8 @@ export default function EntityFormScreen() {
                   onPress={() => setQuestStatus(s)}
                   className={`mr-2 mb-2 px-3 py-1.5 rounded-sm border ${
                     questStatus === s
-                      ? "border-gold bg-gold/10"
-                      : "border-ink/20"
+                      ? "border-gold dark:border-night-gold bg-gold/10 dark:bg-night-gold/10"
+                      : "border-ink/20 dark:border-night-ink/20"
                   }`}
                 >
                   <Text
@@ -1185,8 +1186,8 @@ export default function EntityFormScreen() {
             onPress={() => setVisibility("table")}
             className={`mr-3 px-4 py-2 rounded-sm border ${
               visibility === "table"
-                ? "border-gold bg-gold/10"
-                : "border-ink/20"
+                ? "border-gold dark:border-night-gold bg-gold/10 dark:bg-night-gold/10"
+                : "border-ink/20 dark:border-night-ink/20"
             }`}
           >
             <Text
@@ -1203,8 +1204,8 @@ export default function EntityFormScreen() {
             onPress={() => setVisibility("gm_only")}
             className={`px-4 py-2 rounded-sm border ${
               visibility === "gm_only"
-                ? "border-oxblood bg-oxblood/10"
-                : "border-ink/20"
+                ? "border-oxblood dark:border-night-oxblood bg-oxblood/10 dark:bg-night-oxblood/10"
+                : "border-ink/20 dark:border-night-ink/20"
             }`}
           >
             <Text
@@ -1224,13 +1225,13 @@ export default function EntityFormScreen() {
         {/* Save */}
         <Pressable
           onPress={save}
-          className="mt-5 bg-oxblood py-3 rounded-sm border border-gold/30 items-center"
+          className="mt-5 bg-oxblood dark:bg-night-oxblood py-3 rounded-sm border border-gold/30 dark:border-night-gold/30 items-center"
         >
           <Text
             style={{
               fontFamily: "Inter_600SemiBold",
               fontSize: 14,
-              color: color.parchment,
+              color: color.onAccent,
               textTransform: "uppercase",
               letterSpacing: 1.5,
             }}
@@ -1264,7 +1265,7 @@ export default function EntityFormScreen() {
 function Label({ text }: { text: string }) {
   return (
     <Text
-      className="text-gold/70 text-xs uppercase tracking-wider mb-2"
+      className="text-gold/70 dark:text-night-gold/70 text-xs uppercase tracking-wider mb-2"
       style={{ fontFamily: "Inter_600SemiBold" }}
     >
       {text}

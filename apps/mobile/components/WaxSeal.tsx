@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import Svg, { Circle, Text as SvgText } from "react-native-svg";
-import { colors } from "@/lib/theme";
+import { color, colors, useThemeTick } from "@/lib/theme";
 
 interface WaxSealProps {
   letter?: string;
@@ -9,6 +9,7 @@ interface WaxSealProps {
 }
 
 export function WaxSeal({ letter = "G", size = 64, className }: WaxSealProps) {
+  useThemeTick();
   const outer = size / 2;
   const inner = outer * 0.8;
   const ringWidth = 1.5;
@@ -35,7 +36,7 @@ export function WaxSeal({ letter = "G", size = 64, className }: WaxSealProps) {
           y={outer}
           dy={size * 0.15}
           textAnchor="middle"
-          fill={colors.parchment.light}
+          fill={color.onAccent}
           fontSize={size * 0.42}
           fontWeight="bold"
           fontFamily="serif"

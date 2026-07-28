@@ -1,7 +1,8 @@
 import { Stack } from "expo-router";
-import { colors } from "@/lib/theme";
+import { color, colors, useThemeTick } from "@/lib/theme";
 
 export default function CampaignLayout() {
+  useThemeTick();
   return (
     <Stack
       screenOptions={{
@@ -11,7 +12,7 @@ export default function CampaignLayout() {
         headerTitleStyle: {
           fontFamily: "CinzelDecorative_400Regular",
           fontSize: 14,
-          color: colors.parchment.DEFAULT,
+          color: color.onAccentBase,
         },
         headerTintColor: colors.gold.DEFAULT,
         contentStyle: { backgroundColor: colors.parchment.DEFAULT },

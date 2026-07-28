@@ -8,7 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { db, getKv, setKv } from "@/lib/db";
 import { schema } from "@grimoire/core";
 import { randomUUID } from "expo-crypto";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type RepEvent = { id: string; delta: number; note: string; timestamp: number };
@@ -24,17 +24,18 @@ type RepData = { factions: FactionRep[] };
 
 // ── Standing labels ───────────────────────────────────────────────────────────
 function standing(score: number): { label: string; color: string } {
-  if (score <= -5) return { label: "Hostile", color: "#7A1A1A" };
-  if (score <= -3) return { label: "Unfriendly", color: "#C44A1A" };
+  if (score <= -5) return { label: "Hostile", color: color.crimson };
+  if (score <= -3) return { label: "Unfriendly", color: color.ember };
   if (score <= -1) return { label: "Wary", color: color.gold };
   if (score === 0) return { label: "Neutral", color: color.inkFaint };
   if (score <= 2) return { label: "Friendly", color: color.successBright };
-  if (score <= 4) return { label: "Trusted", color: "#1A6A4A" };
-  return { label: "Allied", color: "#0A4A30" };
+  if (score <= 4) return { label: "Trusted", color: color.greenDeep };
+  return { label: "Allied", color: color.greenDeepest };
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function ReputationScreen() {
+  useThemeTick();
   const { id } = useLocalSearchParams<{ id: string }>();
   const storageKey = `reputation_${id}`;
 
@@ -187,7 +188,7 @@ export default function ReputationScreen() {
                       flex: 1, height: 6, borderRadius: 1,
                       backgroundColor: v === 0 ? color.border :
                         (faction.score >= v && v > 0) ? st.color :
-                        (faction.score <= v && v < 0) ? "#7A1A1A" : color.parchmentEdge,
+                        (faction.score <= v && v < 0) ? color.crimson : color.parchmentEdge,
                       borderWidth: v === faction.score ? 1.5 : 0,
                       borderColor: st.color,
                     }}
@@ -197,7 +198,7 @@ export default function ReputationScreen() {
 
               {/* Adjust buttons */}
               <View style={{ flexDirection: "row", gap: 6 }}>
-                <Pressable onPress={() => openAdjust(faction)} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 8, alignItems: "center" }}>
+                <Pressable onPress={() => openAdjust(faction)} style={{ flex: 1, backgroundColor: color.panelInk, borderRadius: 2, padding: 8, alignItems: "center" }}>
                   <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.goldBright }}>± Adjust</Text>
                 </Pressable>
                 <Pressable onPress={() => setHistoryFaction(historyFaction?.factionId === faction.factionId ? null : faction)} style={{ borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 8, alignItems: "center", minWidth: 60 }}>
@@ -213,7 +214,7 @@ export default function ReputationScreen() {
                   )}
                   {faction.history.slice(0, 8).map(ev => (
                     <View key={ev.id} style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 5, borderTopWidth: 1, borderTopColor: color.parchmentEdge, gap: 8 }}>
-                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: ev.delta > 0 ? color.successBright : ev.delta < 0 ? "#7A1A1A" : color.inkFaint, width: 28 }}>
+                      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: ev.delta > 0 ? color.successBright : ev.delta < 0 ? color.crimson : color.inkFaint, width: 28 }}>
                         {ev.delta > 0 ? `+${ev.delta}` : ev.delta}
                       </Text>
                       <Text style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 12, color: color.borderDark }}>{ev.note || "—"}</Text>
@@ -261,11 +262,11 @@ export default function ReputationScreen() {
             />
 
             <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
-              <Pressable onPress={() => submitAdjust(false)} style={{ flex: 1, backgroundColor: "#7A1A1A", borderRadius: 2, padding: 12, alignItems: "center" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.parchmentWarm }}>− Decrease</Text>
+              <Pressable onPress={() => submitAdjust(false)} style={{ flex: 1, backgroundColor: color.crimson, borderRadius: 2, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.onAccentWarm }}>− Decrease</Text>
               </Pressable>
               <Pressable onPress={() => submitAdjust(true)} style={{ flex: 1, backgroundColor: color.successBright, borderRadius: 2, padding: 12, alignItems: "center" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.parchmentWarm }}>+ Increase</Text>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.onAccentWarm }}>+ Increase</Text>
               </Pressable>
             </View>
             <Pressable onPress={() => setModalVisible(false)} style={{ padding: 8, alignItems: "center" }}>

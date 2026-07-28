@@ -6,6 +6,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { getKv, setKv } from "@/lib/db";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 // ── Treasure tables (CR-based hoard) ──────────────────────────────────────────
 const COIN_BY_CR: [number, number, number, number, number][] = [
@@ -175,6 +176,7 @@ function generateLoot(cr: number): LootItem[] {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function LootScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const [cr, setCr] = useState(5);
   const [loot, setLoot] = useState<LootItem[]>([]);
@@ -223,26 +225,26 @@ export default function LootScreen() {
   const magics = loot.filter(i => i.type === "magic");
 
   const ITEM_COLORS: Record<string, string> = {
-    coin: "#A07A2C", gem: "#4A8060", art: "#7A2418", magic: "#6A5ACD",
+    coin: color.gold, gem: color.success, art: color.oxblood, magic: color.arcane,
   };
 
   function renderSection(title: string, items: LootItem[]) {
     if (!items.length) return null;
     return (
       <View style={{ marginBottom: 14 }}>
-        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{title}</Text>
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{title}</Text>
         {items.map((item, localIdx) => {
           const globalIdx = loot.indexOf(item);
           return (
             <View key={localIdx} style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
               <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: ITEM_COLORS[item.type], marginRight: 8 }} />
-              <Text style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014" }}>
+              <Text style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink }}>
                 {item.text}
-                {item.rarity ? <Text style={{ color: "#8A7D6D", fontSize: 11 }}> ({item.rarity})</Text> : null}
+                {item.rarity ? <Text style={{ color: color.inkFaint, fontSize: 11 }}> ({item.rarity})</Text> : null}
               </Text>
               {item.type !== "coin" && (
                 <Pressable onPress={() => rerollItem(globalIdx)} style={{ paddingLeft: 8 }}>
-                  <Text style={{ fontSize: 14, color: "#A07A2C" }}>⚄</Text>
+                  <Text style={{ fontSize: 14, color: color.gold }}>⚄</Text>
                 </Pressable>
               )}
             </View>
@@ -256,13 +258,13 @@ export default function LootScreen() {
     <ParchmentScreen>
       <Stack.Screen options={{ title: "Loot Generator", headerBackTitle: "Campaign" }} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 4 }}>
           Loot Generator
         </Text>
         <GoldRule />
 
         {/* CR selector */}
-        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, textAlign: "center", marginBottom: 8 }}>
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, textAlign: "center", marginBottom: 8 }}>
           Encounter CR
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
@@ -273,11 +275,11 @@ export default function LootScreen() {
               style={{
                 paddingHorizontal: 12, paddingVertical: 6, marginRight: 6, borderRadius: 2,
                 borderWidth: 1,
-                borderColor: cr === c ? "#A07A2C" : "#C8B88A40",
-                backgroundColor: cr === c ? "#A07A2C18" : "transparent",
+                borderColor: cr === c ? color.gold : withAlpha("sand", 0x40 / 255),
+                backgroundColor: cr === c ? withAlpha("gold", 0x18 / 255) : "transparent",
               }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: cr === c ? "#A07A2C" : "#5C4A2A" }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: cr === c ? color.gold : color.goldShadow }}>
                 {c}
               </Text>
             </Pressable>
@@ -287,17 +289,17 @@ export default function LootScreen() {
         {/* Roll button */}
         <Pressable
           onPress={roll}
-          style={{ backgroundColor: "#2C2014", borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 20 }}
+          style={{ backgroundColor: color.panelInk, borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 20 }}
         >
-          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: "#C9A24A", letterSpacing: 1 }}>
+          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: color.goldBright, letterSpacing: 1 }}>
             ⚄ Roll Treasure
           </Text>
         </Pressable>
 
         {/* Results */}
         {loot.length > 0 && (
-          <View style={{ backgroundColor: "#A07A2C08", borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C20", padding: 14, marginBottom: 16 }}>
-            <Text style={{ fontFamily: "CormorantGaramond_600SemiBold_Italic", fontSize: 16, color: "#2C2014", marginBottom: 12 }}>
+          <View style={{ backgroundColor: withAlpha("gold", 0x08 / 255), borderRadius: 2, borderWidth: 1, borderColor: withAlpha("gold", 0x20 / 255), padding: 14, marginBottom: 16 }}>
+            <Text style={{ fontFamily: "CormorantGaramond_600SemiBold_Italic", fontSize: 16, color: color.ink, marginBottom: 12 }}>
               CR {cr} Treasure Hoard
             </Text>
             {renderSection("Currency", coins)}
@@ -305,21 +307,21 @@ export default function LootScreen() {
             {renderSection("Art Objects", arts)}
             {renderSection("Magic Items", magics)}
             {!gems.length && !arts.length && !magics.length && (
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D60", fontStyle: "italic", marginTop: 4 }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("inkFaint", 0x60 / 255), fontStyle: "italic", marginTop: 4 }}>
                 No gems, art, or magic items this time.
               </Text>
             )}
             <Pressable
               onPress={saveLoot}
-              style={{ marginTop: 12, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, padding: 10, alignItems: "center" }}
+              style={{ marginTop: 12, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, padding: 10, alignItems: "center" }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C" }}>Save to History</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold }}>Save to History</Text>
             </Pressable>
           </View>
         )}
 
         {loot.length === 0 && (
-          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#8A7D6D60", textAlign: "center", marginTop: 20 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("inkFaint", 0x60 / 255), textAlign: "center", marginTop: 20 }}>
             Select a CR and roll for treasure.
           </Text>
         )}
@@ -328,16 +330,16 @@ export default function LootScreen() {
         {savedLoot.length > 0 && (
           <>
             <GoldRule />
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
               Recent History
             </Text>
             {savedLoot.slice(0, 5).map((entry, i) => (
-              <View key={i} style={{ marginBottom: 10, borderLeftWidth: 2, borderLeftColor: "#A07A2C30", paddingLeft: 10 }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#8A7D6D", marginBottom: 3 }}>
+              <View key={i} style={{ marginBottom: 10, borderLeftWidth: 2, borderLeftColor: withAlpha("gold", 0x30 / 255), paddingLeft: 10 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.inkFaint, marginBottom: 3 }}>
                   CR {entry.crUsed} — {new Date(entry.ts).toLocaleDateString()}
                 </Text>
                 {entry.items.map((item, j) => (
-                  <Text key={j} style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#4A3F32" }}>
+                  <Text key={j} style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.borderDark }}>
                     • {item.text}
                   </Text>
                 ))}

@@ -8,7 +8,7 @@ import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type NoteEntry = { id: string; text: string; ts: number };
 
@@ -27,6 +27,7 @@ type Quest = { id: string; name: string; questStatus: string };
 type Clock = { id: string; name: string; current: number; max: number; unit?: string };
 
 export default function PlayViewScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
@@ -200,13 +201,13 @@ export default function PlayViewScreen() {
                   placeholder="Quick note…"
                   placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                   returnKeyType="done"
-                  style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, borderWidth: 1, borderColor: withAlpha("goldBright", 0x30 / 255), borderRadius: 2, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: "#FFFDF7", marginRight: 8 }}
+                  style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, borderWidth: 1, borderColor: withAlpha("goldBright", 0x30 / 255), borderRadius: 2, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: color.paperBright, marginRight: 8 }}
                 />
                 <Pressable
                   onPress={addNote}
                   style={{ paddingHorizontal: 14, paddingVertical: 8, backgroundColor: color.goldBright, borderRadius: 2, alignItems: "center", justifyContent: "center" }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.parchment }}>Add</Text>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.onAccent }}>Add</Text>
                 </Pressable>
               </View>
             ) : (
@@ -273,7 +274,7 @@ export default function PlayViewScreen() {
                     ) : null}
                   </View>
                   {hpPct != null ? (
-                    <View style={{ height: 3, backgroundColor: withAlpha("ink", 0x15 / 255), borderRadius: 2, overflow: "hidden", marginBottom: pc.resources.length > 0 ? 4 : 0 }}>
+                    <View style={{ height: 3, backgroundColor: withAlpha("panelInk", 0x15 / 255), borderRadius: 2, overflow: "hidden", marginBottom: pc.resources.length > 0 ? 4 : 0 }}>
                       <View style={{ height: 3, backgroundColor: hpColor, borderRadius: 2, width: `${Math.round(hpPct * 100)}%` as `${number}%` }} />
                     </View>
                   ) : null}

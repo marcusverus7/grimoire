@@ -23,6 +23,7 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { schema, can } from "@grimoire/core";
 import { seedSampleCampaign } from "@/lib/sampleData";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type CampaignRow = typeof schema.campaigns.$inferSelect & {
   entityCount: number;
@@ -65,6 +66,7 @@ function remapMentionIds(node: unknown, idMap: Map<string, string>): unknown {
 }
 
 export default function CampaignsScreen() {
+  useThemeTick();
   const [campaigns, setCampaigns] = useState<CampaignRow[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
@@ -343,20 +345,20 @@ export default function CampaignsScreen() {
     <>
     <OnboardingModal visible={showOnboarding} onDone={finishOnboarding} />
     <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
-    <View className="flex-1 bg-parchment">
+    <View className="flex-1 bg-parchment dark:bg-night-bg">
       {campaigns.length === 0 ? (
         <View className="flex-1 items-center justify-center px-8">
           <WaxSeal size={80} />
-          <Text className="font-cinzel text-ink text-lg mt-6 text-center">
+          <Text className="font-cinzel text-ink dark:text-night-ink text-lg mt-6 text-center">
             Your Grimoire Awaits
           </Text>
-          <Text className="font-cormorant text-ink-soft text-base mt-3 text-center leading-6">
+          <Text className="font-cormorant text-ink-soft dark:text-night-ink-soft text-base mt-3 text-center leading-6">
             Every great campaign begins with a single page. Create your first
             campaign and start building your world.
           </Text>
           <Pressable
             onPress={openCreate}
-            className="mt-8 bg-oxblood px-8 py-3 rounded-sm border border-gold/30"
+            className="mt-8 bg-oxblood dark:bg-night-oxblood px-8 py-3 rounded-sm border border-gold/30 dark:border-night-gold/30"
           >
             <Text className="font-inter-semibold text-ink-light text-sm tracking-wider uppercase">
               Begin
@@ -374,7 +376,7 @@ export default function CampaignsScreen() {
             }}
             style={{ marginTop: 20 }}
           >
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#A07A2C", textDecorationLine: "underline" }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.gold, textDecorationLine: "underline" }}>
               Explore a sample campaign →
             </Text>
           </Pressable>
@@ -387,7 +389,7 @@ export default function CampaignsScreen() {
           ListHeaderComponent={
             campaigns.some((c) => c.status !== "active") ? (
               <Pressable onPress={() => setShowArchived((v) => !v)} style={{ marginBottom: 12, alignSelf: "flex-end" }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60" }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x60 / 255) }}>
                   {showArchived ? "Hide archived" : "Show archived"}
                 </Text>
               </Pressable>
@@ -440,27 +442,27 @@ export default function CampaignsScreen() {
                 />
               ) : null}
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text className="font-cormorant-semibold text-ink text-lg" style={{ flex: 1 }}>
+                <Text className="font-cormorant-semibold text-ink dark:text-night-ink text-lg" style={{ flex: 1 }}>
                   {item.name}
                 </Text>
                 {item.status !== "active" ? (
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E60", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkSoft", 0x60 / 255), textTransform: "uppercase", letterSpacing: 0.8 }}>
                     {item.status}
                   </Text>
                 ) : null}
               </View>
               {item.logline ? (
-                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#4A3F3280", marginTop: 2, fontStyle: "italic" }} numberOfLines={2}>
+                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("borderDark", 0x80 / 255), marginTop: 2, fontStyle: "italic" }} numberOfLines={2}>
                   {item.logline}
                 </Text>
               ) : null}
               {item.systemTag ? (
-                <Text className="font-inter text-gold text-xs mt-1">
+                <Text className="font-inter text-gold dark:text-night-gold text-xs mt-1">
                   {item.systemTag}
                 </Text>
               ) : null}
               <Text
-                className="font-inter text-ink-faint text-xs mt-1"
+                className="font-inter text-ink-faint dark:text-night-ink-faint text-xs mt-1"
                 style={{ fontFamily: "Inter_400Regular" }}
               >
                 {item.entityCount} {item.entityCount === 1 ? "entity" : "entities"}
@@ -469,7 +471,7 @@ export default function CampaignsScreen() {
                 {item.quoteCount > 0 ? ` · ${item.quoteCount} ${item.quoteCount === 1 ? "quote" : "quotes"}` : ""}
               </Text>
               {item.lastActivity && item.lastActivity > 0 ? (
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#5A4D3E50", marginTop: 3 }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("inkSoft", 0x50 / 255), marginTop: 3 }}>
                   Updated {timeAgo(item.lastActivity)}
                 </Text>
               ) : null}
@@ -478,9 +480,9 @@ export default function CampaignsScreen() {
           ListFooterComponent={
             <Pressable
               onPress={openCreate}
-              className="mt-4 items-center py-3 border border-gold/30 rounded-sm"
+              className="mt-4 items-center py-3 border border-gold/30 dark:border-night-gold/30 rounded-sm"
             >
-              <Text className="font-inter-medium text-gold text-sm tracking-wider uppercase">
+              <Text className="font-inter-medium text-gold dark:text-night-gold text-sm tracking-wider uppercase">
                 + New Campaign
               </Text>
             </Pressable>
@@ -505,17 +507,17 @@ export default function CampaignsScreen() {
           >
             <Pressable
               onPress={() => {}}
-              className="bg-parchment-warm rounded-sm border border-gold/30 p-5"
+              className="bg-parchment-warm dark:bg-night-edge rounded-sm border border-gold/30 dark:border-night-gold/30 p-5"
             >
               <Text
-                className="text-ink text-lg text-center mb-5"
+                className="text-ink dark:text-night-ink text-lg text-center mb-5"
                 style={{ fontFamily: "CormorantGaramond_700Bold" }}
               >
                 New Campaign
               </Text>
 
               <Text
-                className="text-gold text-xs uppercase tracking-wider mb-1.5"
+                className="text-gold dark:text-night-gold text-xs uppercase tracking-wider mb-1.5"
                 style={{ fontFamily: "Inter_600SemiBold" }}
               >
                 Campaign Name
@@ -524,18 +526,18 @@ export default function CampaignsScreen() {
                 value={newName}
                 onChangeText={setNewName}
                 placeholder="e.g. The Sunken Throne"
-                placeholderTextColor="#2C201440"
+                placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                 autoFocus
-                className="border-b border-gold/30 pb-2 mb-5"
+                className="border-b border-gold/30 dark:border-night-gold/30 pb-2 mb-5"
                 style={{
                   fontFamily: "CormorantGaramond_600SemiBold",
                   fontSize: 18,
-                  color: "#2C2014",
+                  color: color.ink,
                 }}
               />
 
               <Text
-                className="text-gold text-xs uppercase tracking-wider mb-1.5"
+                className="text-gold dark:text-night-gold text-xs uppercase tracking-wider mb-1.5"
                 style={{ fontFamily: "Inter_600SemiBold" }}
               >
                 System (optional)
@@ -544,12 +546,12 @@ export default function CampaignsScreen() {
                 value={newSystem}
                 onChangeText={setNewSystem}
                 placeholder="e.g. D&D 5e, Pathfinder 2e"
-                placeholderTextColor="#2C201440"
-                className="border-b border-gold/30 pb-2 mb-6"
+                placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+                className="border-b border-gold/30 dark:border-night-gold/30 pb-2 mb-6"
                 style={{
                   fontFamily: "Inter_400Regular",
                   fontSize: 14,
-                  color: "#2C2014",
+                  color: color.ink,
                 }}
                 onSubmitEditing={createCampaign}
               />
@@ -563,12 +565,12 @@ export default function CampaignsScreen() {
                       paddingHorizontal: 10,
                       paddingVertical: 4,
                       borderWidth: 1,
-                      borderColor: newSystem === chip ? "#A07A2C" : "#A07A2C40",
+                      borderColor: newSystem === chip ? color.gold : withAlpha("gold", 0x40 / 255),
                       borderRadius: 20,
-                      backgroundColor: newSystem === chip ? "#A07A2C15" : "transparent",
+                      backgroundColor: newSystem === chip ? withAlpha("gold", 0x15 / 255) : "transparent",
                     }}
                   >
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: newSystem === chip ? "#A07A2C" : "#5A4D3E80" }}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: newSystem === chip ? color.gold : withAlpha("inkSoft", 0x80 / 255) }}>
                       {chip}
                     </Text>
                   </Pressable>
@@ -584,7 +586,7 @@ export default function CampaignsScreen() {
                     style={{
                       fontFamily: "Inter_500Medium",
                       fontSize: 13,
-                      color: "#5A4D3E",
+                      color: color.inkSoft,
                     }}
                   >
                     Cancel
@@ -595,15 +597,15 @@ export default function CampaignsScreen() {
                   disabled={!newName.trim()}
                   className={`px-5 py-2.5 rounded-sm border ${
                     newName.trim()
-                      ? "bg-oxblood border-gold/30"
-                      : "bg-oxblood/30 border-ink/10"
+                      ? "bg-oxblood dark:bg-night-oxblood border-gold/30 dark:border-night-gold/30"
+                      : "bg-oxblood/30 dark:bg-night-oxblood/30 border-ink/10 dark:border-night-ink/10"
                   }`}
                 >
                   <Text
                     style={{
                       fontFamily: "Inter_600SemiBold",
                       fontSize: 13,
-                      color: newName.trim() ? "#FAF5EA" : "#FAF5EA60",
+                      color: newName.trim() ? color.onAccent : withAlpha("onAccent", 0x60 / 255),
                       textTransform: "uppercase",
                       letterSpacing: 1,
                     }}
@@ -634,17 +636,17 @@ export default function CampaignsScreen() {
           >
             <Pressable
               onPress={() => {}}
-              className="bg-parchment-warm rounded-sm border border-gold/30 p-5"
+              className="bg-parchment-warm dark:bg-night-edge rounded-sm border border-gold/30 dark:border-night-gold/30 p-5"
             >
               <Text
-                className="text-ink text-lg text-center mb-5"
+                className="text-ink dark:text-night-ink text-lg text-center mb-5"
                 style={{ fontFamily: "CormorantGaramond_700Bold" }}
               >
                 Rename Campaign
               </Text>
 
               <Text
-                className="text-gold text-xs uppercase tracking-wider mb-1.5"
+                className="text-gold dark:text-night-gold text-xs uppercase tracking-wider mb-1.5"
                 style={{ fontFamily: "Inter_600SemiBold" }}
               >
                 Campaign Name
@@ -653,11 +655,11 @@ export default function CampaignsScreen() {
                 value={renameName}
                 onChangeText={setRenameName}
                 autoFocus
-                className="border-b border-gold/30 pb-2 mb-6"
+                className="border-b border-gold/30 dark:border-night-gold/30 pb-2 mb-6"
                 style={{
                   fontFamily: "CormorantGaramond_600SemiBold",
                   fontSize: 18,
-                  color: "#2C2014",
+                  color: color.ink,
                 }}
                 onSubmitEditing={renameCampaign}
               />
@@ -671,7 +673,7 @@ export default function CampaignsScreen() {
                     style={{
                       fontFamily: "Inter_500Medium",
                       fontSize: 13,
-                      color: "#5A4D3E",
+                      color: color.inkSoft,
                     }}
                   >
                     Cancel
@@ -682,15 +684,15 @@ export default function CampaignsScreen() {
                   disabled={!renameName.trim()}
                   className={`px-5 py-2.5 rounded-sm border ${
                     renameName.trim()
-                      ? "bg-oxblood border-gold/30"
-                      : "bg-oxblood/30 border-ink/10"
+                      ? "bg-oxblood dark:bg-night-oxblood border-gold/30 dark:border-night-gold/30"
+                      : "bg-oxblood/30 dark:bg-night-oxblood/30 border-ink/10 dark:border-night-ink/10"
                   }`}
                 >
                   <Text
                     style={{
                       fontFamily: "Inter_600SemiBold",
                       fontSize: 13,
-                      color: renameName.trim() ? "#FAF5EA" : "#FAF5EA60",
+                      color: renameName.trim() ? color.onAccent : withAlpha("onAccent", 0x60 / 255),
                       textTransform: "uppercase",
                       letterSpacing: 1,
                     }}

@@ -15,12 +15,14 @@ import { newId } from "@/lib/id";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { schema } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Campaign = typeof schema.campaigns.$inferSelect;
 type CampaignArc = { id: string; name: string };
 type CampaignSettings = { arcs?: CampaignArc[] } & Record<string, unknown>;
 
 export default function ArcsScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
@@ -97,7 +99,7 @@ export default function ArcsScreen() {
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         <ScrollView contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
 
-          <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 14, color: "#5A4D3E80", fontStyle: "italic", marginBottom: 20, lineHeight: 20 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 14, color: withAlpha("inkSoft", 0x80 / 255), fontStyle: "italic", marginBottom: 20, lineHeight: 20 }}>
             Group your sessions into story arcs or chapters. Assign an arc when editing a session.
           </Text>
 
@@ -108,29 +110,29 @@ export default function ArcsScreen() {
               onChangeText={setInput}
               onSubmitEditing={addArc}
               placeholder="New arc name…"
-              placeholderTextColor="#2C201440"
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
               returnKeyType="done"
               style={{
                 flex: 1,
                 fontFamily: "CormorantGaramond_600SemiBold",
                 fontSize: 17,
-                color: "#2C2014",
+                color: color.ink,
                 borderBottomWidth: 1,
-                borderBottomColor: "#A07A2C40",
+                borderBottomColor: withAlpha("gold", 0x40 / 255),
                 paddingBottom: 6,
               }}
             />
             <Pressable
               onPress={addArc}
-              style={{ paddingHorizontal: 14, paddingVertical: 7, backgroundColor: "#7A2418", borderRadius: 2 }}
+              style={{ paddingHorizontal: 14, paddingVertical: 7, backgroundColor: color.oxblood, borderRadius: 2 }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#FAF5EA" }}>Add</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.onAccent }}>Add</Text>
             </Pressable>
           </View>
 
           {arcs.length === 0 ? (
             <View style={{ paddingVertical: 32, alignItems: "center" }}>
-              <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: "#5A4D3E50", fontStyle: "italic" }}>
+              <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: withAlpha("inkSoft", 0x50 / 255), fontStyle: "italic" }}>
                 No arcs yet.
               </Text>
             </View>
@@ -145,10 +147,10 @@ export default function ArcsScreen() {
                     alignItems: "center",
                     paddingVertical: 12,
                     borderBottomWidth: 0.5,
-                    borderBottomColor: "#A07A2C15",
+                    borderBottomColor: withAlpha("gold", 0x15 / 255),
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C60", marginRight: 12, width: 20, textAlign: "right" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: withAlpha("gold", 0x60 / 255), marginRight: 12, width: 20, textAlign: "right" }}>
                     {idx + 1}
                   </Text>
                   {editingId === arc.id ? (
@@ -162,14 +164,14 @@ export default function ArcsScreen() {
                         flex: 1,
                         fontFamily: "CormorantGaramond_600SemiBold",
                         fontSize: 17,
-                        color: "#2C2014",
+                        color: color.ink,
                         borderBottomWidth: 1,
-                        borderBottomColor: "#A07A2C40",
+                        borderBottomColor: withAlpha("gold", 0x40 / 255),
                       }}
                     />
                   ) : (
                     <Pressable onPress={() => startEdit(arc)} style={{ flex: 1 }}>
-                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 17, color: "#2C2014" }}>
+                      <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 17, color: color.ink }}>
                         {arc.name}
                       </Text>
                     </Pressable>
@@ -178,7 +180,7 @@ export default function ArcsScreen() {
                     onPress={() => deleteArc(arc.id)}
                     style={{ paddingHorizontal: 10, paddingVertical: 6 }}
                   >
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#7A241850" }}>✕</Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: withAlpha("oxblood", 0x50 / 255) }}>✕</Text>
                   </Pressable>
                 </View>
               ))}

@@ -10,6 +10,7 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema, richTextToMarkdown } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
 import { RichTextRenderer } from "@/components/RichTextRenderer";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Session = typeof schema.sessions.$inferSelect;
 type Quote = typeof schema.quotes.$inferSelect;
@@ -24,6 +25,7 @@ function formatDuration(ms: number): string {
 }
 
 export default function SessionDetailScreen() {
+  useThemeTick();
   const { id: campaignId, sessionId } = useLocalSearchParams<{
     id: string;
     sessionId: string;
@@ -176,8 +178,8 @@ export default function SessionDetailScreen() {
 
   if (!session) {
     return (
-      <View className="flex-1 bg-parchment items-center justify-center">
-        <Text className="text-ink/50 font-inter text-sm">
+      <View className="flex-1 bg-parchment dark:bg-night-bg items-center justify-center">
+        <Text className="text-ink/50 dark:text-night-ink/50 font-inter text-sm">
           Session not found
         </Text>
       </View>
@@ -206,7 +208,7 @@ export default function SessionDetailScreen() {
                 }}
                 style={{ marginRight: 12 }}
               >
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#A07A2C" }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.gold }}>
                   Share
                 </Text>
               </Pressable>
@@ -222,7 +224,7 @@ export default function SessionDetailScreen() {
                   style={{
                     fontFamily: "Inter_500Medium",
                     fontSize: 14,
-                    color: "#A07A2C",
+                    color: color.gold,
                   }}
                 >
                   Edit
@@ -245,17 +247,17 @@ export default function SessionDetailScreen() {
             style={{
               marginBottom: 16,
               paddingVertical: 12,
-              backgroundColor: "#7A241808",
+              backgroundColor: withAlpha("oxblood", 0x08 / 255),
               borderWidth: 1,
-              borderColor: "#7A241830",
+              borderColor: withAlpha("oxblood", 0x30 / 255),
               borderRadius: 2,
               alignItems: "center",
             }}
           >
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#7A2418", textTransform: "uppercase", letterSpacing: 1.5 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.oxblood, textTransform: "uppercase", letterSpacing: 1.5 }}>
               ◈ Session Prep
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginTop: 2 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint, marginTop: 2 }}>
               Recap · Quests · Key Characters
             </Text>
           </Pressable>
@@ -263,7 +265,7 @@ export default function SessionDetailScreen() {
 
         {/* Header */}
         <Text
-          className="text-ink text-2xl mb-1"
+          className="text-ink dark:text-night-ink text-2xl mb-1"
           style={{ fontFamily: "CormorantGaramond_700Bold" }}
         >
           Session {session.number}
@@ -274,14 +276,14 @@ export default function SessionDetailScreen() {
             className="text-xs uppercase tracking-wider"
             style={{
               fontFamily: "Inter_500Medium",
-              color: session.status === "played" ? "#A07A2C" : session.status === "in_progress" ? "#7A2418" : "#4A3F32",
+              color: session.status === "played" ? color.gold : session.status === "in_progress" ? color.oxblood : color.borderDark,
             }}
           >
             {session.status}
           </Text>
           {session.playedOn ? (
             <Text
-              className="text-ink-soft/50 text-xs ml-3"
+              className="text-ink-soft/50 dark:text-night-ink-soft/50 text-xs ml-3"
               style={{ fontFamily: "Inter_400Regular" }}
             >
               {session.playedOn}
@@ -292,7 +294,7 @@ export default function SessionDetailScreen() {
         {/* Duration row */}
         {durationMs !== null ? (
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E80" }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("inkSoft", 0x80 / 255) }}>
               ⏱ {formatDuration(durationMs)}
             </Text>
             <Pressable
@@ -304,7 +306,7 @@ export default function SessionDetailScreen() {
               }
               style={{ marginLeft: 8 }}
             >
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E40" }}>clear</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x40 / 255) }}>clear</Text>
             </Pressable>
           </View>
         ) : (
@@ -316,17 +318,17 @@ export default function SessionDetailScreen() {
                   paddingHorizontal: 10,
                   paddingVertical: 4,
                   borderWidth: 1,
-                  borderColor: "#5A4D3E30",
+                  borderColor: withAlpha("inkSoft", 0x30 / 255),
                   borderRadius: 2,
                 }}
               >
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E80" }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x80 / 255) }}>
                   ▷ Start Timer
                 </Text>
               </Pressable>
             ) : (
               <>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#5A4D3E60", alignSelf: "center" }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkSoft", 0x60 / 255), alignSelf: "center" }}>
                   ⏱ running…
                 </Text>
                 <Pressable
@@ -335,11 +337,11 @@ export default function SessionDetailScreen() {
                     paddingHorizontal: 10,
                     paddingVertical: 4,
                     borderWidth: 1,
-                    borderColor: "#4A7A2C40",
+                    borderColor: withAlpha("green", 0x40 / 255),
                     borderRadius: 2,
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#4A7A2C" }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.green }}>
                     ◼ End Timer
                   </Text>
                 </Pressable>
@@ -352,11 +354,11 @@ export default function SessionDetailScreen() {
 
         {/* Prep goals (if set) */}
         {sessionAttrs.prepGoals ? (
-          <View style={{ marginTop: 12, paddingHorizontal: 12, paddingVertical: 10, borderLeftWidth: 2, borderLeftColor: "#A07A2C40", backgroundColor: "#A07A2C06", marginBottom: 4 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#A07A2C80", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
+          <View style={{ marginTop: 12, paddingHorizontal: 12, paddingVertical: 10, borderLeftWidth: 2, borderLeftColor: withAlpha("gold", 0x40 / 255), backgroundColor: withAlpha("gold", 0x06 / 255), marginBottom: 4 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: withAlpha("gold", 0x80 / 255), textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
               Session Goals
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#4A3F32", lineHeight: 20 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.borderDark, lineHeight: 20 }}>
               {sessionAttrs.prepGoals}
             </Text>
           </View>
@@ -368,22 +370,22 @@ export default function SessionDetailScreen() {
             <RichTextRenderer body={session.body as RichTextNode} campaignId={campaignId} />
           </View>
         ) : (
-          <View style={{ marginTop: 16, marginBottom: 16, padding: 16, borderWidth: 1, borderColor: "#A07A2C20", borderRadius: 2, backgroundColor: "#A07A2C05" }}>
-            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: "#2C201455", fontStyle: "italic", lineHeight: 23, marginBottom: 12 }}>
+          <View style={{ marginTop: 16, marginBottom: 16, padding: 16, borderWidth: 1, borderColor: withAlpha("gold", 0x20 / 255), borderRadius: 2, backgroundColor: withAlpha("gold", 0x05 / 255) }}>
+            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: withAlpha("ink", 0x55 / 255), fontStyle: "italic", lineHeight: 23, marginBottom: 12 }}>
               No notes yet. Tap Edit to record what happened, @-mention key characters, and capture important moments.
             </Text>
             <View style={{ flexDirection: "row", gap: 12 }}>
               <Pressable
                 onPress={() => router.push(`/campaign/${campaignId}/session/${sessionId}/edit` as Parameters<typeof router.push>[0])}
-                style={{ paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: "#A07A2C50", borderRadius: 2, backgroundColor: "#A07A2C0A" }}
+                style={{ paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: withAlpha("gold", 0x50 / 255), borderRadius: 2, backgroundColor: withAlpha("gold", 0x0A / 255) }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>✎ Add Notes</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.gold, textTransform: "uppercase", letterSpacing: 1 }}>✎ Add Notes</Text>
               </Pressable>
               <Pressable
                 onPress={() => router.push(`/campaign/${campaignId}/session/${sessionId}/prep` as Parameters<typeof router.push>[0])}
-                style={{ paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: "#7A241830", borderRadius: 2, backgroundColor: "#7A241806" }}
+                style={{ paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: withAlpha("oxblood", 0x30 / 255), borderRadius: 2, backgroundColor: withAlpha("oxblood", 0x06 / 255) }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#7A2418", textTransform: "uppercase", letterSpacing: 1 }}>◈ Session Prep</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.oxblood, textTransform: "uppercase", letterSpacing: 1 }}>◈ Session Prep</Text>
               </Pressable>
             </View>
           </View>
@@ -397,16 +399,16 @@ export default function SessionDetailScreen() {
               marginBottom: 12,
               paddingVertical: 12,
               borderWidth: 1,
-              borderColor: "#C9A24A40",
+              borderColor: withAlpha("goldBright", 0x40 / 255),
               borderRadius: 2,
               alignItems: "center",
-              backgroundColor: "#C9A24A06",
+              backgroundColor: withAlpha("goldBright", 0x06 / 255),
             }}
           >
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5 }}>
               ◈ Wrap Up Session
             </Text>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginTop: 2 }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint, marginTop: 2 }}>
               HP · Quests · XP
             </Text>
           </Pressable>
@@ -419,13 +421,13 @@ export default function SessionDetailScreen() {
             marginBottom: 12,
             paddingVertical: 10,
             borderWidth: 1,
-            borderColor: "#A07A2C30",
+            borderColor: withAlpha("gold", 0x30 / 255),
             borderRadius: 2,
             alignItems: "center",
-            backgroundColor: "#A07A2C06",
+            backgroundColor: withAlpha("gold", 0x06 / 255),
           }}
         >
-          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold, textTransform: "uppercase", letterSpacing: 1 }}>
             ✎ Scene Notes
           </Text>
         </Pressable>
@@ -456,13 +458,13 @@ export default function SessionDetailScreen() {
               marginBottom: 12,
               paddingVertical: 10,
               borderWidth: 1,
-              borderColor: "#4A7A2C40",
+              borderColor: withAlpha("green", 0x40 / 255),
               borderRadius: 2,
               alignItems: "center",
-              backgroundColor: "#4A7A2C08",
+              backgroundColor: withAlpha("green", 0x08 / 255),
             }}
           >
-            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#4A7A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.green, textTransform: "uppercase", letterSpacing: 1 }}>
               ✓ Mark Session Played
             </Text>
           </Pressable>
@@ -473,9 +475,9 @@ export default function SessionDetailScreen() {
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
             <Pressable
               onPress={() => router.push(`/campaign/${campaignId}/session/${sessionId}/recap`)}
-              style={{ flex: 1, paddingVertical: 12, borderRadius: 2, borderWidth: 1, borderColor: "#C9A24A40", backgroundColor: "#7A2418", alignItems: "center" }}
+              style={{ flex: 1, paddingVertical: 12, borderRadius: 2, borderWidth: 1, borderColor: withAlpha("goldBright", 0x40 / 255), backgroundColor: color.oxblood, alignItems: "center" }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1.5 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1.5 }}>
                 {recapSlug ? "Edit Recap" : "Create Recap"}
               </Text>
             </Pressable>
@@ -497,9 +499,9 @@ export default function SessionDetailScreen() {
                   const url = `https://${recapShareUrl(recapSlug)}`;
                   await Share.share({ title: `Session ${session.number} Recap`, message: url, url });
                 }}
-                style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: 2, borderWidth: 1, borderColor: "#A07A2C40", backgroundColor: "#A07A2C0A", alignItems: "center" }}
+                style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: 2, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), backgroundColor: withAlpha("gold", 0x0A / 255), alignItems: "center" }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1 }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold, textTransform: "uppercase", letterSpacing: 1 }}>
                   Share ↗
                 </Text>
               </Pressable>
@@ -511,31 +513,31 @@ export default function SessionDetailScreen() {
         {session.status === "played" ? (
           <View style={{ marginBottom: 12 }}>
             {showXpAward ? (
-              <View style={{ borderWidth: 1, borderColor: "#3A6830", borderRadius: 2, padding: 12, backgroundColor: "#3A683008" }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#3A6830", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>Award XP to Attendees</Text>
+              <View style={{ borderWidth: 1, borderColor: color.greenDark, borderRadius: 2, padding: 12, backgroundColor: withAlpha("greenDark", 0x08 / 255) }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.greenDark, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>Award XP to Attendees</Text>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <TextInput
                     value={xpInput}
                     onChangeText={setXpInput}
                     placeholder="XP amount"
-                    placeholderTextColor="#2C201440"
+                    placeholderTextColor={withAlpha("ink", 0x40 / 255)}
                     keyboardType="number-pad"
-                    style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#3A683040", paddingBottom: 4 }}
+                    style={{ fontFamily: "Inter_400Regular", fontSize: 16, color: color.ink, flex: 1, borderBottomWidth: 1, borderBottomColor: withAlpha("greenDark", 0x40 / 255), paddingBottom: 4 }}
                   />
-                  <Pressable onPress={awardXp} style={{ paddingHorizontal: 16, paddingVertical: 8, backgroundColor: "#3A6830", borderRadius: 2 }}>
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#FAF5EA" }}>Award</Text>
+                  <Pressable onPress={awardXp} style={{ paddingHorizontal: 16, paddingVertical: 8, backgroundColor: color.greenDark, borderRadius: 2 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.onAccent }}>Award</Text>
                   </Pressable>
                   <Pressable onPress={() => { setShowXpAward(false); setXpInput(""); }} style={{ paddingHorizontal: 10, paddingVertical: 8 }}>
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D" }}>✕</Text>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint }}>✕</Text>
                   </Pressable>
                 </View>
               </View>
             ) : (
               <Pressable
                 onPress={() => setShowXpAward(true)}
-                style={{ paddingVertical: 8, borderWidth: 1, borderColor: "#3A683040", borderRadius: 2, alignItems: "center", backgroundColor: "#3A683008" }}
+                style={{ paddingVertical: 8, borderWidth: 1, borderColor: withAlpha("greenDark", 0x40 / 255), borderRadius: 2, alignItems: "center", backgroundColor: withAlpha("greenDark", 0x08 / 255) }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#3A6830", textTransform: "uppercase", letterSpacing: 1 }}>◆ Award XP to Attendees</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.greenDark, textTransform: "uppercase", letterSpacing: 1 }}>◆ Award XP to Attendees</Text>
               </Pressable>
             )}
           </View>
@@ -545,11 +547,11 @@ export default function SessionDetailScreen() {
         <GoldRule />
         <View style={{ marginTop: 12, marginBottom: 12 }}>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#5A4D3E", textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.inkSoft, textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
               Memorable Moments
             </Text>
             <Pressable onPress={() => setShowHighlightInput((v) => !v)}>
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C" }}>+ Add</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold }}>+ Add</Text>
             </Pressable>
           </View>
           {showHighlightInput && (
@@ -558,25 +560,25 @@ export default function SessionDetailScreen() {
                 value={highlightInput}
                 onChangeText={setHighlightInput}
                 placeholder="What happened?"
-                placeholderTextColor="#8A7D6D60"
-                style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", flex: 1, borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 4 }}
+                placeholderTextColor={withAlpha("inkFaint", 0x60 / 255)}
+                style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, flex: 1, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 4 }}
                 onSubmitEditing={addHighlight}
                 autoFocus
               />
-              <Pressable onPress={addHighlight} style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: "#7A2418", borderRadius: 2 }}>
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#FAF5EA" }}>Add</Text>
+              <Pressable onPress={addHighlight} style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: color.oxblood, borderRadius: 2 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.onAccent }}>Add</Text>
               </Pressable>
             </View>
           )}
           {highlights.length === 0 && !showHighlightInput ? (
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D80", fontStyle: "italic" }}>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: withAlpha("inkFaint", 0x80 / 255), fontStyle: "italic" }}>
               Record standout moments, unexpected turns, and great player decisions here.
             </Text>
           ) : (
             highlights.map((h, i) => (
-              <Pressable key={i} onLongPress={() => deleteHighlight(i)} style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C12" }}>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C", marginRight: 8, marginTop: 1 }}>◆</Text>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014", flex: 1, lineHeight: 20 }}>{h}</Text>
+              <Pressable key={i} onLongPress={() => deleteHighlight(i)} style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: withAlpha("gold", 0x12 / 255) }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold, marginRight: 8, marginTop: 1 }}>◆</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink, flex: 1, lineHeight: 20 }}>{h}</Text>
               </Pressable>
             ))
           )}
@@ -586,7 +588,7 @@ export default function SessionDetailScreen() {
         <GoldRule />
         <View style={{ marginTop: 12, marginBottom: 8 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: "#5A4D3E", textTransform: "uppercase", letterSpacing: 1.5 }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.inkSoft, textTransform: "uppercase", letterSpacing: 1.5 }}>
               Quotes
             </Text>
             <Pressable
@@ -596,23 +598,23 @@ export default function SessionDetailScreen() {
                 )
               }
             >
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: "#A07A2C" }}>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: color.gold }}>
                 + Add Quote
               </Text>
             </Pressable>
           </View>
           {quotes.length === 0 ? (
-            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 15, color: "#2C201440", fontStyle: "italic" }}>
+            <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 15, color: withAlpha("ink", 0x40 / 255), fontStyle: "italic" }}>
               No quotes yet — memorable lines, player jokes, dramatic moments…
             </Text>
           ) : (
             quotes.map((q) => (
-              <View key={q.id} style={{ marginBottom: 12, paddingLeft: 14, borderLeftWidth: 2, borderLeftColor: "#A07A2C50" }}>
-                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: "#2C2014CC", fontStyle: "italic", lineHeight: 23 }}>
+              <View key={q.id} style={{ marginBottom: 12, paddingLeft: 14, borderLeftWidth: 2, borderLeftColor: withAlpha("gold", 0x50 / 255) }}>
+                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 16, color: withAlpha("ink", 0xCC / 255), fontStyle: "italic", lineHeight: 23 }}>
                   "{q.text}"
                 </Text>
                 {q.attribution ? (
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E", marginTop: 4 }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.inkSoft, marginTop: 4 }}>
                     — {q.attribution}
                   </Text>
                 ) : null}
@@ -627,7 +629,7 @@ export default function SessionDetailScreen() {
             <GoldRule />
             <View className="mt-4">
               <Text
-                className="text-ink-soft text-xs uppercase tracking-wider mb-3"
+                className="text-ink-soft dark:text-night-ink-soft text-xs uppercase tracking-wider mb-3"
                 style={{ fontFamily: "Inter_600SemiBold" }}
               >
                 Entities in This Session
@@ -647,13 +649,13 @@ export default function SessionDetailScreen() {
                       className="text-xs uppercase tracking-wider mr-2"
                       style={{
                         fontFamily: "Inter_500Medium",
-                        color: "#4A3F32",
+                        color: color.borderDark,
                       }}
                     >
                       {entity.kind}
                     </Text>
                     <Text
-                      className="text-ink text-base flex-1"
+                      className="text-ink dark:text-night-ink text-base flex-1"
                       style={{ fontFamily: "CormorantGaramond_600SemiBold" }}
                     >
                       {entity.name}
@@ -667,14 +669,14 @@ export default function SessionDetailScreen() {
 
         {/* Session navigation */}
         {(prevSession || nextSession) ? (
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#A07A2C20" }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: withAlpha("gold", 0x20 / 255) }}>
             {prevSession ? (
               <Pressable
                 onPress={() => router.replace(`/campaign/${campaignId}/session/${prevSession.id}` as Parameters<typeof router.replace>[0])}
                 style={{ flex: 1, paddingVertical: 8, alignItems: "flex-start" }}
               >
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C60", marginBottom: 2 }}>← Previous</Text>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Session {prevSession.number}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("gold", 0x60 / 255), marginBottom: 2 }}>← Previous</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.gold }}>Session {prevSession.number}</Text>
               </Pressable>
             ) : <View style={{ flex: 1 }} />}
             {nextSession ? (
@@ -682,8 +684,8 @@ export default function SessionDetailScreen() {
                 onPress={() => router.replace(`/campaign/${campaignId}/session/${nextSession.id}` as Parameters<typeof router.replace>[0])}
                 style={{ flex: 1, paddingVertical: 8, alignItems: "flex-end" }}
               >
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#A07A2C60", marginBottom: 2 }}>Next →</Text>
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Session {nextSession.number}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("gold", 0x60 / 255), marginBottom: 2 }}>Next →</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.gold }}>Session {nextSession.number}</Text>
               </Pressable>
             ) : <View style={{ flex: 1 }} />}
           </View>

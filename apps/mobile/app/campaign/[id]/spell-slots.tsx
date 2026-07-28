@@ -7,7 +7,7 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { db, getKv, setKv } from "@/lib/db";
 import { schema } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 // ── D&D 5e spell slot tables ──────────────────────────────────────────────────
 // [level] → [slot counts per spell level 1-9]
@@ -79,6 +79,7 @@ type SlotData = { pcs: PCSlots[] };
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function SpellSlotsScreen() {
+  useThemeTick();
   const { id } = useLocalSearchParams<{ id: string }>();
   const storageKey = `spell_slots_${id}`;
 
@@ -197,7 +198,7 @@ export default function SpellSlotsScreen() {
           </Pressable>
           <Pressable
             onPress={longRest}
-            style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}
+            style={{ flex: 1, backgroundColor: color.panelInk, borderRadius: 2, padding: 10, alignItems: "center" }}
           >
             <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.goldBright }}>☾ Long Rest</Text>
             <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("goldBright", 0x80 / 255), marginTop: 2 }}>All recover</Text>
@@ -288,7 +289,7 @@ export default function SpellSlotsScreen() {
                 <Pressable
                   key={pc.id}
                   onPress={() => { setSelPc(pc.name); setSelPcId(pc.id); setSelLevel(pc.level); }}
-                  style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: selPcId === pc.id ? color.ink : color.border, backgroundColor: selPcId === pc.id ? color.ink : color.parchmentEdge }}
+                  style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: selPcId === pc.id ? color.ink : color.border, backgroundColor: selPcId === pc.id ? color.panelInk : color.parchmentEdge }}
                 >
                   <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: selPcId === pc.id ? color.goldBright : color.borderDark }}>{pc.name}</Text>
                 </Pressable>
@@ -333,7 +334,7 @@ export default function SpellSlotsScreen() {
               <Pressable onPress={() => setAddModal(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
                 <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
               </Pressable>
-              <Pressable onPress={addPc} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+              <Pressable onPress={addPc} style={{ flex: 1, backgroundColor: color.panelInk, borderRadius: 2, padding: 10, alignItems: "center" }}>
                 <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>Add</Text>
               </Pressable>
             </View>
@@ -344,4 +345,4 @@ export default function SpellSlotsScreen() {
   );
 }
 
-const labelStyle = { fontFamily: "Inter_600SemiBold" as const, fontSize: 10, color: color.inkFaint, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 4 };
+const labelStyle = { fontFamily: "Inter_600SemiBold" as const, fontSize: 10, get color() { return color.inkFaint; }, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 4 };

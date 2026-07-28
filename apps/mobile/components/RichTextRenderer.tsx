@@ -3,6 +3,7 @@ import { View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { nodeText } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 interface Props {
   body: RichTextNode;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function RichTextRenderer({ body, campaignId }: Props) {
+  useThemeTick();
   const router = useRouter();
 
   if (!body.content) return null;
@@ -33,7 +35,7 @@ export function RichTextRenderer({ body, campaignId }: Props) {
               style={{
                 fontFamily: "CormorantGaramond_700Bold",
                 fontSize: level === 1 ? 22 : level === 2 ? 19 : 17,
-                color: "#2C2014",
+                color: color.ink,
                 marginBottom: 8,
               }}
             >
@@ -48,7 +50,7 @@ export function RichTextRenderer({ body, campaignId }: Props) {
               key={i}
               style={{
                 borderLeftWidth: 2,
-                borderLeftColor: "#A07A2C66",
+                borderLeftColor: withAlpha("gold", 0x66 / 255),
                 paddingLeft: 12,
                 marginBottom: 8,
               }}
@@ -57,7 +59,7 @@ export function RichTextRenderer({ body, campaignId }: Props) {
                 style={{
                   fontFamily: "CormorantGaramond_400Regular_Italic",
                   fontSize: 16,
-                  color: "#2C2014B3",
+                  color: withAlpha("ink", 0xB3 / 255),
                   lineHeight: 24,
                   fontStyle: "italic",
                 }}
@@ -77,7 +79,7 @@ export function RichTextRenderer({ body, campaignId }: Props) {
                     style={{
                       fontFamily: "Inter_400Regular",
                       fontSize: 14,
-                      color: "#A07A2C",
+                      color: color.gold,
                       marginRight: 8,
                     }}
                   >
@@ -87,7 +89,7 @@ export function RichTextRenderer({ body, campaignId }: Props) {
                     style={{
                       fontFamily: "CormorantGaramond_400Regular",
                       fontSize: 16,
-                      color: "#2C2014CC",
+                      color: withAlpha("ink", 0xCC / 255),
                       flex: 1,
                       lineHeight: 24,
                     }}
@@ -106,7 +108,7 @@ export function RichTextRenderer({ body, campaignId }: Props) {
             style={{
               fontFamily: "CormorantGaramond_400Regular",
               fontSize: 16,
-              color: "#2C2014CC",
+              color: withAlpha("ink", 0xCC / 255),
               marginBottom: 8,
               lineHeight: 24,
             }}
@@ -133,7 +135,7 @@ function renderInline(
         key={`mention-${entityId || label}`}
         onPress={() => onMention(entityId)}
         style={{
-          color: "#A07A2C",
+          color: color.gold,
           fontFamily: "CormorantGaramond_600SemiBold",
         }}
       >

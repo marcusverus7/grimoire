@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useRef, useState } from "react";
 import { WaxSeal } from "@/components/WaxSeal";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -45,6 +46,8 @@ const SLIDES = [
 ];
 
 export function OnboardingModal({ visible, onDone }: OnboardingModalProps) {
+  useThemeTick();
+  const styles = makeStyles();
   const [page, setPage] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
 
@@ -150,10 +153,11 @@ export function OnboardingModal({ visible, onDone }: OnboardingModalProps) {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles() {
+  return StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#FAF5EA",
+    backgroundColor: color.parchment,
     alignItems: "center",
     paddingBottom: 48,
   },
@@ -168,7 +172,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "CormorantGaramond_700Bold",
     fontSize: 36,
-    color: "#2C2014",
+    color: color.ink,
     textAlign: "center",
     lineHeight: 42,
     marginBottom: 20,
@@ -176,7 +180,7 @@ const styles = StyleSheet.create({
   body: {
     fontFamily: "CormorantGaramond_400Regular",
     fontSize: 18,
-    color: "#5A4D3E",
+    color: color.inkSoft,
     textAlign: "center",
     lineHeight: 28,
   },
@@ -193,13 +197,13 @@ const styles = StyleSheet.create({
   featureLabel: {
     fontFamily: "Inter_600SemiBold",
     fontSize: 13,
-    color: "#2C2014",
+    color: color.ink,
     marginBottom: 2,
   },
   featureDesc: {
     fontFamily: "Inter_400Regular",
     fontSize: 13,
-    color: "#7A6E60",
+    color: color.inkStone,
     lineHeight: 18,
   },
   dots: {
@@ -211,10 +215,10 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: "#2C201420",
+    backgroundColor: withAlpha("ink", 0x20 / 255),
   },
   dotActive: {
-    backgroundColor: "#A07A2C",
+    backgroundColor: color.gold,
     width: 20,
     borderRadius: 3,
   },
@@ -224,17 +228,17 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   btnPrimary: {
-    backgroundColor: "#7A2418",
+    backgroundColor: color.oxblood,
     paddingVertical: 14,
     borderRadius: 2,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#A07A2C40",
+    borderColor: withAlpha("gold", 0x40 / 255),
   },
   btnPrimaryText: {
     fontFamily: "Inter_600SemiBold",
     fontSize: 14,
-    color: "#FAF5EA",
+    color: color.onAccent,
     textTransform: "uppercase",
     letterSpacing: 1.5,
   },
@@ -243,12 +247,12 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#A07A2C50",
+    borderColor: withAlpha("gold", 0x50 / 255),
   },
   btnSecondaryText: {
     fontFamily: "Inter_500Medium",
     fontSize: 14,
-    color: "#A07A2C",
+    color: color.gold,
   },
   btnSkip: {
     alignItems: "center",
@@ -257,6 +261,7 @@ const styles = StyleSheet.create({
   btnSkipText: {
     fontFamily: "Inter_400Regular",
     fontSize: 13,
-    color: "#2C201450",
+    color: withAlpha("ink", 0x50 / 255),
   },
-});
+  });
+}

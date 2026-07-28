@@ -8,7 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { db, getKv, setKv } from "@/lib/db";
 import { schema } from "@grimoire/core";
 import { randomUUID } from "expo-crypto";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Rarity = "Common" | "Uncommon" | "Rare" | "Very Rare" | "Legendary" | "Artifact";
@@ -25,16 +25,16 @@ type MagicItem = {
 
 const RARITIES: Rarity[] = ["Common", "Uncommon", "Rare", "Very Rare", "Legendary", "Artifact"];
 const RARITY_COLORS: Record<Rarity, string> = {
-  Common: color.inkFaint,
-  Uncommon: color.successBright,
-  Rare: "#2563EB",
-  "Very Rare": "#7C3AED",
-  Legendary: color.goldBright,
-  Artifact: "#7A1A1A",
-};
+  get Common() { return color.inkFaint; },
+  get Uncommon() { return color.successBright; },
+  get Rare() { return color.blue; },
+  get "Very Rare"() { return color.violet; },
+  get Legendary() { return color.goldBright; },
+  get Artifact() { return color.crimson; }};
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function MagicItemsScreen() {
+  useThemeTick();
   const { id } = useLocalSearchParams<{ id: string }>();
   const storageKey = `magic_items_${id}`;
 
@@ -143,7 +143,7 @@ export default function MagicItemsScreen() {
             <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint }}>Rare+</Text>
           </View>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: "#7C3AED" }}>
+            <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 16, color: color.violet }}>
               {items.filter(it => it.attunement).length}
             </Text>
             <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.inkFaint }}>Attuned</Text>
@@ -155,7 +155,7 @@ export default function MagicItemsScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
             <Pressable
               onPress={() => setFilterHolder(null)}
-              style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, backgroundColor: filterHolder === null ? color.ink : color.parchmentEdge, borderWidth: 1, borderColor: filterHolder === null ? color.ink : color.border }}
+              style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, backgroundColor: filterHolder === null ? color.panelInk : color.parchmentEdge, borderWidth: 1, borderColor: filterHolder === null ? color.ink : color.border }}
             >
               <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: filterHolder === null ? color.goldBright : color.borderDark }}>All</Text>
             </Pressable>
@@ -163,7 +163,7 @@ export default function MagicItemsScreen() {
               <Pressable
                 key={pc.id}
                 onPress={() => setFilterHolder(filterHolder === pc.name ? null : pc.name)}
-                style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, backgroundColor: filterHolder === pc.name ? color.ink : color.parchmentEdge, borderWidth: 1, borderColor: filterHolder === pc.name ? color.ink : color.border }}
+                style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, backgroundColor: filterHolder === pc.name ? color.panelInk : color.parchmentEdge, borderWidth: 1, borderColor: filterHolder === pc.name ? color.ink : color.border }}
               >
                 <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: filterHolder === pc.name ? color.goldBright : color.borderDark }}>{pc.name}</Text>
               </Pressable>
@@ -174,7 +174,7 @@ export default function MagicItemsScreen() {
         {/* Add button */}
         <Pressable
           onPress={openAdd}
-          style={{ backgroundColor: color.ink, borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
+          style={{ backgroundColor: color.panelInk, borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
         >
           <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: color.goldBright, letterSpacing: 1 }}>
             + Add Magic Item
@@ -194,7 +194,7 @@ export default function MagicItemsScreen() {
                 {g.holder}
               </Text>
               {g.holder !== "Unassigned" && (
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#7C3AED" }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.violet }}>
                   {attuneCount(g.holder)}/3 attunement
                 </Text>
               )}
@@ -237,8 +237,8 @@ export default function MagicItemsScreen() {
               </ScrollView>
 
               <Pressable onPress={() => setFattune(a => !a)} style={{ flexDirection: "row", alignItems: "center", marginBottom: 12, gap: 8 }}>
-                <View style={{ width: 18, height: 18, borderRadius: 2, borderWidth: 1.5, borderColor: fattune ? "#7C3AED" : color.border, backgroundColor: fattune ? "#7C3AED20" : "transparent", alignItems: "center", justifyContent: "center" }}>
-                  {fattune && <Text style={{ fontSize: 11, color: "#7C3AED" }}>✓</Text>}
+                <View style={{ width: 18, height: 18, borderRadius: 2, borderWidth: 1.5, borderColor: fattune ? color.violet : color.border, backgroundColor: fattune ? withAlpha("violet", 0x20 / 255) : "transparent", alignItems: "center", justifyContent: "center" }}>
+                  {fattune && <Text style={{ fontSize: 11, color: color.violet }}>✓</Text>}
                 </View>
                 <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink }}>Requires Attunement</Text>
               </Pressable>
@@ -249,7 +249,7 @@ export default function MagicItemsScreen() {
                   <Pressable
                     key={h}
                     onPress={() => setFholder(h)}
-                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fholder === h ? color.ink : color.border, backgroundColor: fholder === h ? color.ink : color.parchmentEdge }}
+                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fholder === h ? color.ink : color.border, backgroundColor: fholder === h ? color.panelInk : color.parchmentEdge }}
                   >
                     <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: fholder === h ? color.goldBright : color.borderDark }}>{h}</Text>
                   </Pressable>
@@ -269,7 +269,7 @@ export default function MagicItemsScreen() {
                 <Pressable onPress={() => setModalVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
                   <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
                 </Pressable>
-                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: color.panelInk, borderRadius: 2, padding: 10, alignItems: "center" }}>
                   <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>
                     {editItem ? "Save Changes" : "Add Item"}
                   </Text>
@@ -284,10 +284,9 @@ export default function MagicItemsScreen() {
 }
 
 const inputStyle = {
-  borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10,
-  fontFamily: "Inter_400Regular" as const, fontSize: 13, color: color.ink,
-  backgroundColor: "#FFFDF8", marginBottom: 12,
-};
+  borderWidth: 1, get borderColor() { return color.border; }, borderRadius: 2, padding: 10,
+  fontFamily: "Inter_400Regular" as const, fontSize: 13, get color() { return color.ink; },
+  get backgroundColor() { return color.paperBrightWarm; }, marginBottom: 12};
 
 function FieldLabel({ label }: { label: string }) {
   return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;
@@ -301,8 +300,8 @@ function ItemCard({ item, onEdit, onDelete }: { item: MagicItem; onEdit: () => v
         <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.ink, flex: 1 }}>{item.name}</Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           {item.attunement && (
-            <View style={{ backgroundColor: "#7C3AED20", borderRadius: 2, paddingHorizontal: 5, paddingVertical: 2 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: "#7C3AED" }}>ATTUNE</Text>
+            <View style={{ backgroundColor: withAlpha("violet", 0x20 / 255), borderRadius: 2, paddingHorizontal: 5, paddingVertical: 2 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: color.violet }}>ATTUNE</Text>
             </View>
           )}
           <View style={{ backgroundColor: rarityColor + "20", borderRadius: 2, paddingHorizontal: 5, paddingVertical: 2 }}>

@@ -8,7 +8,7 @@ import { GoldRule } from "@/components/GoldRule";
 import { db, getKv, setKv } from "@/lib/db";
 import { schema } from "@grimoire/core";
 import { randomUUID } from "expo-crypto";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type ActivityType =
@@ -52,6 +52,7 @@ const ACTIVITY_DEFAULT_DAYS: Record<ActivityType, number> = {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function DowntimeScreen() {
+  useThemeTick();
   const { id } = useLocalSearchParams<{ id: string }>();
   const storageKey = `downtime_${id}`;
 
@@ -165,7 +166,7 @@ export default function DowntimeScreen() {
 
         <Pressable
           onPress={openAdd}
-          style={{ backgroundColor: color.ink, borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
+          style={{ backgroundColor: color.panelInk, borderRadius: 2, padding: 12, alignItems: "center", marginBottom: 20 }}
         >
           <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 13, color: color.goldBright, letterSpacing: 1 }}>
             + Add Activity
@@ -231,7 +232,7 @@ export default function DowntimeScreen() {
                   <Pressable
                     key={pc.id}
                     onPress={() => { setFpc(pc.name); setFpcId(pc.id); }}
-                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fpc === pc.name ? color.ink : color.border, backgroundColor: fpc === pc.name ? color.ink : color.parchmentEdge }}
+                    style={{ paddingHorizontal: 10, paddingVertical: 5, marginRight: 6, borderRadius: 2, borderWidth: 1, borderColor: fpc === pc.name ? color.ink : color.border, backgroundColor: fpc === pc.name ? color.panelInk : color.parchmentEdge }}
                   >
                     <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: fpc === pc.name ? color.goldBright : color.borderDark }}>{pc.name}</Text>
                   </Pressable>
@@ -310,7 +311,7 @@ export default function DowntimeScreen() {
                 <Pressable onPress={() => setModalVisible(false)} style={{ flex: 1, borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10, alignItems: "center" }}>
                   <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.borderDark }}>Cancel</Text>
                 </Pressable>
-                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}>
+                <Pressable onPress={submit} style={{ flex: 1, backgroundColor: color.panelInk, borderRadius: 2, padding: 10, alignItems: "center" }}>
                   <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.goldBright }}>
                     {editActivity ? "Save" : "Add"}
                   </Text>
@@ -325,10 +326,9 @@ export default function DowntimeScreen() {
 }
 
 const inputStyle = {
-  borderWidth: 1, borderColor: color.border, borderRadius: 2, padding: 10,
-  fontFamily: "Inter_400Regular" as const, fontSize: 13, color: color.ink,
-  backgroundColor: "#FFFDF8", marginBottom: 12,
-};
+  borderWidth: 1, get borderColor() { return color.border; }, borderRadius: 2, padding: 10,
+  fontFamily: "Inter_400Regular" as const, fontSize: 13, get color() { return color.ink; },
+  get backgroundColor() { return color.paperBrightWarm; }, marginBottom: 12};
 
 function FL({ label }: { label: string }) {
   return <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{label}</Text>;

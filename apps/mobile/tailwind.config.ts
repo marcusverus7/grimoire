@@ -7,9 +7,28 @@ export default {
     "./lib/**/*.{ts,tsx}",
   ],
   presets: [require("nativewind/preset")],
+  // Driven explicitly by `applyScheme()` in lib/theme.ts, not by the OS —
+  // the candlelit theme is a choice a GM makes, not one the phone makes.
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
+        /**
+         * Candlelit counterparts, used only through `dark:` variants
+         * (`text-ink dark:text-night-ink`). Values match the `candlelit`
+         * palette in lib/theme.ts — change both together.
+         */
+        night: {
+          bg: "#16110D",
+          surface: "#1C1611",
+          edge: "#2A2119",
+          ink: "#EFE4CE",
+          "ink-soft": "#C0B096",
+          "ink-faint": "#93866F",
+          gold: "#C9A24A",
+          "gold-bright": "#E2BE73",
+          oxblood: "#A03A2A",
+        },
         leather: {
           DEFAULT: "#1A1410",
           light: "#2A2118",

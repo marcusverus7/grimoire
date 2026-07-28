@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { Text, Pressable, Alert } from "react-native";
 import { useAuth } from "@/lib/auth-context";
-import { colors } from "@/lib/theme";
+import { color, colors, useThemeTick } from "@/lib/theme";
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   return (
@@ -61,6 +61,7 @@ function HeaderActions() {
 }
 
 export default function TabLayout() {
+  useThemeTick();
   return (
     <Tabs
       screenOptions={{
@@ -72,7 +73,7 @@ export default function TabLayout() {
         headerTitleStyle: {
           fontFamily: "CinzelDecorative_400Regular",
           fontSize: 16,
-          color: colors.parchment.DEFAULT,
+          color: color.onAccentBase,
         },
         headerTintColor: colors.gold.DEFAULT,
         tabBarStyle: {
@@ -81,7 +82,7 @@ export default function TabLayout() {
           borderTopColor: colors.gold.DEFAULT,
         },
         tabBarActiveTintColor: colors.gold.bright,
-        tabBarInactiveTintColor: colors.parchment.deep,
+        tabBarInactiveTintColor: color.onAccentDeep,
         tabBarLabelStyle: {
           fontFamily: "Inter_500Medium",
           fontSize: 10,

@@ -8,6 +8,7 @@ import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Entity = typeof schema.entities.$inferSelect;
 
@@ -19,13 +20,13 @@ const STATUS_LABELS: Record<string, string> = {
   failed: "Failed",
 };
 const STATUS_COLORS: Record<string, string> = {
-  active: "#A07A2C",
-  open: "#5A4D3E",
-  completed: "#4A8060",
-  failed: "#7A2418",
-};
+  get active() { return color.gold; },
+  get open() { return color.inkSoft; },
+  get completed() { return color.success; },
+  get failed() { return color.oxblood; }};
 
 export default function QuestsScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [quests, setQuests] = useState<Entity[]>([]);
@@ -88,24 +89,24 @@ export default function QuestsScreen() {
           title: "Quest Log",
           headerRight: () => (
             <Pressable onPress={createQuest} style={{ marginRight: 16 }}>
-              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 22, color: "#A07A2C", lineHeight: 26 }}>+</Text>
+              <Text style={{ fontFamily: "Inter_500Medium", fontSize: 22, color: color.gold, lineHeight: 26 }}>+</Text>
             </Pressable>
           ),
         }}
       />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
       <ScrollView
-        className="flex-1 bg-parchment"
+        className="flex-1 bg-parchment dark:bg-night-bg"
         contentContainerStyle={{ padding: 20 }}
       >
         <Text
-          className="text-ink text-xl mb-1"
+          className="text-ink dark:text-night-ink text-xl mb-1"
           style={{ fontFamily: "CormorantGaramond_700Bold" }}
         >
           Quest Log
         </Text>
         <Text
-          className="text-ink-faint text-xs mb-4"
+          className="text-ink-faint dark:text-night-ink-faint text-xs mb-4"
           style={{ fontFamily: "Inter_400Regular" }}
         >
           {quests.length} quest{quests.length !== 1 ? "s" : ""}
@@ -116,7 +117,7 @@ export default function QuestsScreen() {
         {quests.length === 0 ? (
           <View className="mt-6 items-center">
             <Text
-              className="text-ink/50 text-sm text-center"
+              className="text-ink/50 dark:text-night-ink/50 text-sm text-center"
               style={{ fontFamily: "Inter_400Regular" }}
             >
               No quests yet. Create a quest entity to track your party's
@@ -132,7 +133,7 @@ export default function QuestsScreen() {
                     width: 8,
                     height: 8,
                     borderRadius: 4,
-                    backgroundColor: STATUS_COLORS[group.status] ?? "#8A7D6D",
+                    backgroundColor: STATUS_COLORS[group.status] ?? color.panelInkFaint,
                     marginRight: 8,
                   }}
                 />
@@ -140,13 +141,13 @@ export default function QuestsScreen() {
                   className="text-xs uppercase tracking-wider"
                   style={{
                     fontFamily: "Inter_600SemiBold",
-                    color: STATUS_COLORS[group.status] ?? "#8A7D6D",
+                    color: STATUS_COLORS[group.status] ?? color.inkFaint,
                   }}
                 >
                   {STATUS_LABELS[group.status] ?? group.status}
                 </Text>
                 <Text
-                  className="text-ink/30 text-xs ml-2"
+                  className="text-ink/30 dark:text-night-ink/30 text-xs ml-2"
                   style={{ fontFamily: "Inter_400Regular" }}
                 >
                   {group.items.length}
@@ -162,21 +163,21 @@ export default function QuestsScreen() {
                   <Pressable
                     key={quest.id}
                     onPress={() => router.push(`/campaign/${campaignId}/entity/${quest.id}`)}
-                    style={{ paddingVertical: 12, paddingHorizontal: 12, marginBottom: 8, borderRadius: 2, borderWidth: 1, borderColor: "#2C201415", backgroundColor: "#FAF5EA" }}
+                    style={{ paddingVertical: 12, paddingHorizontal: 12, marginBottom: 8, borderRadius: 2, borderWidth: 1, borderColor: withAlpha("ink", 0x15 / 255), backgroundColor: color.parchment }}
                   >
-                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 17, color: "#2C2014", marginBottom: quest.summary || interested.length > 0 ? 4 : 0 }}>
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 17, color: color.ink, marginBottom: quest.summary || interested.length > 0 ? 4 : 0 }}>
                       {quest.name}
                     </Text>
                     {quest.summary ? (
-                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#5A4D3E80", lineHeight: 18, marginBottom: interested.length > 0 ? 6 : 0 }} numberOfLines={2}>
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: withAlpha("inkSoft", 0x80 / 255), lineHeight: 18, marginBottom: interested.length > 0 ? 6 : 0 }} numberOfLines={2}>
                         {quest.summary}
                       </Text>
                     ) : null}
                     {interested.length > 0 ? (
                       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
                         {interested.map((name) => (
-                          <View key={name} style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 20, backgroundColor: "#A07A2C12", borderWidth: 1, borderColor: "#A07A2C30" }}>
-                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "#A07A2C" }}>{name}</Text>
+                          <View key={name} style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 20, backgroundColor: withAlpha("gold", 0x12 / 255), borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255) }}>
+                            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: color.gold }}>{name}</Text>
                           </View>
                         ))}
                       </View>

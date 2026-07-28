@@ -7,6 +7,7 @@ import {
   Easing,
 } from "react-native";
 import { useState, useRef, useEffect } from "react";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 const DICE = [4, 6, 8, 10, 12, 20, 100] as const;
 type Die = (typeof DICE)[number];
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function DiceRoller({ visible, onClose }: Props) {
+  useThemeTick();
   const [selectedDie, setSelectedDie] = useState<Die>(20);
   const [result, setResult] = useState<number | null>(null);
   const [modifier, setModifier] = useState(0);
@@ -64,20 +66,20 @@ export function DiceRoller({ visible, onClose }: Props) {
         <Pressable
           onPress={() => {}}
           style={{
-            backgroundColor: "#2C2014",
+            backgroundColor: color.panelInk,
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
             borderTopWidth: 1,
-            borderColor: "#A07A2C40",
+            borderColor: withAlpha("gold", 0x40 / 255),
             paddingHorizontal: 20,
             paddingTop: 12,
             paddingBottom: 40,
           }}
         >
           {/* Handle */}
-          <View style={{ width: 40, height: 4, backgroundColor: "#A07A2C40", borderRadius: 2, alignSelf: "center", marginBottom: 16 }} />
+          <View style={{ width: 40, height: 4, backgroundColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, alignSelf: "center", marginBottom: 16 }} />
 
-          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#F5EFDE", textAlign: "center", marginBottom: 16 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: color.onAccentSoft, textAlign: "center", marginBottom: 16 }}>
             Dice Vault
           </Text>
 
@@ -94,11 +96,11 @@ export function DiceRoller({ visible, onClose }: Props) {
                   borderRadius: 4,
                   borderWidth: 1,
                   alignItems: "center",
-                  backgroundColor: selectedDie === d ? "#A07A2C" : "transparent",
-                  borderColor: selectedDie === d ? "#C9A24A" : "#A07A2C40",
+                  backgroundColor: selectedDie === d ? color.gold : "transparent",
+                  borderColor: selectedDie === d ? color.goldBright : withAlpha("gold", 0x40 / 255),
                 }}
               >
-                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: d === 100 ? 11 : 14, color: selectedDie === d ? "#FAF5EA" : "#A07A2C" }}>
+                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: d === 100 ? 11 : 14, color: selectedDie === d ? color.onAccent : color.gold }}>
                   d{d}
                 </Text>
               </Pressable>
@@ -107,25 +109,25 @@ export function DiceRoller({ visible, onClose }: Props) {
 
           {/* Modifier */}
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", marginRight: 12 }}>Modifier</Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, marginRight: 12 }}>Modifier</Text>
             <Pressable
               onPress={() => setModifier((v) => v - 1)}
-              style={{ width: 32, height: 32, borderRadius: 16, borderWidth: 1, borderColor: "#A07A2C40", alignItems: "center", justifyContent: "center" }}
+              style={{ width: 32, height: 32, borderRadius: 16, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), alignItems: "center", justifyContent: "center" }}
             >
-              <Text style={{ color: "#A07A2C", fontSize: 18, lineHeight: 20 }}>−</Text>
+              <Text style={{ color: color.gold, fontSize: 18, lineHeight: 20 }}>−</Text>
             </Pressable>
-            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#F5EFDE", marginHorizontal: 16, minWidth: 32, textAlign: "center" }}>
+            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: color.onAccentSoft, marginHorizontal: 16, minWidth: 32, textAlign: "center" }}>
               {modifier >= 0 ? "+" : ""}{modifier}
             </Text>
             <Pressable
               onPress={() => setModifier((v) => v + 1)}
-              style={{ width: 32, height: 32, borderRadius: 16, borderWidth: 1, borderColor: "#A07A2C40", alignItems: "center", justifyContent: "center" }}
+              style={{ width: 32, height: 32, borderRadius: 16, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), alignItems: "center", justifyContent: "center" }}
             >
-              <Text style={{ color: "#A07A2C", fontSize: 18, lineHeight: 20 }}>+</Text>
+              <Text style={{ color: color.gold, fontSize: 18, lineHeight: 20 }}>+</Text>
             </Pressable>
             {modifier !== 0 && (
               <Pressable onPress={() => setModifier(0)} style={{ marginLeft: 12 }}>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D50" }}>reset</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: withAlpha("inkFaint", 0x50 / 255) }}>reset</Text>
               </Pressable>
             )}
           </View>
@@ -135,9 +137,9 @@ export function DiceRoller({ visible, onClose }: Props) {
             <Pressable
               onPress={roll}
               style={{
-                backgroundColor: "#7A2418",
+                backgroundColor: color.oxblood,
                 borderWidth: 1,
-                borderColor: isCrit ? "#C9A24A" : isFumble ? "#7A2418" : "#A07A2C40",
+                borderColor: isCrit ? color.goldBright : isFumble ? color.oxblood : withAlpha("gold", 0x40 / 255),
                 borderRadius: 4,
                 paddingVertical: 24,
                 alignItems: "center",
@@ -146,27 +148,27 @@ export function DiceRoller({ visible, onClose }: Props) {
             >
               {result !== null ? (
                 <>
-                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 56, color: isCrit ? "#C9A24A" : isFumble ? "#F5EFDE60" : "#F5EFDE", lineHeight: 64 }}>
+                  <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 56, color: isCrit ? color.goldBright : isFumble ? withAlpha("onAccentSoft", 0x60 / 255) : color.onAccentSoft, lineHeight: 64 }}>
                     {total}
                   </Text>
                   {modifier !== 0 && (
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#F5EFDE50" }}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("onAccentSoft", 0x50 / 255) }}>
                       {result} {modifier > 0 ? "+" : ""}{modifier}
                     </Text>
                   )}
                   {isCrit && (
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#C9A24A", textTransform: "uppercase", letterSpacing: 2, marginTop: 4 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.goldBright, textTransform: "uppercase", letterSpacing: 2, marginTop: 4 }}>
                       Natural {selectedDie}!
                     </Text>
                   )}
                   {isFumble && (
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#F5EFDE60", textTransform: "uppercase", letterSpacing: 2, marginTop: 4 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: withAlpha("onAccentSoft", 0x60 / 255), textTransform: "uppercase", letterSpacing: 2, marginTop: 4 }}>
                       Fumble
                     </Text>
                   )}
                 </>
               ) : (
-                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 28, color: "#F5EFDE50" }}>
+                <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 28, color: withAlpha("onAccentSoft", 0x50 / 255) }}>
                   Roll d{selectedDie}
                 </Text>
               )}
@@ -182,7 +184,7 @@ export function DiceRoller({ visible, onClose }: Props) {
                   style={{
                     fontFamily: "Inter_400Regular",
                     fontSize: 12,
-                    color: i === 0 ? "#A07A2C" : "#8A7D6D50",
+                    color: i === 0 ? color.gold : withAlpha("inkFaint", 0x50 / 255),
                     textAlign: "center",
                     marginBottom: 2,
                   }}

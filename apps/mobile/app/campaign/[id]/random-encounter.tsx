@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { db } from "@/lib/db";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 import { schema } from "@grimoire/core";
 import { eq } from "drizzle-orm";
 
@@ -390,10 +390,10 @@ const NIGHT_NOTES = [
 
 const TERRAINS = ["Forest", "Road", "Dungeon", "City", "Mountain", "Desert", "Swamp", "Coast", "Underdark"];
 const TIERS = [
-  { key: "low", label: "Low", color: color.successBright },
-  { key: "medium", label: "Medium", color: "#8A5C1A" },
-  { key: "high", label: "High", color: "#8A1A1A" },
-  { key: "deadly", label: "Deadly", color: "#3A0A0A" },
+  { key: "low", label: "Low", get color() { return color.successBright; } },
+  { key: "medium", label: "Medium", get color() { return color.goldDark; } },
+  { key: "high", label: "High", get color() { return color.crimsonDark; } },
+  { key: "deadly", label: "Deadly", get color() { return color.crimsonDeep; } },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -424,6 +424,7 @@ function rollEncounter(terrain: string, tier: string, isNight: boolean): Encount
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function RandomEncounterScreen() {
+  useThemeTick();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [terrain, setTerrain] = useState("Forest");
   const [tier, setTier] = useState("medium");
@@ -460,7 +461,7 @@ export default function RandomEncounterScreen() {
     });
   }
 
-  const tierColor = TIERS.find(t => t.key === tier)?.color ?? "#8A5C1A";
+  const tierColor = TIERS.find(t => t.key === tier)?.color ?? color.goldDark;
 
   return (
     <ParchmentScreen>
@@ -482,7 +483,7 @@ export default function RandomEncounterScreen() {
               onPress={() => setTerrain(t)}
               style={{
                 paddingHorizontal: 12, paddingVertical: 6, marginRight: 8, borderRadius: 2,
-                backgroundColor: terrain === t ? color.ink : color.parchmentEdge,
+                backgroundColor: terrain === t ? color.panelInk : color.parchmentEdge,
                 borderWidth: 1, borderColor: terrain === t ? color.ink : color.border,
               }}
             >
@@ -502,11 +503,11 @@ export default function RandomEncounterScreen() {
               onPress={() => setTier(t.key)}
               style={{
                 flex: 1, paddingVertical: 8, borderRadius: 2, alignItems: "center",
-                backgroundColor: tier === t.key ? t.color : color.parchmentEdge,
-                borderWidth: 1, borderColor: tier === t.key ? t.color : color.border,
+                backgroundColor: tier === t.key ? t.color : color.onAccentEdge,
+                borderWidth: 1, borderColor: tier === t.key ? t.color : color.onAccentBorder,
               }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: tier === t.key ? color.parchmentWarm : color.borderDark }}>{t.label}</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: tier === t.key ? color.onAccentWarm : color.borderDark }}>{t.label}</Text>
             </Pressable>
           ))}
         </View>
@@ -516,12 +517,12 @@ export default function RandomEncounterScreen() {
           onPress={() => setIsNight(n => !n)}
           style={{
             flexDirection: "row", alignItems: "center", justifyContent: "center",
-            backgroundColor: isNight ? "#1A1430" : color.parchmentEdge,
+            backgroundColor: isNight ? color.purpleNight : color.parchmentEdge,
             borderRadius: 2, padding: 10, marginBottom: 20,
-            borderWidth: 1, borderColor: isNight ? "#4A3A7A" : color.border,
+            borderWidth: 1, borderColor: isNight ? color.purpleDark : color.border,
           }}
         >
-          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: isNight ? "#B0A0E0" : color.borderDark }}>
+          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: isNight ? color.violetPale : color.borderDark }}>
             {isNight ? "🌙 Night" : "☀ Day"} — tap to toggle
           </Text>
         </Pressable>
@@ -529,7 +530,7 @@ export default function RandomEncounterScreen() {
         {/* Generate */}
         <Pressable
           onPress={() => setResult(rollEncounter(terrain, tier, isNight))}
-          style={{ backgroundColor: color.ink, borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 24 }}
+          style={{ backgroundColor: color.panelInk, borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 24 }}
         >
           <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: color.goldBright, letterSpacing: 1 }}>
             ⚄ Roll Encounter
@@ -585,7 +586,7 @@ export default function RandomEncounterScreen() {
               </Pressable>
               <Pressable
                 onPress={saveToNotes}
-                style={{ flex: 1, backgroundColor: color.ink, borderRadius: 2, padding: 10, alignItems: "center" }}
+                style={{ flex: 1, backgroundColor: color.panelInk, borderRadius: 2, padding: 10, alignItems: "center" }}
               >
                 <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.goldBright }}>Save to Notes</Text>
               </Pressable>

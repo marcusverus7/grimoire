@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema, nodeText } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type ResultKind = "entity" | "session" | "quote";
 
@@ -19,25 +20,24 @@ interface SearchResult {
 }
 
 const RESULT_COLORS: Record<ResultKind, string> = {
-  entity: "#A07A2C",
-  session: "#7A2418",
-  quote: "#4A3F32",
-};
+  get entity() { return color.gold; },
+  get session() { return color.oxblood; },
+  get quote() { return color.borderDark; }};
 
 const ENTITY_KIND_COLORS: Record<string, string> = {
-  npc: "#A07A2C",
-  pc: "#C9A24A",
-  location: "#4A8060",
-  faction: "#7A2418",
-  item: "#6A5ACD",
-  quest: "#D4A843",
-  custom: "#4A3F32",
-  secret: "#7A2418",
-};
+  get npc() { return color.gold; },
+  get pc() { return color.goldBright; },
+  get location() { return color.success; },
+  get faction() { return color.oxblood; },
+  get item() { return color.arcane; },
+  get quest() { return color.goldPale; },
+  get custom() { return color.borderDark; },
+  get secret() { return color.oxblood; }};
 
 type StatusFilter = "all" | "dead" | "missing";
 
 export default function LoreSearchScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -256,18 +256,18 @@ export default function LoreSearchScreen() {
               alignItems: "center",
               margin: 16,
               borderWidth: 1,
-              borderColor: "#A07A2C40",
+              borderColor: withAlpha("gold", 0x40 / 255),
               borderRadius: 4,
-              backgroundColor: "#FAF5EA",
+              backgroundColor: color.parchment,
               paddingHorizontal: 12,
             }}
           >
-            <Text style={{ fontSize: 16, color: "#A07A2C", marginRight: 8 }}>⌕</Text>
+            <Text style={{ fontSize: 16, color: color.gold, marginRight: 8 }}>⌕</Text>
             <TextInput
               value={query}
               onChangeText={handleChange}
               placeholder="Search entities, sessions, quotes…"
-              placeholderTextColor="#8A7D6D80"
+              placeholderTextColor={withAlpha("inkFaint", 0x80 / 255)}
               autoFocus
               autoCapitalize="none"
               autoCorrect={false}
@@ -275,13 +275,13 @@ export default function LoreSearchScreen() {
                 flex: 1,
                 fontFamily: "Inter_400Regular",
                 fontSize: 15,
-                color: "#2C2014",
+                color: color.ink,
                 paddingVertical: 12,
               }}
             />
             {query.length > 0 && (
               <Pressable onPress={() => handleChange("")}>
-                <Text style={{ color: "#8A7D6D", fontSize: 18, paddingLeft: 8 }}>✕</Text>
+                <Text style={{ color: color.inkFaint, fontSize: 18, paddingLeft: 8 }}>✕</Text>
               </Pressable>
             )}
           </View>
@@ -290,7 +290,7 @@ export default function LoreSearchScreen() {
           <View style={{ flexDirection: "row", paddingHorizontal: 16, gap: 6, marginBottom: 12 }}>
             {(["all", "dead", "missing"] as StatusFilter[]).map((f) => {
               const active = statusFilter === f;
-              const color = f === "dead" ? "#7A2418" : f === "missing" ? "#A07A2C" : "#4A3F32";
+              const swatch = f === "dead" ? color.oxblood : f === "missing" ? color.gold : color.borderDark;
               const label = f === "all" ? "All" : f === "dead" ? "☠ Dead" : "? Missing";
               return (
                 <Pressable
@@ -301,11 +301,11 @@ export default function LoreSearchScreen() {
                     paddingVertical: 5,
                     borderRadius: 12,
                     borderWidth: 1,
-                    borderColor: active ? color : `${color}40`,
-                    backgroundColor: active ? `${color}18` : "transparent",
+                    borderColor: active ? swatch : `${swatch}40`,
+                    backgroundColor: active ? `${swatch}18` : "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: active ? color : "#8A7D6D" }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: active ? swatch : color.inkFaint }}>
                     {label}
                   </Text>
                 </Pressable>
@@ -316,10 +316,10 @@ export default function LoreSearchScreen() {
           {/* Results */}
           {results.length === 0 && searched ? (
             <View style={{ alignItems: "center", marginTop: 48 }}>
-              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: "#2C2014", marginBottom: 8 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 18, color: color.ink, marginBottom: 8 }}>
                 Nothing found
               </Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", textAlign: "center" }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, textAlign: "center" }}>
                 {statusFilter !== "all"
                   ? `No ${statusFilter} characters in this campaign.`
                   : "Try a different name, keyword, or phrase."}
@@ -327,10 +327,10 @@ export default function LoreSearchScreen() {
             </View>
           ) : results.length === 0 && !searched ? (
             <View style={{ alignItems: "center", marginTop: 48, paddingHorizontal: 32 }}>
-              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014", marginBottom: 8 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: color.ink, marginBottom: 8 }}>
                 Lore Search
               </Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", textAlign: "center", lineHeight: 20 }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, textAlign: "center", lineHeight: 20 }}>
                 Search across all entities, session notes, and captured quotes in this campaign. Filter by Dead or Missing to browse by status.
               </Text>
             </View>
@@ -357,8 +357,8 @@ export default function LoreSearchScreen() {
                       marginBottom: 6,
                       borderRadius: 2,
                       borderWidth: 1,
-                      borderColor: "#A07A2C15",
-                      backgroundColor: "#FAF5EA",
+                      borderColor: withAlpha("gold", 0x15 / 255),
+                      backgroundColor: color.parchment,
                     }}
                   >
                     <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
@@ -376,10 +376,10 @@ export default function LoreSearchScreen() {
                         </Text>
                       </View>
                     </View>
-                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: "#2C2014", marginBottom: 2 }}>
+                    <Text style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 16, color: color.ink, marginBottom: 2 }}>
                       {item.title}
                     </Text>
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#8A7D6D" }} numberOfLines={2}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: color.inkFaint }} numberOfLines={2}>
                       {item.subtitle}
                     </Text>
                   </Pressable>
@@ -387,7 +387,7 @@ export default function LoreSearchScreen() {
               }}
               ListHeaderComponent={
                 results.length > 0 ? (
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D", marginBottom: 10 }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint, marginBottom: 10 }}>
                     {results.length} result{results.length !== 1 ? "s" : ""}
                   </Text>
                 ) : null

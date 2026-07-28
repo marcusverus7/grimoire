@@ -6,6 +6,7 @@ import { db, getKv, setKv } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type TodoItem = { id: string; text: string; done: boolean; ts: number };
 
@@ -41,6 +42,7 @@ function saveTodos(campaignId: string, todos: TodoItem[]) {
 }
 
 export default function TodosScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [input, setInput] = useState("");
@@ -95,7 +97,7 @@ export default function TodosScreen() {
     <>
       <Stack.Screen options={{ title: "Prep To-Do", headerRight: () => (
         <Pressable onPress={() => setShowTemplates(true)} style={{ marginRight: 8 }}>
-          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: "#A07A2C" }}>Templates</Text>
+          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: color.gold }}>Templates</Text>
         </Pressable>
       ) }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
@@ -108,33 +110,33 @@ export default function TodosScreen() {
               onChangeText={setInput}
               onSubmitEditing={addTodo}
               placeholder="Add a prep task…"
-              placeholderTextColor="#2C201440"
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
               returnKeyType="done"
               style={{
                 flex: 1,
                 fontFamily: "Inter_400Regular",
                 fontSize: 14,
-                color: "#2C2014",
+                color: color.ink,
                 borderBottomWidth: 1,
-                borderBottomColor: "#A07A2C40",
+                borderBottomColor: withAlpha("gold", 0x40 / 255),
                 paddingBottom: 6,
               }}
             />
             <Pressable
               onPress={addTodo}
-              style={{ paddingHorizontal: 14, paddingVertical: 7, backgroundColor: "#7A2418", borderRadius: 2 }}
+              style={{ paddingHorizontal: 14, paddingVertical: 7, backgroundColor: color.oxblood, borderRadius: 2 }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#FAF5EA" }}>Add</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.onAccent }}>Add</Text>
             </Pressable>
           </View>
 
           {/* Pending */}
           {pending.length === 0 && done.length === 0 ? (
             <View style={{ paddingVertical: 32, alignItems: "center" }}>
-              <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: "#5A4D3E80", fontStyle: "italic" }}>
+              <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 16, color: withAlpha("inkSoft", 0x80 / 255), fontStyle: "italic" }}>
                 No prep tasks yet.
               </Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#5A4D3E50", marginTop: 6 }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("inkSoft", 0x50 / 255), marginTop: 6 }}>
                 Add tasks above — stat up NPCs, plan scenes, write hooks.
               </Text>
             </View>
@@ -145,13 +147,13 @@ export default function TodosScreen() {
               key={todo.id}
               onPress={() => toggle(todo.id)}
               onLongPress={() => deleteTodo(todo.id)}
-              style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C15" }}
+              style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: withAlpha("gold", 0x15 / 255) }}
             >
               <View style={{
                 width: 20, height: 20, borderRadius: 2, borderWidth: 1.5,
-                borderColor: "#A07A2C60", marginRight: 12, marginTop: 2, alignItems: "center", justifyContent: "center",
+                borderColor: withAlpha("gold", 0x60 / 255), marginRight: 12, marginTop: 2, alignItems: "center", justifyContent: "center",
               }} />
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", flex: 1, lineHeight: 22 }}>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, flex: 1, lineHeight: 22 }}>
                 {todo.text}
               </Text>
             </Pressable>
@@ -165,10 +167,10 @@ export default function TodosScreen() {
                 onPress={() => setShowDone((v) => !v)}
                 style={{ flexDirection: "row", alignItems: "center", paddingVertical: 10 }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C60", textTransform: "uppercase", letterSpacing: 1.2, flex: 1 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: withAlpha("gold", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1.2, flex: 1 }}>
                   Done ({done.length})
                 </Text>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#A07A2C80" }}>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("gold", 0x80 / 255) }}>
                   {showDone ? "▲" : "▼"}
                 </Text>
               </Pressable>
@@ -179,16 +181,16 @@ export default function TodosScreen() {
                       key={todo.id}
                       onPress={() => toggle(todo.id)}
                       onLongPress={() => deleteTodo(todo.id)}
-                      style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C10" }}
+                      style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: withAlpha("gold", 0x10 / 255) }}
                     >
                       <View style={{
                         width: 20, height: 20, borderRadius: 2, borderWidth: 1.5,
-                        borderColor: "#4A806060", backgroundColor: "#4A806020",
+                        borderColor: withAlpha("success", 0x60 / 255), backgroundColor: withAlpha("success", 0x20 / 255),
                         marginRight: 12, marginTop: 2, alignItems: "center", justifyContent: "center",
                       }}>
-                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#4A8060" }}>✓</Text>
+                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.success }}>✓</Text>
                       </View>
-                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#5A4D3E60", flex: 1, lineHeight: 22, textDecorationLine: "line-through" }}>
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: withAlpha("inkSoft", 0x60 / 255), flex: 1, lineHeight: 22, textDecorationLine: "line-through" }}>
                         {todo.text}
                       </Text>
                     </Pressable>
@@ -197,7 +199,7 @@ export default function TodosScreen() {
                     onPress={deleteDone}
                     style={{ paddingVertical: 10, alignItems: "center" }}
                   >
-                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: "#7A241870" }}>
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: withAlpha("oxblood", 0x70 / 255) }}>
                       Clear completed
                     </Text>
                   </Pressable>
@@ -212,17 +214,17 @@ export default function TodosScreen() {
 
       {/* Templates modal */}
       <Modal visible={showTemplates} transparent animationType="slide" onRequestClose={() => setShowTemplates(false)}>
-        <Pressable style={{ flex: 1, backgroundColor: "#00000040", justifyContent: "flex-end" }} onPress={() => setShowTemplates(false)}>
-          <Pressable style={{ backgroundColor: "#FAF5EA", borderTopLeftRadius: 12, borderTopRightRadius: 12, padding: 20, paddingBottom: 36 }} onPress={() => {}}>
-            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: "#2C2014", marginBottom: 16 }}>Prep Templates</Text>
+        <Pressable style={{ flex: 1, backgroundColor: withAlpha("shadow", 0x40 / 255), justifyContent: "flex-end" }} onPress={() => setShowTemplates(false)}>
+          <Pressable style={{ backgroundColor: color.parchment, borderTopLeftRadius: 12, borderTopRightRadius: 12, padding: 20, paddingBottom: 36 }} onPress={() => {}}>
+            <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 20, color: color.ink, marginBottom: 16 }}>Prep Templates</Text>
             {PREP_TEMPLATES.map((t) => (
               <Pressable
                 key={t.label}
                 onPress={() => applyTemplate(t.tasks)}
-                style={{ paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: "#A07A2C20" }}
+                style={{ paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: withAlpha("gold", 0x20 / 255) }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#2C2014", marginBottom: 4 }}>{t.label}</Text>
-                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: "#8A7D6D" }} numberOfLines={2}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.ink, marginBottom: 4 }}>{t.label}</Text>
+                <Text style={{ fontFamily: "Inter_400Regular", fontSize: 11, color: color.inkFaint }} numberOfLines={2}>
                   {t.tasks.join(" · ")}
                 </Text>
               </Pressable>

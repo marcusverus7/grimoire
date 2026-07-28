@@ -16,7 +16,7 @@ import { getKv, setKv } from "@/lib/db";
 import { newId } from "@/lib/id";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Clock = {
   id: string;
@@ -48,6 +48,7 @@ function saveClocks(campaignId: string, clocks: Clock[]) {
 const MAX_SIZES = [4, 6, 8, 10, 12];
 
 export default function ClocksScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const [clocks, setClocks] = useState<Clock[]>([]);
   const [showAdd, setShowAdd] = useState(false);
@@ -112,7 +113,7 @@ export default function ClocksScreen() {
               onPress={() => setShowAdd(true)}
               style={{ paddingHorizontal: 14, paddingVertical: 7, backgroundColor: color.oxblood, borderRadius: 2, marginLeft: 12 }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.parchment }}>+ Clock</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.onAccent }}>+ Clock</Text>
             </Pressable>
           </View>
 
@@ -318,7 +319,7 @@ export default function ClocksScreen() {
                     backgroundColor: newName.trim() ? color.oxblood : withAlpha("oxblood", 0x30 / 255),
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: newName.trim() ? color.parchment : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: newName.trim() ? color.onAccent : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
                     Create
                   </Text>
                 </Pressable>

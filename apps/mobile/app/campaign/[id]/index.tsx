@@ -22,7 +22,7 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { DiceRoller } from "@/components/DiceRoller";
 import { schema, nodeText } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Campaign = typeof schema.campaigns.$inferSelect;
 type Entity = typeof schema.entities.$inferSelect;
@@ -40,14 +40,13 @@ const KIND_LABELS: Record<string, string> = {
   custom: "Custom",
 };
 const KIND_COLORS: Record<string, string> = {
-  npc: color.gold,
-  pc: color.goldBright,
-  location: color.success,
-  faction: color.oxblood,
-  item: color.arcane,
-  quest: "#D4A843",
-  custom: color.borderDark,
-};
+  get npc() { return color.gold; },
+  get pc() { return color.goldBright; },
+  get location() { return color.success; },
+  get faction() { return color.oxblood; },
+  get item() { return color.arcane; },
+  get quest() { return color.goldPale; },
+  get custom() { return color.borderDark; }};
 
 function fmtDuration(ms: number): string {
   const h = Math.floor(ms / 3600000);
@@ -58,6 +57,7 @@ function fmtDuration(ms: number): string {
 }
 
 export default function CampaignDetailScreen() {
+  useThemeTick();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
@@ -250,8 +250,8 @@ export default function CampaignDetailScreen() {
 
   if (!campaign) {
     return (
-      <View className="flex-1 bg-parchment items-center justify-center">
-        <Text className="text-ink/50 font-inter text-sm">
+      <View className="flex-1 bg-parchment dark:bg-night-bg items-center justify-center">
+        <Text className="text-ink/50 dark:text-night-ink/50 font-inter text-sm">
           Campaign not found
         </Text>
       </View>
@@ -412,14 +412,14 @@ export default function CampaignDetailScreen() {
           <View style={{ marginBottom: 16, borderRadius: 2, overflow: "hidden", borderWidth: 1, borderColor: withAlpha("oxblood", 0x40 / 255) }}>
             <View style={{ backgroundColor: color.oxblood, paddingHorizontal: 14, paddingVertical: 8, flexDirection: "row", alignItems: "center" }}>
               <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: color.parchment, marginRight: 8, opacity: 0.8 }} />
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.parchment, textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 11, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
                 Session {inProgressSession.number}{inProgressSession.title ? ` · ${inProgressSession.title}` : ""} — In Play
               </Text>
               <Pressable
                 onPress={() => router.push(`/campaign/${id}/session/${inProgressSession.id}` as Parameters<typeof router.push>[0])}
                 style={{ paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: withAlpha("parchment", 0x40 / 255), borderRadius: 2 }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: color.parchment, textTransform: "uppercase", letterSpacing: 1 }}>Open</Text>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1 }}>Open</Text>
               </Pressable>
             </View>
             <View style={{ flexDirection: "row", backgroundColor: withAlpha("oxblood", 0x08 / 255), paddingVertical: 8, paddingHorizontal: 14, gap: 16 }}>
@@ -467,7 +467,7 @@ export default function CampaignDetailScreen() {
               onBlur={saveName}
               onSubmitEditing={saveName}
               autoFocus
-              className="flex-1 text-ink font-cormorant-bold text-2xl border-b border-gold/30 pb-1"
+              className="flex-1 text-ink dark:text-night-ink font-cormorant-bold text-2xl border-b border-gold/30 dark:border-night-gold/30 pb-1"
               style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 24, color: color.ink }}
               placeholderTextColor={color.inkFaint}
             />
@@ -475,13 +475,13 @@ export default function CampaignDetailScreen() {
         ) : (
           <Pressable onPress={() => setEditing(true)} className="mb-4">
             <Text
-              className="text-ink text-2xl"
+              className="text-ink dark:text-night-ink text-2xl"
               style={{ fontFamily: "CormorantGaramond_700Bold" }}
             >
               {campaign.name}
             </Text>
             {campaign.systemTag ? (
-              <Text className="text-gold-muted text-xs mt-1" style={{ fontFamily: "Inter_400Regular" }}>
+              <Text className="text-gold-muted dark:text-night-gold text-xs mt-1" style={{ fontFamily: "Inter_400Regular" }}>
                 {campaign.systemTag}
               </Text>
             ) : null}
@@ -557,7 +557,7 @@ export default function CampaignDetailScreen() {
                     onPress={() => router.push(`/campaign/${id}/session/${nextPlannedSessionId}/prep` as Parameters<typeof router.push>[0])}
                     style={{ paddingHorizontal: 8, paddingVertical: 4, backgroundColor: color.oxblood, borderRadius: 2 }}
                   >
-                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.parchment, textTransform: "uppercase", letterSpacing: 1 }}>
+                    <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1 }}>
                       Prep
                     </Text>
                   </Pressable>
@@ -650,7 +650,7 @@ export default function CampaignDetailScreen() {
           <View className="flex-row items-center justify-between mb-3">
             <Pressable onPress={() => setShowSessions((v) => !v)} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               <Text
-                className="text-gold text-xs uppercase tracking-widest"
+                className="text-gold dark:text-night-gold text-xs uppercase tracking-widest"
                 style={{ fontFamily: "Inter_600SemiBold" }}
               >
                 Sessions
@@ -661,24 +661,24 @@ export default function CampaignDetailScreen() {
             </Pressable>
             <View className="flex-row items-center">
               <Pressable onPress={() => router.push(`/campaign/${id}/todos` as Parameters<typeof router.push>[0])}>
-                <Text className="text-ink-faint text-xs mr-4" style={{ fontFamily: "Inter_500Medium" }}>
+                <Text className="text-ink-faint dark:text-night-ink-faint text-xs mr-4" style={{ fontFamily: "Inter_500Medium" }}>
                   To-Do
                 </Text>
               </Pressable>
               <Pressable onPress={() => router.push(`/campaign/${id}/timeline`)}>
-                <Text className="text-ink-faint text-xs mr-4" style={{ fontFamily: "Inter_500Medium" }}>
+                <Text className="text-ink-faint dark:text-night-ink-faint text-xs mr-4" style={{ fontFamily: "Inter_500Medium" }}>
                   Timeline
                 </Text>
               </Pressable>
               <Pressable onPress={createSession}>
-                <Text className="text-gold text-xs" style={{ fontFamily: "Inter_500Medium" }}>
+                <Text className="text-gold dark:text-night-gold text-xs" style={{ fontFamily: "Inter_500Medium" }}>
                   + New
                 </Text>
               </Pressable>
             </View>
           </View>
           {showSessions && sessions.length === 0 ? (
-            <Text className="text-ink-faint text-sm mb-4" style={{ fontFamily: "Inter_400Regular" }}>
+            <Text className="text-ink-faint dark:text-night-ink-faint text-sm mb-4" style={{ fontFamily: "Inter_400Regular" }}>
               No sessions yet
             </Text>
           ) : null}
@@ -742,7 +742,7 @@ export default function CampaignDetailScreen() {
                     }}
                     className="py-2.5 px-2 mb-1"
                   >
-                    <Text className="text-ink text-base" style={{ fontFamily: "CormorantGaramond_600SemiBold" }}>
+                    <Text className="text-ink dark:text-night-ink text-base" style={{ fontFamily: "CormorantGaramond_600SemiBold" }}>
                       Session {s.number}
                       {s.title ? `: ${s.title}` : ""}
                     </Text>
@@ -766,7 +766,7 @@ export default function CampaignDetailScreen() {
                         {s.status}
                       </Text>
                       {s.playedOn ? (
-                        <Text className="text-ink/30 text-xs ml-2" style={{ fontFamily: "Inter_400Regular" }}>
+                        <Text className="text-ink/30 dark:text-night-ink/30 text-xs ml-2" style={{ fontFamily: "Inter_400Regular" }}>
                           {s.playedOn}
                         </Text>
                       ) : null}
@@ -792,12 +792,12 @@ export default function CampaignDetailScreen() {
                         const st = (s.attrs as Record<string, unknown> | null)?.sessionType as string | undefined;
                         if (!st) return null;
                         const typeColors: Record<string, string> = {
-                          combat: "#8B2020", roleplay: "#1E6B6B", exploration: "#3A6830", downtime: "#5A3A7A", travel: "#2A4080",
+                          combat: color.crimsonBright, roleplay: color.teal, exploration: color.greenDark, downtime: color.purpleDeep, travel: color.blueDeep,
                         };
-                        const color = typeColors[st] ?? "#5A4D3E";
+                        const swatch = typeColors[st] ?? color.inkSoft;
                         return (
-                          <View style={{ marginLeft: 6, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 2, borderWidth: 0.5, borderColor: `${color}60`, backgroundColor: `${color}12` }}>
-                            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color, textTransform: "capitalize" }}>{st}</Text>
+                          <View style={{ marginLeft: 6, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 2, borderWidth: 0.5, borderColor: `${swatch}60`, backgroundColor: `${swatch}12` }}>
+                            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 9, color: swatch, textTransform: "capitalize" }}>{st}</Text>
                           </View>
                         );
                       })()}
@@ -821,7 +821,7 @@ export default function CampaignDetailScreen() {
           <View className="flex-row items-center justify-between mb-3">
             <Pressable onPress={() => setShowEntities((v) => !v)} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               <Text
-                className="text-gold text-xs uppercase tracking-widest"
+                className="text-gold dark:text-night-gold text-xs uppercase tracking-widest"
                 style={{ fontFamily: "Inter_600SemiBold" }}
               >
                 Entities
@@ -831,7 +831,7 @@ export default function CampaignDetailScreen() {
               </Text>
             </Pressable>
             <Pressable onPress={() => { setQuickAddName(""); setQuickAddKind("npc"); setShowQuickAdd(true); }}>
-              <Text className="text-gold text-xs" style={{ fontFamily: "Inter_500Medium" }}>
+              <Text className="text-gold dark:text-night-gold text-xs" style={{ fontFamily: "Inter_500Medium" }}>
                 + New
               </Text>
             </Pressable>
@@ -852,7 +852,7 @@ export default function CampaignDetailScreen() {
                   borderColor: kindFilter === null ? color.gold : withAlpha("gold", 0x40 / 255),
                 }}
               >
-                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: kindFilter === null ? color.parchment : color.gold }}>
+                <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: kindFilter === null ? color.onAccent : color.gold }}>
                   All
                 </Text>
               </Pressable>
@@ -870,7 +870,7 @@ export default function CampaignDetailScreen() {
                     borderColor: kindFilter === k ? color.gold : withAlpha("gold", 0x40 / 255),
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: kindFilter === k ? color.parchment : color.gold }}>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: kindFilter === k ? color.onAccent : color.gold }}>
                     {KIND_LABELS[k]}
                   </Text>
                 </Pressable>
@@ -909,7 +909,7 @@ export default function CampaignDetailScreen() {
               onChangeText={setSearch}
               placeholder="Search entities…"
               placeholderTextColor={color.inkFaint}
-              className="border border-ink/10 rounded-sm px-3 py-2 mb-2"
+              className="border border-ink/10 dark:border-night-ink/10 rounded-sm px-3 py-2 mb-2"
               style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink }}
             />
           )}
@@ -974,16 +974,16 @@ export default function CampaignDetailScreen() {
               ))}
             </View>
           ) : entitiesByKind.length === 0 ? (
-            <Text className="text-ink-faint text-sm" style={{ fontFamily: "Inter_400Regular" }}>
+            <Text className="text-ink-faint dark:text-night-ink-faint text-sm" style={{ fontFamily: "Inter_400Regular" }}>
               No entities match filters
             </Text>
           ) : (
             entitiesByKind.map((group) => (
               <View key={group.kind} className="mb-4">
                 <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: KIND_COLORS[group.kind] ?? color.borderDark, marginRight: 6 }} />
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: KIND_COLORS[group.kind] ?? color.panelBorderDark, marginRight: 6 }} />
                   <Text
-                    className="text-ink/50 text-xs uppercase tracking-wider"
+                    className="text-ink/50 dark:text-night-ink/50 text-xs uppercase tracking-wider"
                     style={{ fontFamily: "Inter_500Medium" }}
                   >
                     {group.label}
@@ -1026,7 +1026,7 @@ export default function CampaignDetailScreen() {
                           <Text style={{ fontSize: 10, color: withAlpha("gold", 0x80 / 255), marginRight: 4 }}>★</Text>
                         )}
                         <Text
-                          className="text-ink text-base flex-1"
+                          className="text-ink dark:text-night-ink text-base flex-1"
                           style={{ fontFamily: "CormorantGaramond_600SemiBold" }}
                         >
                           {entity.name}
@@ -1052,7 +1052,7 @@ export default function CampaignDetailScreen() {
                         })()}
                         {entity.visibility === "gm_only" && (
                           <Text
-                            className="text-oxblood text-xs ml-2"
+                            className="text-oxblood dark:text-night-oxblood text-xs ml-2"
                             style={{ fontFamily: "Inter_500Medium" }}
                           >
                             GM
@@ -1061,7 +1061,7 @@ export default function CampaignDetailScreen() {
                       </View>
                       {entity.summary ? (
                         <Text
-                          className="text-ink/50 text-sm mt-0.5"
+                          className="text-ink/50 dark:text-night-ink/50 text-sm mt-0.5"
                           style={{ fontFamily: "Inter_400Regular" }}
                           numberOfLines={1}
                         >
@@ -1151,7 +1151,7 @@ export default function CampaignDetailScreen() {
             onPress={() => setShowToolbox((v) => !v)}
             style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 12 }}
           >
-            <Text className="text-gold text-xs uppercase tracking-widest" style={{ fontFamily: "Inter_600SemiBold" }}>
+            <Text className="text-gold dark:text-night-gold text-xs uppercase tracking-widest" style={{ fontFamily: "Inter_600SemiBold" }}>
               GM Toolbox
             </Text>
             <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: withAlpha("gold", 0x60 / 255) }}>
@@ -1284,7 +1284,7 @@ export default function CampaignDetailScreen() {
                     borderColor: withAlpha("gold", 0x30 / 255),
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: quickAddName.trim() ? color.parchment : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: quickAddName.trim() ? color.onAccent : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
                     Create
                   </Text>
                 </Pressable>

@@ -6,16 +6,18 @@ import { useFocusEffect } from "@react-navigation/native";
 import { db } from "@/lib/db";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type CharacterProfile = typeof schema.characterProfiles.$inferSelect;
 
 const LABEL = (s: string) => (
-  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
     {s}
   </Text>
 );
 
 export default function CharacterEditScreen() {
+  useThemeTick();
   const { profileId } = useLocalSearchParams<{ profileId: string }>();
   const router = useRouter();
   const [profile, setProfile] = useState<CharacterProfile | null>(null);
@@ -96,9 +98,9 @@ export default function CharacterEditScreen() {
               value={name}
               onChangeText={setName}
               placeholder="e.g. Kira Ashwood"
-              placeholderTextColor="#2C201440"
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
               autoFocus
-              style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 22, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 20 }}
+              style={{ fontFamily: "CormorantGaramond_600SemiBold", fontSize: 22, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 20 }}
             />
 
             {LABEL("One-line Description")}
@@ -106,8 +108,8 @@ export default function CharacterEditScreen() {
               value={summary}
               onChangeText={setSummary}
               placeholder="A halfling rogue with a complicated past"
-              placeholderTextColor="#2C201440"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 20 }}
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 20 }}
             />
 
             {LABEL("Class")}
@@ -115,8 +117,8 @@ export default function CharacterEditScreen() {
               value={charClass}
               onChangeText={setCharClass}
               placeholder="e.g. Ranger"
-              placeholderTextColor="#2C201440"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 20 }}
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 20 }}
             />
 
             {LABEL("Race / Ancestry")}
@@ -124,8 +126,8 @@ export default function CharacterEditScreen() {
               value={race}
               onChangeText={setRace}
               placeholder="e.g. Half-elf"
-              placeholderTextColor="#2C201440"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 20 }}
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 20 }}
             />
 
             {LABEL("Level")}
@@ -133,31 +135,31 @@ export default function CharacterEditScreen() {
               value={level}
               onChangeText={setLevel}
               placeholder="e.g. 5"
-              placeholderTextColor="#2C201440"
+              placeholderTextColor={withAlpha("ink", 0x40 / 255)}
               keyboardType="numeric"
-              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: "#2C2014", borderBottomWidth: 1, borderBottomColor: "#A07A2C30", paddingBottom: 8, marginBottom: 28 }}
+              style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.ink, borderBottomWidth: 1, borderBottomColor: withAlpha("gold", 0x30 / 255), paddingBottom: 8, marginBottom: 28 }}
             />
 
             <Pressable
               onPress={handleSave}
               disabled={!name.trim()}
               style={{
-                backgroundColor: name.trim() ? "#7A2418" : "#7A241830",
+                backgroundColor: name.trim() ? color.oxblood : withAlpha("oxblood", 0x30 / 255),
                 paddingVertical: 14,
                 borderRadius: 2,
                 alignItems: "center",
                 marginBottom: 12,
                 borderWidth: 1,
-                borderColor: "#A07A2C30",
+                borderColor: withAlpha("gold", 0x30 / 255),
               }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: name.trim() ? "#FAF5EA" : "#FAF5EA60", textTransform: "uppercase", letterSpacing: 1 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: name.trim() ? color.onAccent : withAlpha("onAccent", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
                 Save
               </Text>
             </Pressable>
 
             <Pressable onPress={handleDelete} style={{ alignItems: "center", paddingVertical: 10 }}>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#7A241860" }}>Delete Character</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: withAlpha("oxblood", 0x60 / 255) }}>Delete Character</Text>
             </Pressable>
 
             <View style={{ height: 40 }} />

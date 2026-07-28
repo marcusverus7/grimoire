@@ -19,7 +19,7 @@ import { newId } from "@/lib/id";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { schema } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type CharacterProfile = typeof schema.characterProfiles.$inferSelect;
 
@@ -29,10 +29,9 @@ const STATUS_LABELS: Record<string, string> = {
   archived: "Archived",
 };
 const STATUS_COLORS: Record<string, string> = {
-  active: color.success,
-  retired: color.gold,
-  archived: color.inkSoft,
-};
+  get active() { return color.success; },
+  get retired() { return color.gold; },
+  get archived() { return color.inkSoft; }};
 
 function getOrCreateGmId(): string {
   const existing = db
@@ -49,6 +48,7 @@ function getOrCreateGmId(): string {
 }
 
 export default function CharactersScreen() {
+  useThemeTick();
   const router = useRouter();
   const [characters, setCharacters] = useState<CharacterProfile[]>([]);
   const [showCreate, setShowCreate] = useState(false);
@@ -177,7 +177,7 @@ export default function CharactersScreen() {
       >
         <Pressable onPress={() => {}}>
           <ScrollView
-            style={{ backgroundColor: "#FAF0DC", borderRadius: 4, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255) }}
+            style={{ backgroundColor: color.paperCream, borderRadius: 4, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255) }}
             contentContainerStyle={{ padding: 20 }}
             keyboardShouldPersistTaps="handled"
           >
@@ -253,7 +253,7 @@ export default function CharactersScreen() {
                 disabled={!name.trim()}
                 style={{ paddingHorizontal: 20, paddingVertical: 10, backgroundColor: name.trim() ? color.oxblood : withAlpha("oxblood", 0x30 / 255), borderRadius: 2, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255) }}
               >
-                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: name.trim() ? color.parchment : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
+                <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: name.trim() ? color.onAccent : withAlpha("parchment", 0x60 / 255), textTransform: "uppercase", letterSpacing: 1 }}>
                   {showEdit ? "Save" : "Create"}
                 </Text>
               </Pressable>
@@ -280,7 +280,7 @@ export default function CharactersScreen() {
               onPress={openCreate}
               style={{ backgroundColor: color.oxblood, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 2, borderWidth: 1, borderColor: withAlpha("gold", 0x30 / 255) }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.parchment, textTransform: "uppercase", letterSpacing: 1 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1 }}>
                 Add Character
               </Text>
             </Pressable>

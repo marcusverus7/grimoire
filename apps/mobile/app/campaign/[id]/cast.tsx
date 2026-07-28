@@ -14,7 +14,7 @@ import { db } from "@/lib/db";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { schema } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Entity = typeof schema.entities.$inferSelect;
 type CastFilter = "all" | "pcs" | "npcs" | "alive";
@@ -29,6 +29,7 @@ const FILTER_LABELS: Record<CastFilter, string> = {
 type EntityWithLastSeen = Entity & { lastSeenSessionNumber?: number; lastSeenSessionTitle?: string | null };
 
 export default function CastScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [entities, setEntities] = useState<EntityWithLastSeen[]>([]);

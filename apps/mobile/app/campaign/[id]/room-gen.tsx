@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { useState } from "react";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 // ── Tables ────────────────────────────────────────────────────────────────────
 const ROOM_SIZES = [
@@ -160,6 +161,7 @@ function rollDoor(): DoorResult {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function RoomGenScreen() {
+  useThemeTick();
   const [mode, setMode] = useState<"room" | "door">("room");
   const [room, setRoom] = useState<RoomResult | null>(null);
   const [door, setDoor] = useState<DoorResult | null>(null);
@@ -186,20 +188,20 @@ export default function RoomGenScreen() {
     <ParchmentScreen>
       <Stack.Screen options={{ title: "Room & Door Generator", headerBackTitle: "Campaign" }} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 4 }}>
           Room & Door Generator
         </Text>
         <GoldRule />
 
         {/* Mode tabs */}
-        <View style={{ flexDirection: "row", marginBottom: 20, borderWidth: 1, borderColor: "#C4B49A", borderRadius: 2, overflow: "hidden" }}>
+        <View style={{ flexDirection: "row", marginBottom: 20, borderWidth: 1, borderColor: color.border, borderRadius: 2, overflow: "hidden" }}>
           {(["room", "door"] as const).map(m => (
             <Pressable
               key={m}
               onPress={() => setMode(m)}
-              style={{ flex: 1, padding: 10, alignItems: "center", backgroundColor: mode === m ? "#2C2014" : "#E8DCC8" }}
+              style={{ flex: 1, padding: 10, alignItems: "center", backgroundColor: mode === m ? color.panelInk : color.parchmentEdge }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: mode === m ? "#C9A24A" : "#4A3F32", textTransform: "capitalize" }}>{m}</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: mode === m ? color.goldBright : color.borderDark, textTransform: "capitalize" }}>{m}</Text>
             </Pressable>
           ))}
         </View>
@@ -209,9 +211,9 @@ export default function RoomGenScreen() {
           <>
             <Pressable
               onPress={() => setRoom(rollRoom())}
-              style={{ backgroundColor: "#2C2014", borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 24 }}
+              style={{ backgroundColor: color.panelInk, borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 24 }}
             >
-              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: "#C9A24A", letterSpacing: 1 }}>
+              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: color.goldBright, letterSpacing: 1 }}>
                 ⚄ Generate Room
               </Text>
             </Pressable>
@@ -227,13 +229,13 @@ export default function RoomGenScreen() {
                 <RoomRow label="Hidden" value={room.hidden} onReroll={() => rerollRoomField("hidden")} muted />
                 <Pressable
                   onPress={() => setRoom(rollRoom())}
-                  style={{ borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, padding: 10, alignItems: "center", marginTop: 12 }}
+                  style={{ borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, padding: 10, alignItems: "center", marginTop: 12 }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C" }}>⚄ Re-roll All</Text>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold }}>⚄ Re-roll All</Text>
                 </Pressable>
               </View>
             ) : (
-              <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#8A7D6D60", textAlign: "center", marginTop: 20 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("inkFaint", 0x60 / 255), textAlign: "center", marginTop: 20 }}>
                 Generate a room to describe the space to your players.
               </Text>
             )}
@@ -245,9 +247,9 @@ export default function RoomGenScreen() {
           <>
             <Pressable
               onPress={() => setDoor(rollDoor())}
-              style={{ backgroundColor: "#2C2014", borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 24 }}
+              style={{ backgroundColor: color.panelInk, borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 24 }}
             >
-              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: "#C9A24A", letterSpacing: 1 }}>
+              <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: color.goldBright, letterSpacing: 1 }}>
                 ⚄ Generate Door
               </Text>
             </Pressable>
@@ -258,13 +260,13 @@ export default function RoomGenScreen() {
                 <RoomRow label="Detail" value={door.feature} onReroll={() => rerollDoorField("feature")} />
                 <Pressable
                   onPress={() => setDoor(rollDoor())}
-                  style={{ borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, padding: 10, alignItems: "center", marginTop: 12 }}
+                  style={{ borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, padding: 10, alignItems: "center", marginTop: 12 }}
                 >
-                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C" }}>⚄ Re-roll All</Text>
+                  <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold }}>⚄ Re-roll All</Text>
                 </Pressable>
               </View>
             ) : (
-              <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#8A7D6D60", textAlign: "center", marginTop: 20 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("inkFaint", 0x60 / 255), textAlign: "center", marginTop: 20 }}>
                 Generate a door for your next encounter or dungeon room.
               </Text>
             )}
@@ -281,16 +283,16 @@ function RoomRow({
   label: string; value: string; onReroll: () => void; highlight?: boolean; muted?: boolean;
 }) {
   return (
-    <View style={{ borderBottomWidth: 1, borderBottomColor: "#E8DCC8", paddingVertical: 10 }}>
-      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>
+    <View style={{ borderBottomWidth: 1, borderBottomColor: color.parchmentEdge, paddingVertical: 10 }}>
+      <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>
         {label}
       </Text>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <Text style={{ flex: 1, fontFamily: highlight ? "CormorantGaramond_400Regular_Italic" : "Inter_400Regular", fontSize: highlight ? 14 : 13, color: muted ? "#8A7D6D" : "#2C2014", lineHeight: 20 }}>
+        <Text style={{ flex: 1, fontFamily: highlight ? "CormorantGaramond_400Regular_Italic" : "Inter_400Regular", fontSize: highlight ? 14 : 13, color: muted ? color.inkFaint : color.ink, lineHeight: 20 }}>
           {value}
         </Text>
         <Pressable onPress={onReroll} style={{ padding: 6, marginLeft: 4 }}>
-          <Text style={{ fontSize: 14, color: "#A07A2C" }}>⚄</Text>
+          <Text style={{ fontSize: 14, color: color.gold }}>⚄</Text>
         </Pressable>
       </View>
     </View>

@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { useState } from "react";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 // ── Tables ────────────────────────────────────────────────────────────────────
 const T_ADJ1 = ["Rusty", "Golden", "Silver", "Broken", "Lucky", "Wandering", "Weeping", "Laughing", "Crooked", "Faded", "Howling", "Merry", "Surly", "Gilded", "Battered", "Winking", "Stumbling", "Proud", "Fallen", "Thirsty"];
@@ -75,12 +76,13 @@ function generateTavern(): TavernData {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function TavernScreen() {
+  useThemeTick();
   const [tavern, setTavern] = useState<TavernData | null>(null);
 
   function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
       <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: "#8A7D6D", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 10, color: color.inkFaint, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
           {title}
         </Text>
         {children}
@@ -92,16 +94,16 @@ export default function TavernScreen() {
     <ParchmentScreen>
       <Stack.Screen options={{ title: "Tavern Generator", headerBackTitle: "Campaign" }} />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+        <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 18, color: color.ink, textAlign: "center", marginBottom: 4 }}>
           Tavern Generator
         </Text>
         <GoldRule />
 
         <Pressable
           onPress={() => setTavern(generateTavern())}
-          style={{ backgroundColor: "#2C2014", borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 24 }}
+          style={{ backgroundColor: color.panelInk, borderRadius: 2, padding: 14, alignItems: "center", marginBottom: 24 }}
         >
-          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: "#C9A24A", letterSpacing: 1 }}>
+          <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 14, color: color.goldBright, letterSpacing: 1 }}>
             ⚄ Generate Tavern
           </Text>
         </Pressable>
@@ -109,31 +111,31 @@ export default function TavernScreen() {
         {tavern && (
           <View>
             {/* Name */}
-            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 20, color: "#2C2014", textAlign: "center", marginBottom: 4 }}>
+            <Text style={{ fontFamily: "CinzelDecorative_400Regular", fontSize: 20, color: color.ink, textAlign: "center", marginBottom: 4 }}>
               {tavern.name}
             </Text>
             <GoldRule />
 
             <Section title="Atmosphere">
-              <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 15, color: "#2C2014", lineHeight: 22 }}>
+              <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 15, color: color.ink, lineHeight: 22 }}>
                 {tavern.atmosphere}
               </Text>
             </Section>
 
             <Section title="Innkeeper">
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#2C2014" }}>{tavern.keeper}</Text>
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#4A3F32", marginTop: 2 }}>{tavern.keeperTrait}</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.ink }}>{tavern.keeper}</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.borderDark, marginTop: 2 }}>{tavern.keeperTrait}</Text>
             </Section>
 
             <Section title="Today's Special">
-              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014" }}>{tavern.special}</Text>
+              <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink }}>{tavern.special}</Text>
             </Section>
 
             <Section title={`Patrons (${tavern.patrons.length})`}>
               {tavern.patrons.map((p, i) => (
                 <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 4 }}>
-                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: "#8A7D6D", width: 16 }}>•</Text>
-                  <Text style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 13, color: "#2C2014" }}>
+                  <Text style={{ fontFamily: "Inter_400Regular", fontSize: 13, color: color.inkFaint, width: 16 }}>•</Text>
+                  <Text style={{ flex: 1, fontFamily: "Inter_400Regular", fontSize: 13, color: color.ink }}>
                     <Text style={{ fontFamily: "Inter_600SemiBold" }}>{p.type}</Text>
                     {" — "}{p.mood}
                   </Text>
@@ -142,8 +144,8 @@ export default function TavernScreen() {
             </Section>
 
             <Section title="Overheard Rumour">
-              <View style={{ backgroundColor: "#A07A2C08", borderLeftWidth: 3, borderLeftColor: "#A07A2C40", padding: 10, borderRadius: 2 }}>
-                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#2C2014", lineHeight: 20 }}>
+              <View style={{ backgroundColor: withAlpha("gold", 0x08 / 255), borderLeftWidth: 3, borderLeftColor: withAlpha("gold", 0x40 / 255), padding: 10, borderRadius: 2 }}>
+                <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: color.ink, lineHeight: 20 }}>
                   "{tavern.rumour}"
                 </Text>
               </View>
@@ -151,15 +153,15 @@ export default function TavernScreen() {
 
             <Pressable
               onPress={() => setTavern(generateTavern())}
-              style={{ borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, padding: 10, alignItems: "center", marginTop: 4 }}
+              style={{ borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, padding: 10, alignItems: "center", marginTop: 4 }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: "#A07A2C" }}>⚄ Re-roll Tavern</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 12, color: color.gold }}>⚄ Re-roll Tavern</Text>
             </Pressable>
           </View>
         )}
 
         {!tavern && (
-          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#8A7D6D60", textAlign: "center", marginTop: 20 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("inkFaint", 0x60 / 255), textAlign: "center", marginTop: 20 }}>
             Generate a tavern to populate your next scene.
           </Text>
         )}

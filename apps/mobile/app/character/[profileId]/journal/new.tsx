@@ -7,8 +7,10 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import RichTextEditor from "@/components/RichTextEditor";
 import { schema } from "@grimoire/core";
 import type { EditorBridge } from "@10play/tentap-editor";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 export default function NewJournalEntryScreen() {
+  useThemeTick();
   const { profileId } = useLocalSearchParams<{ profileId: string }>();
   const router = useRouter();
   const editorRef = useRef<EditorBridge | null>(null);
@@ -39,14 +41,14 @@ export default function NewJournalEntryScreen() {
           title: "New Journal Entry",
           headerRight: () => (
             <Pressable onPress={handleSave} style={{ marginRight: 8 }}>
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: "#A07A2C" }}>Save</Text>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.gold }}>Save</Text>
             </Pressable>
           ),
         }}
       />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         <View style={{ flex: 1, padding: 16 }}>
-          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: "#5A4D3E80", marginBottom: 12, textAlign: "center" }}>
+          <Text style={{ fontFamily: "CormorantGaramond_400Regular_Italic", fontSize: 14, color: withAlpha("inkSoft", 0x80 / 255), marginBottom: 12, textAlign: "center" }}>
             Write in your character's voice
           </Text>
           <RichTextEditor editorRef={editorRef} minHeight={400} />

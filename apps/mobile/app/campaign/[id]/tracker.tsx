@@ -16,7 +16,7 @@ import { db, getKv, setKv } from "@/lib/db";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { DiceRoller } from "@/components/DiceRoller";
 import { schema } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 const CONDITIONS = [
   "Blinded", "Charmed", "Concentration", "Deafened", "Exhausted",
@@ -25,14 +25,13 @@ const CONDITIONS = [
 ];
 
 const CONDITION_COLORS: Record<string, string> = {
-  Poisoned: "#4A7A2C",
-  Frightened: color.oxblood,
-  Paralyzed: color.arcane,
-  Stunned: color.arcane,
-  Unconscious: "#3A2E24",
-  Concentration: color.gold,
-  Prone: color.inkFaint,
-};
+  get Poisoned() { return color.green; },
+  get Frightened() { return color.oxblood; },
+  get Paralyzed() { return color.arcane; },
+  get Stunned() { return color.arcane; },
+  get Unconscious() { return color.inkBark; },
+  get Concentration() { return color.gold; },
+  get Prone() { return color.inkFaint; }};
 
 const CONDITION_DESC: Record<string, string> = {
   Blinded: "Auto-fail sight checks. Attack rolls have disadvantage; attacks against have advantage.",
@@ -65,6 +64,7 @@ type TrackerEntry = Entity & {
 };
 
 export default function TrackerScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   type TempCombatant = { id: string; name: string; hp: number; ac: number };
@@ -372,12 +372,12 @@ export default function TrackerScreen() {
                     paddingHorizontal: 10,
                     paddingVertical: 4,
                     borderWidth: 1,
-                    borderColor: "#5A3A7A40",
+                    borderColor: withAlpha("purpleDeep", 0x40 / 255),
                     borderRadius: 10,
                     backgroundColor: "transparent",
                   }}
                 >
-                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: "#5A3A7A" }}>⚄ Roll All</Text>
+                  <Text style={{ fontFamily: "Inter_500Medium", fontSize: 11, color: color.purpleDeep }}>⚄ Roll All</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setSortByInit((v) => !v)}
@@ -547,7 +547,7 @@ function CombatantRow({
   const [editingInit, setEditingInit] = useState(false);
   const [initInput, setInitInput] = useState("");
   const pct = entry.maxHp > 0 ? entry.currentHp / entry.maxHp : 1;
-  const barColor = pct > 0.5 ? "#4A7A2C" : pct > 0.25 ? color.gold : color.oxblood;
+  const barColor = pct > 0.5 ? color.green : pct > 0.25 ? color.gold : color.oxblood;
   const isDead = entry.currentHp === 0;
 
   const confirmInit = () => {
@@ -627,9 +627,9 @@ function CombatantRow({
           <Pressable
             onPress={() => onAdjust(entry, 1)}
             onLongPress={() => onAdjust(entry, 5)}
-            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: "#4A7A2C15", borderWidth: 1, borderColor: "#4A7A2C30", alignItems: "center", justifyContent: "center" }}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: withAlpha("green", 0x15 / 255), borderWidth: 1, borderColor: withAlpha("green", 0x30 / 255), alignItems: "center", justifyContent: "center" }}
           >
-            <Text style={{ color: "#4A7A2C", fontSize: 20, lineHeight: 22 }}>+</Text>
+            <Text style={{ color: color.green, fontSize: 20, lineHeight: 22 }}>+</Text>
           </Pressable>
         </View>
       </View>
@@ -672,7 +672,7 @@ function CombatantRow({
 function TempCombatantRow({ combatant, onAdjust }: { combatant: { id: string; name: string; hp: number; ac: number }; onAdjust: (delta: number) => void }) {
   const maxHp = combatant.hp;
   const pct = maxHp > 0 ? combatant.hp / maxHp : 1;
-  const barColor = pct > 0.5 ? "#4A7A2C" : pct > 0.25 ? color.gold : color.oxblood;
+  const barColor = pct > 0.5 ? color.green : pct > 0.25 ? color.gold : color.oxblood;
   const isDead = combatant.hp <= 0;
 
   return (
@@ -710,9 +710,9 @@ function TempCombatantRow({ combatant, onAdjust }: { combatant: { id: string; na
           <Pressable
             onPress={() => onAdjust(1)}
             onLongPress={() => onAdjust(5)}
-            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: "#4A7A2C15", borderWidth: 1, borderColor: "#4A7A2C30", alignItems: "center", justifyContent: "center" }}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: withAlpha("green", 0x15 / 255), borderWidth: 1, borderColor: withAlpha("green", 0x30 / 255), alignItems: "center", justifyContent: "center" }}
           >
-            <Text style={{ color: "#4A7A2C", fontSize: 20, lineHeight: 22 }}>+</Text>
+            <Text style={{ color: color.green, fontSize: 20, lineHeight: 22 }}>+</Text>
           </Pressable>
         </View>
       </View>

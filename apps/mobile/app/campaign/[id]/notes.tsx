@@ -8,6 +8,7 @@ import RichTextEditor from "@/components/RichTextEditor";
 import { schema } from "@grimoire/core";
 import type { RichTextNode } from "@grimoire/core";
 import type { EditorBridge } from "@10play/tentap-editor";
+import { color, useThemeTick } from "@/lib/theme";
 
 type CampaignSettings = {
   notes?: string;
@@ -16,6 +17,7 @@ type CampaignSettings = {
 };
 
 export default function WorldNotesScreen() {
+  useThemeTick();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const editorRef = useRef<EditorBridge | null>(null);
@@ -88,7 +90,7 @@ export default function WorldNotesScreen() {
                 style={{
                   fontFamily: "Inter_600SemiBold",
                   fontSize: 14,
-                  color: "#A07A2C",
+                  color: color.gold,
                 }}
               >
                 Save
@@ -103,7 +105,7 @@ export default function WorldNotesScreen() {
             style={{
               fontFamily: "Inter_400Regular",
               fontSize: 12,
-              color: "#8A7D6D",
+              color: color.inkFaint,
               marginBottom: 12,
               lineHeight: 18,
             }}

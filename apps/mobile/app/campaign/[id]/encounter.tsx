@@ -15,7 +15,7 @@ import { db, getKv, setKv } from "@/lib/db";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { newId } from "@/lib/id";
 import { schema } from "@grimoire/core";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 type Attrs = Record<string, unknown>;
 
@@ -47,6 +47,7 @@ const XP_THRESHOLDS: [number, number, number, number][] = [
 ];
 
 export default function EncounterBuilderScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
@@ -197,12 +198,12 @@ export default function EncounterBuilderScreen() {
                 </Text>
                 <View style={{ flexDirection: "row", gap: 6 }}>
                   {(["Easy", "Medium", "Hard", "Deadly"] as const).map((label, i) => {
-                    const colors = ["#4A8060", "#A07A2C", "#7A5020", "#7A2418"];
-                    const color = colors[i] ?? "#5A4D3E";
+                    const colors = [color.success, color.gold, color.goldEarth, color.oxblood];
+                    const swatch = colors[i] ?? color.inkSoft;
                     return (
-                      <View key={label} style={{ flex: 1, alignItems: "center", padding: 6, borderRadius: 2, borderWidth: 1, borderColor: `${color}25`, backgroundColor: `${color}08` }}>
-                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 8, color, textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>{label}</Text>
-                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color }}>{(partyThresholds[i] ?? 0).toLocaleString()}</Text>
+                      <View key={label} style={{ flex: 1, alignItems: "center", padding: 6, borderRadius: 2, borderWidth: 1, borderColor: `${swatch}25`, backgroundColor: `${swatch}08` }}>
+                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 8, color: swatch, textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>{label}</Text>
+                        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: swatch }}>{(partyThresholds[i] ?? 0).toLocaleString()}</Text>
                       </View>
                     );
                   })}
@@ -250,7 +251,7 @@ export default function EncounterBuilderScreen() {
                         marginRight: 10,
                       }}
                     >
-                      {isSelected && <Text style={{ color: color.parchment, fontSize: 10 }}>✓</Text>}
+                      {isSelected && <Text style={{ color: color.onAccent, fontSize: 10 }}>✓</Text>}
                     </View>
                     {npc.imageUri ? (
                       <Image source={{ uri: npc.imageUri }} style={{ width: 32, height: 32, borderRadius: 16, marginRight: 10 }} />
@@ -382,7 +383,7 @@ export default function EncounterBuilderScreen() {
                 borderColor: withAlpha("gold", 0x30 / 255),
               }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.parchment, textTransform: "uppercase", letterSpacing: 1.5 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1.5 }}>
                 {selectedCount > 0 ? `Start Encounter (${selectedCount})` : "Select Combatants"}
               </Text>
             </Pressable>

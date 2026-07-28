@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { GoldRule } from "@/components/GoldRule";
 import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { schema } from "@grimoire/core";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 
 const PROBLEMS = [
   "A prominent citizen has vanished without a trace",
@@ -96,6 +97,7 @@ function generateHook() {
 type HookDraft = ReturnType<typeof generateHook>;
 
 export default function HookGenScreen() {
+  useThemeTick();
   const { id: campaignId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [hook, setHook] = useState<HookDraft>(generateHook);
@@ -119,7 +121,7 @@ export default function HookGenScreen() {
       <Stack.Screen options={{ title: "Plot Hook Generator" }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
         <ScrollView contentContainerStyle={{ padding: 24 }}>
-          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 2, marginBottom: 6 }}>
+          <Text style={{ fontFamily: "CormorantGaramond_700Bold", fontSize: 13, color: color.gold, textTransform: "uppercase", letterSpacing: 2, marginBottom: 6 }}>
             Adventure Hook
           </Text>
 
@@ -129,25 +131,25 @@ export default function HookGenScreen() {
             <HookField
               label="Situation"
               value={hook.problem}
-              color="#7A2418"
+              accent={color.oxblood}
               onReroll={() => setHook((h) => ({ ...h, problem: pick(PROBLEMS) }))}
             />
             <HookField
               label="Setting"
               value={hook.location}
-              color="#4A8060"
+              accent={color.success}
               onReroll={() => setHook((h) => ({ ...h, location: pick(LOCATIONS) }))}
             />
             <HookField
               label="Twist"
               value={hook.twist}
-              color="#5A3A7A"
+              accent={color.purpleDeep}
               onReroll={() => setHook((h) => ({ ...h, twist: pick(TWISTS) }))}
             />
             <HookField
               label="Reward"
               value={hook.reward}
-              color="#A07A2C"
+              accent={color.gold}
               onReroll={() => setHook((h) => ({ ...h, reward: pick(REWARDS) }))}
             />
           </View>
@@ -157,18 +159,18 @@ export default function HookGenScreen() {
           <View style={{ marginTop: 24, gap: 12 }}>
             <Pressable
               onPress={() => setHook(generateHook())}
-              style={{ paddingVertical: 14, borderWidth: 1, borderColor: "#A07A2C40", borderRadius: 2, alignItems: "center" }}
+              style={{ paddingVertical: 14, borderWidth: 1, borderColor: withAlpha("gold", 0x40 / 255), borderRadius: 2, alignItems: "center" }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#A07A2C", textTransform: "uppercase", letterSpacing: 1.5 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.gold, textTransform: "uppercase", letterSpacing: 1.5 }}>
                 ⚄ Generate New Hook
               </Text>
             </Pressable>
 
             <Pressable
               onPress={saveToNotes}
-              style={{ paddingVertical: 14, backgroundColor: "#7A2418", borderWidth: 1, borderColor: "#C9A24A40", borderRadius: 2, alignItems: "center" }}
+              style={{ paddingVertical: 14, backgroundColor: color.oxblood, borderWidth: 1, borderColor: withAlpha("goldBright", 0x40 / 255), borderRadius: 2, alignItems: "center" }}
             >
-              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: "#FAF5EA", textTransform: "uppercase", letterSpacing: 1.5 }}>
+              <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: color.onAccent, textTransform: "uppercase", letterSpacing: 1.5 }}>
                 Save to Campaign Notes
               </Text>
             </Pressable>
@@ -181,18 +183,18 @@ export default function HookGenScreen() {
   );
 }
 
-function HookField({ label, value, color, onReroll }: { label: string; value: string; color: string; onReroll: () => void }) {
+function HookField({ label, value, accent, onReroll }: { label: string; value: string; accent: string; onReroll: () => void }) {
   return (
-    <View style={{ padding: 14, borderWidth: 1, borderColor: `${color}25`, borderRadius: 2, backgroundColor: `${color}06` }}>
+    <View style={{ padding: 14, borderWidth: 1, borderColor: `${accent}25`, borderRadius: 2, backgroundColor: `${accent}06` }}>
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color, textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 9, color: accent, textTransform: "uppercase", letterSpacing: 1.5, flex: 1 }}>
           {label}
         </Text>
         <Pressable onPress={onReroll}>
-          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: `${color}60` }}>⚄</Text>
+          <Text style={{ fontFamily: "Inter_500Medium", fontSize: 12, color: `${accent}60` }}>⚄</Text>
         </Pressable>
       </View>
-      <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 17, color: "#2C2014", lineHeight: 26 }}>
+      <Text style={{ fontFamily: "CormorantGaramond_400Regular", fontSize: 17, color: color.ink, lineHeight: 26 }}>
         {value}
       </Text>
     </View>

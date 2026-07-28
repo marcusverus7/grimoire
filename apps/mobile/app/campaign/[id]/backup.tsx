@@ -8,7 +8,7 @@ import { ParchmentScreen } from "@/components/ParchmentScreen";
 import { GoldRule } from "@/components/GoldRule";
 import { WaxSeal } from "@/components/WaxSeal";
 import { newId } from "@/lib/id";
-import { color, withAlpha } from "@/lib/theme";
+import { color, withAlpha, useThemeTick } from "@/lib/theme";
 import { pushBackup, listBackups, deleteBackup, type CloudBackupRow } from "@/lib/backup";
 
 /**
@@ -20,6 +20,7 @@ import { pushBackup, listBackups, deleteBackup, type CloudBackupRow } from "@/li
  * happened, happened.
  */
 export default function BackupScreen() {
+  useThemeTick();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { session } = useAuth();
@@ -87,7 +88,7 @@ export default function BackupScreen() {
     <>
       <Stack.Screen options={{ title: "Cloud Backup" }} />
       <ParchmentScreen edges={["top", "bottom", "left", "right"]}>
-        <ScrollView className="flex-1 bg-parchment" contentContainerStyle={{ padding: 20 }}>
+        <ScrollView className="flex-1 bg-parchment dark:bg-night-bg" contentContainerStyle={{ padding: 20 }}>
           <Pressable onPress={() => router.back()}>
             <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: color.gold, marginBottom: 16 }}>
               ‹ Back
@@ -160,7 +161,7 @@ export default function BackupScreen() {
                     style={{
                       fontFamily: "Inter_600SemiBold",
                       fontSize: 13,
-                      color: color.parchment,
+                      color: color.onAccent,
                       textTransform: "uppercase",
                       letterSpacing: 1.5,
                     }}
