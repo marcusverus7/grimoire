@@ -517,6 +517,27 @@ read Part IV (build plan) before starting any phase.
   `bg-gold/8` in recap.tsx was already a dead class (tailwind 3 has no /8 step)
   and its `dark:` twin is equally inert.
 
+- Phase 56: **The crash "fix" in builds 10–14 was a placebo — the patch never
+  compiled.** Founder report: app still crashes on open after build 14. Build-log
+  forensics: `[ReactNativeCore] Using React Native Core and React Native
+  Dependencies prebuilt versions` — RN 0.81/Expo 54 downloads a PREBUILT
+  React-Core framework from Maven, so the pnpm patch to `RCTTurboModule.mm`
+  (iOS-26 launch-crash fix, react-native#54859) was silently discarded in every
+  build since 10. **Lesson: a react-native native-code patch means nothing while
+  React-Core-prebuilt is in play; verify the build log / Podfile.lock, never the
+  source tree.** Fix: `ios-build.yml` job env `RCT_USE_PREBUILT_RNCORE: "0"`
+  (rncore.rb uses prebuilt only when exactly "1") + a post-`pod install` assert
+  that fails the build if `React-Core-prebuilt` is in Podfile.lock or the
+  "GRIMOIRE PATCH" marker is absent from resolved RCTTurboModule.mm — placebo
+  builds are now structurally impossible. Source builds cost ~+10-15 min.
+  Version 1.13.2 / buildNumber **15**. Separately: BOTH local ASC API keys now
+  return 401 (revoked/expired — possibly by an overnight sibling-app session);
+  feedback/crash pulls blocked until the founder mints a new key in ASC → Users
+  and Access → Integrations. CI upload uses GH-secret creds (validity unknown —
+  build 15's upload step is the test). If build 15 STILL crashes for Fe, the
+  patch now logs the NSException name/reason via RCTLogError — get her device
+  console (Xcode → Devices, or Console.app) for the exact module.
+
 ## What to build next
 
 1. Player invites & roles — the real multi-device story (needs the Supabase

@@ -19,6 +19,14 @@ jobs:
     timeout-minutes: 120
     env:
       COREPACK_INTEGRITY_KEYS: "0"
+      # CRITICAL: build React Native Core from SOURCE, never prebuilt.
+      # RN 0.81/Expo 54 defaults to downloading a precompiled React-Core
+      # framework from Maven — which silently DISCARDS our pnpm patch to
+      # RCTTurboModule.mm (the iOS-26 launch-crash fix, react-native#54859).
+      # Builds 10-14 shipped WITHOUT the patch because of this: the source was
+      # patched, the binary never rebuilt. rncore.rb only uses prebuilt when
+      # this env var is exactly "1", so "0" forces source compilation.
+      RCT_USE_PREBUILT_RNCORE: "0"
 
     steps:
       - name: Checkout
@@ -142,6 +150,25 @@ jobs:
         run: |
           gem install cocoapods --no-document 2>/dev/null || true
           pod install
+
+      - name: Assert RN core builds from source (patch must compile)
+        working-directory: apps/mobile/ios
+        run: |
+          # If React-Core-prebuilt appears in the lockfile, the precompiled
+          # framework is in use and the RCTTurboModule.mm crash patch is NOT in
+          # the binary. Fail loudly rather than ship another placebo build.
+          if grep -q "React-Core-prebuilt" Podfile.lock; then
+            echo "::error::React-Core-prebuilt found in Podfile.lock — the iOS-26 crash patch would be silently dropped. RCT_USE_PREBUILT_RNCORE must resolve to source builds."
+            exit 1
+          fi
+          # And positively confirm the patched line is present in the source
+          # that is about to be compiled.
+          RESOLVED=$(find ../../../node_modules/.pnpm -path "*react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm" | head -1)
+          if ! grep -q "GRIMOIRE PATCH" "$RESOLVED"; then
+            echo "::error::pnpm patch missing from RCTTurboModule.mm — refusing to build."
+            exit 1
+          fi
+          echo "OK: building RN core from source with the crash patch present."
 
       - name: Write ExportOptions.plist
         run: |
